@@ -10,7 +10,7 @@ export default class ViewAllUser extends React.Component {
     this.state = {
       FlatListItems: [],
     };
-    realm = new Realm({ path: 'UserDatabase.realm' });
+    realm = new Realm({ path: 'QmsDb.realm' });
     var user_details = realm.objects('user_details');
     this.state = {
       FlatListItems: user_details,

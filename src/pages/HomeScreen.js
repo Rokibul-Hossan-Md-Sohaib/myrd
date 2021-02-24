@@ -10,7 +10,7 @@ export default class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
     realm = new Realm({
-      path: 'UserDatabase.realm',
+      path: 'QmsDb.realm',
       schema: [
         {
           name: 'user_details',

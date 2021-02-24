@@ -14,7 +14,7 @@ export default class RegisterUser extends React.Component {
       user_contact: '',
       user_address: '',
     };
-    realm = new Realm({ path: 'UserDatabase.realm' });
+    realm = new Realm({ path: 'QmsDb.realm' });
   }
 
   register_user = () => {

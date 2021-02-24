@@ -6,18 +6,18 @@ import { createAppContainer } from 'react-navigation';
 import { createStackNavigator} from 'react-navigation-stack';
 
 //Import external files
-import HomeScreen from './pages/HomeScreen';
-import RegisterUser from './pages/RegisterUser';
-import UpdateUser from './pages/UpdateUser';
-import ViewUser from './pages/ViewUser';
-import ViewAllUser from './pages/ViewAllUser';
-import DeleteUser from './pages/DeleteUser';
+import HomeScreen from './src/pages/HomeScreen';
+import RegisterUser from './src/pages/RegisterUser';
+import UpdateUser from './src/pages/UpdateUser';
+import ViewUser from './src/pages/ViewUser';
+import ViewAllUser from './src/pages/ViewAllUser';
+import DeleteUser from './src/pages/DeleteUser';
 
 const App = createStackNavigator({
   HomeScreen: {
     screen: HomeScreen,
     navigationOptions: {
-      title: 'HomeScreen',
+      title: 'QMS Home',
       headerStyle: { backgroundColor: '#3a59b7' },
       headerTintColor: '#ffffff',
     },

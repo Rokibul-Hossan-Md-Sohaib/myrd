@@ -8,7 +8,7 @@ let realm;
 export default class UpdateUser extends React.Component {
   constructor(props) {
     super(props);
-    realm = new Realm({ path: 'UserDatabase.realm' });
+    realm = new Realm({ path: 'QmsDb.realm' });
     this.state = {
       input_user_id: '',
     };
