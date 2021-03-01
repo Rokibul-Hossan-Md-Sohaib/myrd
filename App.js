@@ -4,7 +4,7 @@ import React from 'react';
 //Import react-navigation
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator} from 'react-navigation-stack';
-
+import Toast from 'react-native-toast-message';
 //Import external files
 import HomeScreen from './src/pages/HomeScreen';
 import RegisterUser from './src/pages/RegisterUser';
@@ -63,4 +63,12 @@ const App = createStackNavigator({
     },
   },
 });
-export default createAppContainer(App);
+
+const AppContainer =  createAppContainer(App);
+
+const ToastContainer = () => <>
+                              <AppContainer/> 
+                              <Toast ref={(ref) => Toast.setRef(ref)} />
+                            </>
+
+export default ToastContainer;

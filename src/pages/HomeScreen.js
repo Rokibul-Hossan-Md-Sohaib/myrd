@@ -2,8 +2,9 @@
 import React from 'react';
 import { View } from 'react-native';
 import Mybutton from './components/Mybutton';
-import Mytext from './components/Mytext';
+import Toast from 'react-native-toast-message';
 import ProgressDialog from '../utils/loader'
+import {get} from '../utils/apiUtils'
 import {CompanyWiseUnitLineSchema, HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, DemoUserSchema} from '../db/schemas/dbSchema'
 import Realm from 'realm';
 let realm;
@@ -11,7 +12,7 @@ let realm;
 export default class HomeScreen extends React.Component {
 
     state = {
-      isloading: false,
+      loading: false,
     }
 
   constructor(props) {
@@ -29,7 +30,60 @@ export default class HomeScreen extends React.Component {
   }
 
   componentDidMount(){
+        this.getInitialData();
+  }
+//adb pull /data/data/com.rnrelmdbsync/files/QmsDb.realm QmsDb.realm
 
+  getInitialData(){
+    get('/GetCompanyUnitLineData')
+    .then(response => {
+
+        this.setState({loading: false}, ()=>{
+            var responseData = response.data;
+        if(responseData){
+            Toast.show({
+                type: 'success',
+                position: 'bottom',
+                text1: 'Successed!',
+                text2: 'It\'s ok! 👋',
+                visibilityTime: 1000,
+                })
+
+              // try { Write Data if data dosen't exixts
+                Realm.
+                realm.write(() => {
+                    responseData.forEach(obj => {
+                      realm.create(CompanyWiseUnitLineSchema.name, obj);
+                  });
+                  //realm.create('Car', {make: 'Honda', model: 'Accord', drive: 'awd'});
+                });
+              // } catch (e) {
+              //   console.log("Error on creation");
+              // }
+
+            console.log(responseData);
+            //this.props.navigation.navigate('HomeScreen', responseData.userObj);
+        }else{
+            Toast.show({
+                type: 'error',
+                position: 'bottom',
+                text1: 'Error!X',
+                text2: responseData.vMessage,
+                visibilityTime: 1000,
+                })
+        }
+        });
+
+    })
+    .catch(errorMessage => {   
+        this.setState({loading: false}, ()=>{
+            Toast.show({
+                type: 'error',
+                text1: 'catch Error!',
+                text2: errorMessage
+                })
+        }); 
+    });
   }
   //https://github.com/lawnstarter/react-native-picker-select
   //https://reactnative.dev/docs/typescript#adding-typescript-to-an-existing-project
@@ -45,7 +99,7 @@ export default class HomeScreen extends React.Component {
           backgroundColor: 'white',
           flexDirection: 'column',
         }}>
-        <ProgressDialog loading={this.state.isloading} />
+        <ProgressDialog loading={this.state.loading} />
         {/* <Mytext text="RealM Example" /> */}
         <Mybutton
           title="Login"
