@@ -8,7 +8,24 @@ const DemoUserSchema = {
     },
   };
 
-const CompanyWiseUnitLineSchema = {
+const QmsSecurityProductionDeviceInfo = {
+        name: 'QMS_SecurityProductionDeviceInfo',
+        properties:{
+          iAutoId: 'int?',
+          vDeviceId: 'string?',
+          vCompanyId: 'string?',
+          vCompanyName: 'string?',
+          vShortCode: 'string?',
+          vUnitId: 'string?',
+          vUnitName: 'string?',
+          vLineId: 'string?',
+          vUnitLineId: 'string?',
+          vShiftId: 'string?',
+          bIsActive: 'bool?'
+        },
+      };
+
+      const CompanyWiseUnitLineSchema = {
         name: 'Vw_CompanyWiseUnitLine',
         //primaryKey: 'vUnitLineId',
         properties:{
@@ -34,14 +51,14 @@ const HourInfoSchema = {
           dStartTime: 'string?',
           dEndTimeOfProduction: 'date',
           dEndTime: 'string?',
-          dStartTimeOfEntry: 'date',
-          dStartEntryTime: 'date',
-          dEndTimeOfEntry: 'date',
-          dEndEntryTime: 'date',
-          nHour: 'string?',
-          iChangeHour: 'string?',
-          iOrderBy: 'string?',
-          iSection: 'string?'
+          dStartTimeOfEntry: 'date?',
+          dStartEntryTime: 'string?',
+          dEndTimeOfEntry: 'date?',
+          dEndEntryTime: 'string?',
+          nHour: 'int?',
+          iChangeHour: 'int?',
+          iOrderBy: 'int?',
+          iSection: 'int?'
         },
       };
 
@@ -114,4 +131,4 @@ const DailyPlanSchema = {
     },
   }
 
-  export {CompanyWiseUnitLineSchema, HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, DemoUserSchema};
+  export {CompanyWiseUnitLineSchema, HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, DemoUserSchema, QmsSecurityProductionDeviceInfo};

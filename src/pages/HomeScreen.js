@@ -5,7 +5,7 @@ import Mybutton from './components/Mybutton';
 import Toast from 'react-native-toast-message';
 import ProgressDialog from '../utils/loader'
 import {get} from '../utils/apiUtils'
-import {CompanyWiseUnitLineSchema, HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, DemoUserSchema} from '../db/schemas/dbSchema'
+import {CompanyWiseUnitLineSchema, HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, DemoUserSchema, QmsSecurityProductionDeviceInfo} from '../db/schemas/dbSchema'
 import Realm from 'realm';
 let realm;
 
@@ -21,25 +21,34 @@ export default class HomeScreen extends React.Component {
       path: 'QmsDb.realm',
       schema: [
         DemoUserSchema,
-        CompanyWiseUnitLineSchema,
+        //CompanyWiseUnitLineSchema,
         HourInfoSchema,
         DailyPlanSchema,
-        DeviceWiseProductionSchema
+        DeviceWiseProductionSchema,
+        QmsSecurityProductionDeviceInfo
       ],
     });
   }
 
   componentDidMount(){
-        this.getInitialData();
+    const tasks = realm.objects(QmsSecurityProductionDeviceInfo.name);    
+    console.log(tasks.length);
+      if(tasks.length === 0){
+        this.setState({loading: true}, ()=> this.getInitialData());
+          //this.getInitialData();
+      }
   }
 //adb pull /data/data/com.rnrelmdbsync/files/QmsDb.realm QmsDb.realm
 
   getInitialData(){
+    //console.log('came here..')
     get('/GetCompanyUnitLineData')
     .then(response => {
 
         this.setState({loading: false}, ()=>{
             var responseData = response.data;
+          console.log(responseData.compUnitData.length);
+          console.log(responseData.timeHourData.length);
         if(responseData){
             Toast.show({
                 type: 'success',
@@ -50,10 +59,13 @@ export default class HomeScreen extends React.Component {
                 })
 
               // try { Write Data if data dosen't exixts
-                Realm.
                 realm.write(() => {
-                    responseData.forEach(obj => {
-                      realm.create(CompanyWiseUnitLineSchema.name, obj);
+                    responseData.compUnitData.forEach(obj => {
+                      realm.create(QmsSecurityProductionDeviceInfo.name, obj);
+                  });
+
+                    responseData.timeHourData.forEach(obj => {
+                    realm.create(HourInfoSchema.name, obj);
                   });
                   //realm.create('Car', {make: 'Honda', model: 'Accord', drive: 'awd'});
                 });
@@ -61,7 +73,7 @@ export default class HomeScreen extends React.Component {
               //   console.log("Error on creation");
               // }
 
-            console.log(responseData);
+            //console.log(responseData);
             //this.props.navigation.navigate('HomeScreen', responseData.userObj);
         }else{
             Toast.show({
@@ -85,6 +97,7 @@ export default class HomeScreen extends React.Component {
         }); 
     });
   }
+  //adb root  adb pull /data/data/com.rnrelmdbsync/files/QmsDb.realm QmsDb.realm
   //https://github.com/lawnstarter/react-native-picker-select
   //https://reactnative.dev/docs/typescript#adding-typescript-to-an-existing-project
   //https://docs.mongodb.com/realm/react-native/objects/
