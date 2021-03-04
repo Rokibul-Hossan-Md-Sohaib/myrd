@@ -97,6 +97,7 @@ export default class HomeScreen extends React.Component {
         }); 
     });
   }
+  // https://docs.mongodb.com/realm-legacy/docs/javascript/latest/api/tutorial-query-language.html
   //adb root  adb pull /data/data/com.rnrelmdbsync/files/QmsDb.realm QmsDb.realm
   //https://github.com/lawnstarter/react-native-picker-select
   //https://reactnative.dev/docs/typescript#adding-typescript-to-an-existing-project
@@ -114,11 +115,14 @@ export default class HomeScreen extends React.Component {
         }}>
         <ProgressDialog loading={this.state.loading} />
         {/* <Mytext text="RealM Example" /> */}
-        <Mybutton
-          title="Login"
-          customClick={() => this.props.navigation.navigate('Update')}
-        />
-        <Mybutton
+        <View></View>
+        <View style={{position:'absolute', bottom: '10%', width: '100%'}}>
+          <Mybutton
+            title="Start"
+            customClick={() => this.props.navigation.navigate('DeviceLogin')}
+          />
+        </View>
+        {/* <Mybutton
           title="Register"
           customClick={() => this.props.navigation.navigate('Register')}
         />
@@ -137,7 +141,7 @@ export default class HomeScreen extends React.Component {
         <Mybutton
           title="Delete"
           customClick={() => this.props.navigation.navigate('Delete')}
-        />
+        /> */}
       </View>
     );
   }

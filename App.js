@@ -12,12 +12,21 @@ import UpdateUser from './src/pages/UpdateUser';
 import ViewUser from './src/pages/ViewUser';
 import ViewAllUser from './src/pages/ViewAllUser';
 import DeleteUser from './src/pages/DeleteUser';
+import DeviceLogin from './src/pages/DeviceLogin'
 
 const App = createStackNavigator({
   HomeScreen: {
     screen: HomeScreen,
     navigationOptions: {
       title: 'QMS Home',
+      headerStyle: { backgroundColor: '#3a59b7' },
+      headerTintColor: '#ffffff',
+    },
+  },
+  DeviceLogin: {
+    screen: DeviceLogin,
+    navigationOptions: {
+      title: 'QMS Login',
       headerStyle: { backgroundColor: '#3a59b7' },
       headerTintColor: '#ffffff',
     },
