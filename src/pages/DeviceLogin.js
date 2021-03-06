@@ -3,7 +3,10 @@ import React from 'react';
 import { View, ScrollView, KeyboardAvoidingView, Alert, StyleSheet, Text } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import Mytextinput from './components/Mytextinput';
+import moment from 'moment'
+import Toast from 'react-native-toast-message';
 import Mybutton from './components/Mybutton';
+import {post} from '../utils/apiUtils'
 import ProgressDialog from '../utils/loader'
 import {QmsSecurityProductionDeviceInfo} from '../db/schemas/dbSchema'
 import Realm from 'realm';
@@ -12,7 +15,7 @@ let realm;
 export default class RegisterUser extends React.Component {
 
     state = {
-       // loading: false,
+        loading: false,
         vDeviceId: '',
         vCompanyId: '',
         vCompanyName: '',
@@ -113,15 +116,125 @@ export default class RegisterUser extends React.Component {
    // console.log('DeviceId', finalObj);
     if(finalObj != undefined){
       var vDeviceId = finalObj.vDeviceId;
-      this.setState({vDeviceId}, ()=> console.log('DeviceID',this.state.vDeviceId))
+      this.setState({vDeviceId,  deviceId: vDeviceId,}, ()=> console.log('DeviceID',this.state.vDeviceId))
     }
   }
 
   userLoginAndGetData(){
     var {vCompanyId, vUnitId, vUnitLineId, vShiftId, vDeviceId, Password } = this.state;
-
-    console.log({vCompanyId, vUnitId, vUnitLineId, vShiftId, vDeviceId, Password });
+    var reqObj = {
+      "deviceId": vDeviceId,
+      "devicePwd": vDeviceId,//Password,
+      "companyId": vCompanyId,
+      "unitId": vUnitId,
+      "unitLineId": vUnitLineId,
+      "shiftId": vShiftId,
+      "dateTime": "2020-11-04"//moment().format('YYYY-MM-DD')
   }
+
+  this.setState({loading: true}, ()=>{
+    post('/GetProductionPlanUnitLineData', reqObj)
+    .then(response => {
+        this.setState({loading: false}, ()=>{
+            var responseData = response.data;
+            console.log(responseData);
+        if(responseData.auth){
+
+          var toastFlavour = responseData.dailyProdPlanData.length > 0 ? "success" : "info";
+          var toastTitleTxt = responseData.dailyProdPlanData.length > 0 ? "Successed!" : "Info!";
+          
+            Toast.show({
+                type: toastFlavour,
+                position: 'top',
+                text1: toastTitleTxt,
+                text2: responseData.msg+' 👋 length: '+responseData.dailyProdPlanData.length,
+                visibilityTime: 1500,
+                })
+            //this.props.navigation.navigate('HomeScreen', responseData.userObj);
+        }else{
+            Toast.show({
+                type: 'error',
+                position: 'top',
+                text1: 'Error!',
+                text2: responseData.msg,
+                visibilityTime: 1500,
+                })
+        }
+        });
+
+    })
+    .catch(errorMessage => {   
+        this.setState({loading: false}, ()=>{
+            Toast.show({
+                type: 'error',
+                position: 'top',
+                text1: 'Error!',
+                text2: errorMessage
+                })
+        }); 
+    });
+  })
+
+    /**
+     * 
+     * {
+        "deviceId": "C6I1L1",
+        "devicePwd": "C6I1L1",
+        "unitId": "U24",
+        "unitLineId": "UL208",
+        "shiftId": "SH1",
+        "dateTime": "2020-11-04"
+      }
+     * 
+     */
+    this.writeToLocalDb();
+    console.log(reqObj);
+  }
+
+
+  
+  writeToLocalDb = () =>{
+    console.log('write to DB')
+    //Clear any existing data in local db
+    this.clearLocalDb();
+      //write plan data to local db
+      /***
+       * realm.write(() => {
+                    responseData.compUnitData.forEach(obj => {
+                      realm.create(QmsSecurityProductionDeviceInfo.name, obj);
+                  });
+
+                    responseData.timeHourData.forEach(obj => {
+                    realm.create(HourInfoSchema.name, obj);
+                  });
+                  //realm.create('Car', {make: 'Honda', model: 'Accord', drive: 'awd'});
+                });
+       * 
+       * 
+       */
+  }
+
+  clearLocalDb = () => {
+    console.log('clear DB')
+    /***
+     * 
+     * realm.write(() => {
+  // Create a book object
+  let book = realm.create('Book', {id: 1, title: 'Recipes', price: 35});
+
+  // Delete the book
+  realm.delete(book);
+
+  // Delete multiple books by passing in a `Results`, `List`,
+  // or JavaScript `Array`
+  let allBooks = realm.objects('Book');
+  realm.delete(allBooks); // Deletes all books
+});
+     * 
+     * 
+     */
+  }
+
 
 //   register_user = () => {
 //     var that = this;
@@ -178,7 +291,7 @@ export default class RegisterUser extends React.Component {
           <KeyboardAvoidingView
             behavior="padding"
             style={{ flex: 1, justifyContent: 'space-between' }}>
-            {/* <ProgressDialog loading={this.state.loading} /> */}
+            <ProgressDialog loading={this.state.loading} />
             <View paddingVertical={5} />
 
             <Text style={{paddingLeft: 25, fontWeight: '700'}}>Company</Text>
@@ -200,7 +313,11 @@ export default class RegisterUser extends React.Component {
                   vDeviceId: '',
                   vShiftId: '',
                   vUnitId: '',
-                  vUnitLineId: ''
+                  vUnitLineId: '',
+                  selectedUnit: undefined,
+                  selectedLine: undefined,
+                  selectedShift: undefined,
+                  deviceId: undefined,
                 }, ()=>{
                   this.setUnitData(value);
                   this.state.shiftAvailavle  ? this.setShiftData() : console.log('no shift available!');
@@ -230,6 +347,9 @@ export default class RegisterUser extends React.Component {
                   vUnitLineId: '',
                   vShiftId: '',
                   vDeviceId: '',
+                  selectedLine: undefined,
+                  selectedShift: undefined,
+                  deviceId: undefined,
                 }, ()=>{
                   this.setLineData(value);
               });
@@ -258,7 +378,8 @@ export default class RegisterUser extends React.Component {
                   vUnitLineId: value,
                   vShiftId: '',
                   vDeviceId: '',
-                  
+                  selectedShift: '',
+                  deviceId: undefined,
                 }, ()=>{
                   this.state.shiftAvailavle ? console.log('Shift available, Select Line to get Device ID') : this.getDeviceId();
                   console.log('line', value);
@@ -287,6 +408,7 @@ export default class RegisterUser extends React.Component {
                   selectedShift: value,
                   vShiftId: value,
                   vDeviceId: '',
+                  deviceId: undefined,
                 }, ()=>{
                   //this.setLineData(value);
                   this.getDeviceId();
