@@ -31,16 +31,41 @@ export default class HomeScreen extends React.Component {
   }
 
   componentDidMount(){
-    const tasks = realm.objects(QmsSecurityProductionDeviceInfo.name);    
-    console.log(tasks.length);
-      if(tasks.length === 0){
+    const deviceinfo = realm.objects(QmsSecurityProductionDeviceInfo.name);  
+    const hourinfo = realm.objects(HourInfoSchema.name);  
+    console.log(deviceinfo.length, hourinfo.length);
+      if(deviceinfo.length == 0 || hourinfo.length == 0){
+        //this.clearLocalDb();
         this.setState({loading: true}, ()=> this.getInitialData());
           //this.getInitialData();
       }
   }
 //adb pull /data/data/com.rnrelmdbsync/files/QmsDb.realm QmsDb.realm
 
+clearLocalDb = () => {
+  console.log('clear DB')
+   realm.write(() => {
+  
+  let allDeviceInfo = realm.objects(QmsSecurityProductionDeviceInfo.name);
+  realm.delete(allDeviceInfo);
+  //console.log('all device', allDeviceInfo.length)
+
+  let allHourInfo = realm.objects(HourInfoSchema.name);
+  realm.delete(allHourInfo);
+  // Create a book object
+  //let book = realm.create('Book', {id: 1, title: 'Recipes', price: 35});
+
+  // Delete the book
+  //realm.delete(book);
+
+  // Delete multiple books by passing in a `Results`, `List`,
+  // or JavaScript `Array`
+});
+ 
+}
+
   getInitialData(){
+    //this.clearLocalDb();
     //console.log('came here..')
     get('/GetCompanyUnitLineData')
     .then(response => {

@@ -8,79 +8,61 @@ import Toast from 'react-native-toast-message';
 import Mybutton from './components/Mybutton';
 import {post} from '../utils/apiUtils'
 import ProgressDialog from '../utils/loader'
-import {QmsSecurityProductionDeviceInfo, DailyPlanSchema} from '../db/schemas/dbSchema'
+import {DailyPlanSchema} from '../db/schemas/dbSchema'
 import Realm from 'realm';
 let realm;
 
-export default class DeviceLogin extends React.Component {
+export default class SetupData extends React.Component {
 
     state = {
         loading: false,
         vDeviceId: '',
-        vCompanyId: '',
-        vCompanyName: '',
-        vShortCode: '',
-        vUnitId: '',
-        vUnitName: '',
-        vLineId: '',
-        vUnitLineId: '',
-        loginDisabled: true,
-        vShiftId: '',
-        Password: '12345',
-        AllDeviceInfo: [],
-        filteredDeviceInfo:[],
-        shiftAvailavle: false,
-        comNames: [],
-        unitNames: [],
-        lineNames:[],
-        shifts: [],
-        reqObj: [],
-        selectedCompany: undefined,
-        selectedUnit: undefined,
-        selectedLine: undefined,
-        selectedShift: undefined,
+        finalSelectedObject:[],
+        vBuyerId: '',
+        vBuyerName: '',
+        vStyleId: '',
+        vStyleName: '',
+        vExpPoorderNo: '',
+        vColorId: '',
+        vColorName: '',
+        vSizeId: '',
+        vSizeName: '',
+        dShipmentDate: '',
+        
+        reqObj:[], //data came from previous screen...
+        AllPlanInfo: [],
+        buyerNames: [],
+        styleNames: [],
+        expPos:[],
+        colorNames: [],
+        sizeNames: [],
+
+        selectedBuyer: undefined,
+        selectedStyle: undefined,
+        selectedExpPo: undefined,
+        selectedColor: undefined,
+        selectedSize: undefined,
         deviceId: undefined,
     };
 
     constructor(props) {
     super(props);    
     realm = new Realm({ path: 'QmsDb.realm' });
-
-    // this.inputRefs = {
-    //     favSport1: null,
-    //   };
   }
 
     componentDidMount(){
-      const comInfo = realm.objects(QmsSecurityProductionDeviceInfo.name);
-      this.setState({AllDeviceInfo: comInfo}, ()=>{
-        const comNames = this.setupPickerData(this.state.AllDeviceInfo, 'vCompanyName', 'vCompanyId');
+      const comInfo = realm.objects(DailyPlanSchema.name);
+      const reqObj = this.props.navigation.getParam('userData');
+        console.log('reqObj', reqObj)
+
+      this.setState({AllPlanInfo: comInfo, reqObj}, ()=>{
+        const buyerNames = this.setupPickerData(this.state.AllPlanInfo, 'vBuyerName', 'vBuyerId');
         this.setState({
-          comNames,
+          buyerNames,
          // loading: false
-        },()=> console.log('inDeviceLogin', this.state.comNames.length))
+        },()=> console.log('buyer', this.state.buyerNames.length))
       })   
       
-    }
-
-    setUnitData(comid){
-      const unitNames = this.setupPickerData(this.state.filteredDeviceInfo, 'vUnitName', 'vUnitId', comid, 'vCompanyId');
-      this.setState({unitNames}, ()=> console.log('units nos', unitNames.length));
-      // if(!comid) comid = 'nothing'
-      // const nfo = realm.objects(QmsSecurityProductionDeviceInfo.name)
-      // .filtered(`vCompanyId="${comid}" && TRUEPREDICATE DISTINCT(vUnitId)`)
-      // .map(item => {
-      //   return { value: item["vUnitId"], label: item["vUnitName"] }}); 
-    }
-
-    setLineData(unitId){
-      const lineNames = this.setupPickerData(this.state.filteredDeviceInfo, 'vLineId', 'vUnitLineId', unitId, 'vUnitId');
-        this.setState({lineNames}, ()=> console.log('lineName nos', lineNames.length));
-    }
-
-    setShiftData(){
-      const shifts = this.setupPickerData(this.state.filteredDeviceInfo, 'vShiftId', 'vShiftId');
-        this.setState({shifts}, ()=> console.log('shifts nos', shifts.length));
     }
 
   setupPickerData(dataArr, labelName, valueName, filterTxt, filterColumn){
@@ -106,20 +88,7 @@ export default class DeviceLogin extends React.Component {
         }
     return DepResult;
   }
-  getDeviceId(){
-    var finalObj = [];
-
-    if(this.state.shiftAvailavle && this.state.vShiftId){
-        finalObj = this.state.filteredDeviceInfo.filter(x => x.vCompanyId === this.state.vCompanyId && x.vUnitId === this.state.vUnitId && x.vUnitLineId === this.state.vUnitLineId && x.vShiftId === this.state.vShiftId)[0];
-    }else{
-        finalObj = this.state.filteredDeviceInfo.filter(x => x.vCompanyId === this.state.vCompanyId && x.vUnitId === this.state.vUnitId && x.vUnitLineId === this.state.vUnitLineId)[0];
-    }
-   // console.log('DeviceId', finalObj);
-    if(finalObj != undefined){
-      var vDeviceId = finalObj.vDeviceId;
-      this.setState({vDeviceId,  deviceId: vDeviceId,}, ()=> console.log('DeviceID',this.state.vDeviceId))
-    }
-  }
+ 
 
   userLoginAndGetData(){
     var {vCompanyId, vUnitId, vUnitLineId, vShiftId, vDeviceId, Password } = this.state;
@@ -133,7 +102,7 @@ export default class DeviceLogin extends React.Component {
       "dateTime": "2020-11-04"//moment().format('YYYY-MM-DD')
   }
 
-  this.setState({loading: true, reqObj}, ()=>{
+  this.setState({loading: true}, ()=>{
     post('/GetProductionPlanUnitLineData', reqObj)
     .then(response => {
         this.setState({loading: false}, ()=>{
@@ -154,8 +123,7 @@ export default class DeviceLogin extends React.Component {
                 text2: responseData.msg+' 👋 length: '+responseData.dailyProdPlanData.length,
                 visibilityTime: 1500,
                 })
-            // this.props.navigation.navigate('SetupData')}
-              this.props.navigation.navigate('SetupData',{ userData:  this.state.reqObj });
+            //this.props.navigation.navigate('HomeScreen', responseData.userObj);
         }else{
             Toast.show({
                 type: 'error',
@@ -281,129 +249,176 @@ export default class DeviceLogin extends React.Component {
 
             <View paddingVertical={5} />
 
-            <Text style={{paddingLeft: 25, fontWeight: '700'}}>Company</Text>
+            <Text style={{paddingLeft: 25, fontWeight: '700'}}>Buyer</Text>
             <View paddingVertical={2} />
             <RNPickerSelect
             placeholder={placeholder}
-            items={this.state.comNames}
+            items={this.state.buyerNames}
             onValueChange={value => {
-              //console.log('pickerValue: ',value)
-              var filteredComData = this.state.AllDeviceInfo.filter(x => x.vCompanyId === value); 
-              //console.log('170', filteredComData);
-              var shiftAvailavle =  filteredComData.length == 0 ? false : filteredComData[0].vShiftId != null; 
-              //vShiftId
+              
+              var filteredComData = this.state.AllPlanInfo.filter(x => x.vBuyerId === value); 
+              const styleNames = this.setupPickerData(filteredComData, 'vStyleName', 'vStyleId', value, 'vBuyerId');
+
                 this.setState({
-                  selectedCompany: value,
-                  vCompanyId: value,
-                  filteredDeviceInfo: filteredComData,
-                  shiftAvailavle,
-                  vDeviceId: '',
-                  vShiftId: '',
-                  vUnitId: '',
-                  vUnitLineId: '',
-                  selectedUnit: undefined,
-                  selectedLine: undefined,
-                  selectedShift: undefined,
-                  deviceId: undefined,
+                  selectedBuyer: value,
+                  styleNames,
+                
+                  vBuyerId: value,
+                  vStyleId: '',
+                  vStyleName: '',
+                  vExpPoorderNo: '',
+                  vColorId: '',
+                  vColorName: '',
+                  vSizeId: '',
+                  vSizeName: '',
+                  dShipmentDate: '',
+
+                  selectedStyle: '',
+                  selectedExpPo: '',
+                  selectedColor: '',
+                  selectedSize: '',
                 }, ()=>{
-                  this.setUnitData(value);
-                  this.state.shiftAvailavle  ? this.setShiftData() : console.log('no shift available!');
+                  console.log('buyer',value);
               });
             }}
             style={pickerSelectStyles}
-            value={this.state.selectedCompany}
+            value={this.state.selectedBuyer}
             useNativeAndroidPickerStyle={false}
-            // ref={el => {
-            //     this.inputRefs.favSport1 = el;
-            // }}
             />
 
             <View paddingVertical={5} />
             
-            { this.state.selectedCompany ?
+            { this.state.selectedBuyer ?
               <View>
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Unit</Text>
+              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Style</Text>
               <View paddingVertical={2} />
               <RNPickerSelect
               placeholder={placeholder}
-              items={this.state.unitNames}
+              items={this.state.styleNames}
               onValueChange={value => {
+
+                var filteredComData = this.state.AllPlanInfo.filter(x => x.vStyleId === value); 
+                const expPos = this.setupPickerData(filteredComData, 'vExpPoorderNo', 'vExpPoorderNo', value, 'vStyleId');
+
                   this.setState({
-                  selectedUnit: value,
-                  vUnitId: value,
-                  vUnitLineId: '',
-                  vShiftId: '',
-                  vDeviceId: '',
-                  selectedLine: undefined,
-                  selectedShift: undefined,
-                  deviceId: undefined,
+                    selectedStyle: value,
+                    expPos,
+  
+                    vStyleId: value,
+                    vExpPoorderNo: '',
+                    vColorId: '',
+                    vColorName: '',
+                    vSizeId: '',
+                    vSizeName: '',
+                    dShipmentDate: '',
+  
+                    selectedExpPo: '',
+                    selectedColor: '',
+                    selectedSize: '',
                 }, ()=>{
-                  this.setLineData(value);
+                  console.log('style',value);
               });
               }}
               style={pickerSelectStyles}
-              value={this.state.selectedUnit}
+              value={this.state.selectedStyle}
               useNativeAndroidPickerStyle={false}
-              // ref={el => {
-              //     this.inputRefs.favSport1 = el;
-              // }}
               />
               
             <View paddingVertical={5} />              
             </View> : <></>}
 
-            { this.state.selectedUnit ?
+            { this.state.selectedStyle ?
               <View>
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Line</Text>
+              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Export PO</Text>
               <View paddingVertical={2} />
               <RNPickerSelect
               placeholder={placeholder}
-              items={this.state.lineNames}
+              items={this.state.expPos}
               onValueChange={value => {
+
+                var filteredComData = this.state.AllPlanInfo.filter(x => x.vExpPoorderNo === value); 
+                const colorNames = this.setupPickerData(filteredComData, 'vColorName', 'vColorId', value, 'vExpPoorderNo');
+
                   this.setState({
-                  selectedLine: value,
-                  vUnitLineId: value,
-                  vShiftId: '',
-                  vDeviceId: '',
-                  selectedShift: '',
-                  deviceId: undefined,
+                    selectedExpPo: value,
+                    colorNames,
+                  
+                    vExpPoorderNo: value,
+                    vColorId: '',
+                    vColorName: '',
+                    vSizeId: '',
+                    vSizeName: '',
+                    dShipmentDate: '',
+  
+                    selectedColor: "",
+                    selectedSize: '',
                 }, ()=>{
-                  this.state.shiftAvailavle ? console.log('Shift available, Select Line to get Device ID') : this.getDeviceId();
-                  console.log('line', value);
+                //   this.state.shiftAvailavle ? console.log('Shift available, Select Line to get Device ID') : this.getDeviceId();
+                   console.log('Exp-PO', value);
               });
               }}
               style={pickerSelectStyles}
-              value={this.state.selectedLine}
+              value={this.state.selectedExpPo}
               useNativeAndroidPickerStyle={false}
-              // ref={el => {
-              //     this.inputRefs.favSport1 = el;
-              // }}
               />            
               <View paddingVertical={5} />
             </View> : <></>}
   
 
-            { (this.state.shiftAvailavle && this.state.selectedLine) ?
+            { this.state.selectedExpPo ?
               <View>
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Shift</Text>
+              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Color</Text>
               <View paddingVertical={2} />
               <RNPickerSelect
               placeholder={placeholder}
-              items={this.state.shifts}
+              items={this.state.colorNames}
               onValueChange={value => {
+
+                var filteredComData = this.state.AllPlanInfo.filter(x => x.vColorId === value); 
+                const sizeNames = this.setupPickerData(filteredComData, 'vSizeName', 'vSizeId', value, 'vColorId');
+
                   this.setState({
-                  selectedShift: value,
-                  vShiftId: value,
-                  vDeviceId: '',
-                  deviceId: undefined,
+                    selectedColor: value,
+                    sizeNames,
+                  
+                    vColorId: value,
+                    vSizeId: '',
+                    vSizeName: '',
+                    dShipmentDate: '',
+
+                    selectedSize: '',
                 }, ()=>{
-                  //this.setLineData(value);
-                  this.getDeviceId();
-                  //console.log('shift', value);
+                 
+                  console.log('color', value);
               });
               }}
               style={pickerSelectStyles}
-              value={this.state.selectedShift}
+              value={this.state.selectedColor}
+              useNativeAndroidPickerStyle={false}
+              />            
+              <View paddingVertical={5} />  
+            </View> : <></>}
+
+            { this.state.selectedColor ?
+              <View>
+              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Size</Text>
+              <View paddingVertical={2} />
+              <RNPickerSelect
+              placeholder={placeholder}
+              items={this.state.sizeNames}
+              onValueChange={value => {
+
+                  this.setState({
+                   selectedSize: value,
+                    
+                    vSizeId: value,
+                    dShipmentDate: '',
+                }, ()=>{
+                  console.log('size', value);
+              });
+              }}
+              style={pickerSelectStyles}
+              value={this.state.selectedSize}
               useNativeAndroidPickerStyle={false}
               // ref={el => {
               //     this.inputRefs.favSport1 = el;
@@ -412,7 +427,7 @@ export default class DeviceLogin extends React.Component {
               <View paddingVertical={5} />  
             </View> : <></>}
 
-            <Text style={{paddingLeft: 25, fontWeight: '700'}}>DeviceID</Text>
+            <Text style={{paddingLeft: 25, fontWeight: '700'}}>Shipment Date</Text>
             <Mytextinput
               placeholder="Device ID"
               editable={false}
@@ -421,18 +436,16 @@ export default class DeviceLogin extends React.Component {
             />
 
             <View paddingVertical={5} />
-            <Text style={{paddingLeft: 25, fontWeight: '700'}}>Password</Text>
+            <Text style={{paddingLeft: 25, fontWeight: '700'}}>Today</Text>
             <Mytextinput
-              secureTextEntry
-              placeholder="Password"
               value={this.state.Password}
               onChangeText={Password => this.setState({ Password })}
             />
             
             <View paddingVertical={5} />  
             <Mybutton
-              title="Get Plan Info"
-              customClick={()=> this.userLoginAndGetData()}
+              title="Set Up"
+              //customClick={()=> this.userLoginAndGetData()}
             />
           </KeyboardAvoidingView>
         </ScrollView>

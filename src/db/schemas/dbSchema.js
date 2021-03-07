@@ -75,12 +75,12 @@ const DailyPlanSchema = {
       vUnitName: 'string?',
       vLineId: 'string?',
       vUnitLineId: 'string?',
-      vExpPOOrderNo: 'string?',
+      vExpPoorderNo: 'string?',
       vColorId: 'string?',
       vColorName: 'string?',
       vSizeId: 'string?',
       vSizeName: 'string?',
-      StylePo: 'string?',
+      stylePo: 'string?',
       iManpower: 'int?',
       vStyleId: 'string?',
       vStyleName: 'string?',
@@ -93,17 +93,17 @@ const DailyPlanSchema = {
       iTotalPlanQty: 'int?',
       iTarget: 'int?',
       nForecast: 'int?',
-      fSmv: 'string?',
+      fSmv: 'double?',
       iMo: 'int?',
       iHel: 'int?',
-      iPlanHour: 'string?',
+      iPlanHour: 'int?',
       iIsNew: 'int?',
-      mCost: 'string?',
+      mCost: 'double?',
       vSetPackId: 'string?',
       vShiftId: 'string?',
-      OrderReference: 'string?',
-      OrderRefSewing: 'string?',
-      ColorWiseOrderReference: 'string?'
+      orderReference: 'string?',
+      orderRefSewing: 'string?',
+      colorWiseOrderReference: 'string?'
     }
   }
 
