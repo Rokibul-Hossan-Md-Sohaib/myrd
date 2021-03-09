@@ -8,7 +8,7 @@ import Toast from 'react-native-toast-message';
 import Mybutton from './components/Mybutton';
 import {post} from '../utils/apiUtils'
 import ProgressDialog from '../utils/loader'
-import {QmsSecurityProductionDeviceInfo, DailyPlanSchema} from '../db/schemas/dbSchema'
+import {QmsSecurityProductionDeviceInfo, DailyPlanSchema, CurrentLoggedInUserSchema, HourInfoSchema} from '../db/schemas/dbSchema'
 import Realm from 'realm';
 let realm;
 
@@ -58,14 +58,16 @@ export default class DeviceLogin extends React.Component {
         this.setState({
           comNames,
          // loading: false
-        },()=> console.log('inDeviceLogin', this.state.comNames.length))
+        })
       })   
       
     }
 
     setUnitData(comid){
       const unitNames = this.setupPickerData(this.state.filteredDeviceInfo, 'vUnitName', 'vUnitId', comid, 'vCompanyId');
-      this.setState({unitNames}, ()=> console.log('units nos', unitNames.length));
+      this.setState({unitNames}, 
+        // ()=> console.log('units nos', unitNames.length)
+        );
       // if(!comid) comid = 'nothing'
       // const nfo = realm.objects(QmsSecurityProductionDeviceInfo.name)
       // .filtered(`vCompanyId="${comid}" && TRUEPREDICATE DISTINCT(vUnitId)`)
@@ -75,12 +77,16 @@ export default class DeviceLogin extends React.Component {
 
     setLineData(unitId){
       const lineNames = this.setupPickerData(this.state.filteredDeviceInfo, 'vLineId', 'vUnitLineId', unitId, 'vUnitId');
-        this.setState({lineNames}, ()=> console.log('lineName nos', lineNames.length));
+        this.setState({lineNames}, 
+          // ()=> console.log('lineName nos', lineNames.length)
+          );
     }
 
     setShiftData(){
       const shifts = this.setupPickerData(this.state.filteredDeviceInfo, 'vShiftId', 'vShiftId');
-        this.setState({shifts}, ()=> console.log('shifts nos', shifts.length));
+        this.setState({shifts}, 
+          //()=> console.log('shifts nos', shifts.length)
+          );
     }
 
   setupPickerData(dataArr, labelName, valueName, filterTxt, filterColumn){
@@ -89,7 +95,7 @@ export default class DeviceLogin extends React.Component {
 
     if(filterTxt && filterColumn){
       depid = dataArr.filter(x => x[filterColumn] === filterTxt).map((obj,idx) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
-      console.log(depid);
+      //console.log(depid);
     }else{
       depid = dataArr.map((obj,idx) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
     }
@@ -117,12 +123,14 @@ export default class DeviceLogin extends React.Component {
    // console.log('DeviceId', finalObj);
     if(finalObj != undefined){
       var vDeviceId = finalObj.vDeviceId;
-      this.setState({vDeviceId,  deviceId: vDeviceId,}, ()=> console.log('DeviceID',this.state.vDeviceId))
+      this.setState({vDeviceId,  deviceId: vDeviceId,}, 
+//        ()=> console.log('DeviceID',this.state.vDeviceId)
+        )
     }
   }
 
   userLoginAndGetData(){
-    var {vCompanyId, vUnitId, vUnitLineId, vShiftId, vDeviceId, Password } = this.state;
+    var {vCompanyId, vUnitId, vUnitLineId, vShiftId, vDeviceId} = this.state;
     var reqObj = {
       "deviceId": vDeviceId,
       "devicePwd": vDeviceId,//Password,
@@ -137,15 +145,17 @@ export default class DeviceLogin extends React.Component {
     post('/GetProductionPlanUnitLineData', reqObj)
     .then(response => {
         this.setState({loading: false}, ()=>{
-            var responseData = response.data;
-            console.log(responseData);
+            var responseData = response.data.compUnitPlanData;
+            //console.log(responseData); timeHourData
+            //.compUnitPlanData.msg
         if(responseData.auth){
 
+          var timeHour = response.data.timeHourData
           
           var toastFlavour = responseData.dailyProdPlanData.length > 0 ? "success" : "info";
           var toastTitleTxt = responseData.dailyProdPlanData.length > 0 ? "Successed!" : "Info!";
 
-          this.writeToLocalDb(responseData.dailyProdPlanData);
+          this.writeToLocalDb(responseData.dailyProdPlanData, timeHour, reqObj);
           
             Toast.show({
                 type: toastFlavour,
@@ -197,7 +207,7 @@ export default class DeviceLogin extends React.Component {
 
 
   
-  writeToLocalDb = (dataToWrite) =>{
+  writeToLocalDb = (dataToWrite, timeHour, current_login) =>{
     console.log('write to DB')
     //Clear any existing data in local db
     this.clearLocalDb();
@@ -207,6 +217,13 @@ export default class DeviceLogin extends React.Component {
             dataToWrite.forEach(obj => {
               realm.create(DailyPlanSchema.name, obj);
           });
+
+         timeHour.forEach(obj => {
+              realm.create(HourInfoSchema.name, obj);
+          });
+
+          realm.create(CurrentLoggedInUserSchema.name, current_login)
+
         });
   }
 
@@ -215,6 +232,13 @@ export default class DeviceLogin extends React.Component {
      realm.write(() => {
     // Delete multiple books by passing in a `Results`, `List`,
     // or JavaScript `Array`
+
+    let allcCurrentLoginData = realm.objects(CurrentLoggedInUserSchema.name);
+     realm.delete(allcCurrentLoginData);
+
+    let allTimeData = realm.objects(HourInfoSchema.name);
+     realm.delete(allTimeData);
+
      let allPlanData = realm.objects(DailyPlanSchema.name);
      realm.delete(allPlanData); // Deletes all plans
   });
@@ -301,10 +325,10 @@ export default class DeviceLogin extends React.Component {
                   vShiftId: '',
                   vUnitId: '',
                   vUnitLineId: '',
-                  selectedUnit: undefined,
-                  selectedLine: undefined,
-                  selectedShift: undefined,
-                  deviceId: undefined,
+                  selectedUnit: "",
+                  selectedLine: "",
+                  selectedShift: "",
+                  deviceId: "",
                 }, ()=>{
                   this.setUnitData(value);
                   this.state.shiftAvailavle  ? this.setShiftData() : console.log('no shift available!');
@@ -334,9 +358,9 @@ export default class DeviceLogin extends React.Component {
                   vUnitLineId: '',
                   vShiftId: '',
                   vDeviceId: '',
-                  selectedLine: undefined,
-                  selectedShift: undefined,
-                  deviceId: undefined,
+                  selectedLine: "",
+                  selectedShift: "",
+                  deviceId: "",
                 }, ()=>{
                   this.setLineData(value);
               });
@@ -366,10 +390,10 @@ export default class DeviceLogin extends React.Component {
                   vShiftId: '',
                   vDeviceId: '',
                   selectedShift: '',
-                  deviceId: undefined,
+                  deviceId: "",
                 }, ()=>{
                   this.state.shiftAvailavle ? console.log('Shift available, Select Line to get Device ID') : this.getDeviceId();
-                  console.log('line', value);
+                  //console.log('line', value);
               });
               }}
               style={pickerSelectStyles}
@@ -395,7 +419,7 @@ export default class DeviceLogin extends React.Component {
                   selectedShift: value,
                   vShiftId: value,
                   vDeviceId: '',
-                  deviceId: undefined,
+                  deviceId: "",
                 }, ()=>{
                   //this.setLineData(value);
                   this.getDeviceId();

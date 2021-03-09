@@ -3,6 +3,7 @@ import React from 'react';
 import { View, ScrollView, KeyboardAvoidingView, Alert, StyleSheet, Text } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import Mytextinput from './components/Mytextinput';
+import DeviceInfo from 'react-native-device-info'
 import moment from 'moment'
 import Toast from 'react-native-toast-message';
 import Mybutton from './components/Mybutton';
@@ -17,7 +18,7 @@ export default class SetupData extends React.Component {
     state = {
         loading: false,
         vDeviceId: '',
-        finalSelectedObject:[],
+        finalProductionObject:[],
         vBuyerId: '',
         vBuyerName: '',
         vStyleId: '',
@@ -28,6 +29,7 @@ export default class SetupData extends React.Component {
         vSizeId: '',
         vSizeName: '',
         dShipmentDate: '',
+        dToday: moment().format('DD-MM-YYYY'),
         
         reqObj:[], //data came from previous screen...
         AllPlanInfo: [],
@@ -54,6 +56,7 @@ export default class SetupData extends React.Component {
       const comInfo = realm.objects(DailyPlanSchema.name);
       const reqObj = this.props.navigation.getParam('userData');
         console.log('reqObj', reqObj)
+       // console.log('isTab', DeviceInfo.isTablet())
 
       this.setState({AllPlanInfo: comInfo, reqObj}, ()=>{
         const buyerNames = this.setupPickerData(this.state.AllPlanInfo, 'vBuyerName', 'vBuyerId');
@@ -71,7 +74,7 @@ export default class SetupData extends React.Component {
 
     if(filterTxt && filterColumn){
       depid = dataArr.filter(x => x[filterColumn] === filterTxt).map((obj,idx) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
-      console.log(depid);
+      //console.log(depid);
     }else{
       depid = dataArr.map((obj,idx) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
     }
@@ -90,63 +93,65 @@ export default class SetupData extends React.Component {
   }
  
 
-  userLoginAndGetData(){
-    var {vCompanyId, vUnitId, vUnitLineId, vShiftId, vDeviceId, Password } = this.state;
-    var reqObj = {
-      "deviceId": vDeviceId,
-      "devicePwd": vDeviceId,//Password,
-      "companyId": vCompanyId,
-      "unitId": vUnitId,
-      "unitLineId": vUnitLineId,
-      "shiftId": vShiftId,
-      "dateTime": "2020-11-04"//moment().format('YYYY-MM-DD')
-  }
+  setupDataForProduction(){
+    var {finalProductionObject} = this.state;
+    console.log('setup prod data', finalProductionObject);
+  //   var {vCompanyId, vUnitId, vUnitLineId, vShiftId, vDeviceId, Password } = this.state;
+  //   var reqObj = {
+  //     "deviceId": vDeviceId,
+  //     "devicePwd": vDeviceId,//Password,
+  //     "companyId": vCompanyId,
+  //     "unitId": vUnitId,
+  //     "unitLineId": vUnitLineId,
+  //     "shiftId": vShiftId,
+  //     "dateTime": "2020-11-04"//moment().format('DD-MM-YYYY')
+  // }
 
-  this.setState({loading: true}, ()=>{
-    post('/GetProductionPlanUnitLineData', reqObj)
-    .then(response => {
-        this.setState({loading: false}, ()=>{
-            var responseData = response.data;
-            console.log(responseData);
-        if(responseData.auth){
+  // this.setState({loading: true}, ()=>{
+  //   post('/GetProductionPlanUnitLineData', reqObj)
+  //   .then(response => {
+  //       this.setState({loading: false}, ()=>{
+  //           var responseData = response.data;
+  //           console.log(responseData);
+  //       if(responseData.auth){
 
           
-          var toastFlavour = responseData.dailyProdPlanData.length > 0 ? "success" : "info";
-          var toastTitleTxt = responseData.dailyProdPlanData.length > 0 ? "Successed!" : "Info!";
+  //         var toastFlavour = responseData.dailyProdPlanData.length > 0 ? "success" : "info";
+  //         var toastTitleTxt = responseData.dailyProdPlanData.length > 0 ? "Successed!" : "Info!";
 
-          this.writeToLocalDb(responseData.dailyProdPlanData);
+  //         this.writeToLocalDb(responseData.dailyProdPlanData);
           
-            Toast.show({
-                type: toastFlavour,
-                position: 'top',
-                text1: toastTitleTxt,
-                text2: responseData.msg+' 👋 length: '+responseData.dailyProdPlanData.length,
-                visibilityTime: 1500,
-                })
-            //this.props.navigation.navigate('HomeScreen', responseData.userObj);
-        }else{
-            Toast.show({
-                type: 'error',
-                position: 'top',
-                text1: 'Error!',
-                text2: responseData.msg,
-                visibilityTime: 1500,
-                })
-        }
-        });
+  //           Toast.show({
+  //               type: toastFlavour,
+  //               position: 'top',
+  //               text1: toastTitleTxt,
+  //               text2: responseData.msg+' 👋 length: '+responseData.dailyProdPlanData.length,
+  //               visibilityTime: 1500,
+  //               })
+  //           //this.props.navigation.navigate('HomeScreen', responseData.userObj);
+  //       }else{
+  //           Toast.show({
+  //               type: 'error',
+  //               position: 'top',
+  //               text1: 'Error!',
+  //               text2: responseData.msg,
+  //               visibilityTime: 1500,
+  //               })
+  //       }
+  //       });
 
-    })
-    .catch(errorMessage => {   
-        this.setState({loading: false}, ()=>{
-            Toast.show({
-                type: 'error',
-                position: 'top',
-                text1: 'Error!',
-                text2: errorMessage
-                })
-        }); 
-    });
-  })
+  //   })
+  //   .catch(errorMessage => {   
+  //       this.setState({loading: false}, ()=>{
+  //           Toast.show({
+  //               type: 'error',
+  //               position: 'top',
+  //               text1: 'Error!',
+  //               text2: errorMessage
+  //               })
+  //       }); 
+  //   });
+  // })
 
     /**
      * 
@@ -414,7 +419,26 @@ export default class SetupData extends React.Component {
                     vSizeId: value,
                     dShipmentDate: '',
                 }, ()=>{
-                  console.log('size', value);
+                  console.log('size', this.state.selectedSize);
+                  
+                  //TODO: issue with G1 -> L1 -> Target -> PO-210  -> Size XXL -> selectedObj -> undefined
+
+
+                  // var {selectedBuyer, selectedStyle, selectedExpPo, selectedColor, selectedSize} = this.state;
+                  // var selectedObj = this.state.AllPlanInfo.filter(
+                  //                       x=> x.vBuyerId === selectedBuyer && 
+                  //                       x.vStyleId === selectedStyle && 
+                  //                       x.vExpPoorderNo === selectedExpPo && 
+                  //                       x.vColorId === selectedColor && 
+                  //                       x.vSizeId === selectedSize)[0];
+                  //   console.log('selectedObj', selectedObj);
+                  //   this.setState({
+                  //     finalProductionObject: selectedObj, 
+                  //     dShipmentDate: moment(selectedObj.dShipmentDate).format('DD-MM-YYYY')},
+                  //     ()=>{
+                        
+                  //   })
+                  //console.log( {selectedBuyer, selectedStyle, selectedExpPo, selectedColor, selectedSize});
               });
               }}
               style={pickerSelectStyles}
@@ -429,23 +453,28 @@ export default class SetupData extends React.Component {
 
             <Text style={{paddingLeft: 25, fontWeight: '700'}}>Shipment Date</Text>
             <Mytextinput
-              placeholder="Device ID"
+              placeholder="Shipment Date"
               editable={false}
-              value={this.state.vDeviceId}
+              value={this.state.dShipmentDate}
               //onChangeText={user_name => this.setState({ user_name })}
             />
 
             <View paddingVertical={5} />
             <Text style={{paddingLeft: 25, fontWeight: '700'}}>Today</Text>
             <Mytextinput
-              value={this.state.Password}
-              onChangeText={Password => this.setState({ Password })}
+              value={this.state.dToday}
             />
             
             <View paddingVertical={5} />  
             <Mybutton
               title="Set Up"
-              //customClick={()=> this.userLoginAndGetData()}
+              customClick={()=> this.setupDataForProduction()}
+            />
+
+            <View paddingVertical={5} />  
+            <Mybutton
+              title="With Multiple Sizes"
+              //customClick={()=> this.setupDataForProduction()}
             />
           </KeyboardAvoidingView>
         </ScrollView>

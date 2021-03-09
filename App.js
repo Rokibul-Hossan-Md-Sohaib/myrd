@@ -14,6 +14,7 @@ import ViewAllUser from './src/pages/ViewAllUser';
 import DeleteUser from './src/pages/DeleteUser';
 import DeviceLogin from './src/pages/DeviceLogin'
 import SetupData from './src/pages/SetupData'
+import ProductionCountSizeWise from './src/pages/ProductionCountSizeWise'
 
 const App = createStackNavigator({
   HomeScreen: {
@@ -39,6 +40,14 @@ const App = createStackNavigator({
       headerStyle: { backgroundColor: '#3a59b7' },
       headerTintColor: '#ffffff',
     },
+  },
+  ProductionCountSizeWise: {
+    screen: ProductionCountSizeWise,
+    navigationOptions: {
+      title: 'QMS Production Count',
+      headerStyle: { backgroundColor: '#3a59b7' },
+      headerTintColor: '#ffffff',
+    }
   },
   View: {
     screen: ViewUser,

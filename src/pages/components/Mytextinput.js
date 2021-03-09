@@ -9,7 +9,7 @@ const Mytextinput = props => {
         marginRight: 20,
         marginTop: 10,
         borderColor: '#000',
-        borderRadius: 7,
+        borderRadius: 17,
         borderWidth: 1,
         height: 45
       }}>

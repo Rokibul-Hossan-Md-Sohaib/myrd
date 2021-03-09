@@ -1,10 +1,13 @@
-const DemoUserSchema = {
-    name: 'user_details',
+const CurrentLoggedInUserSchema = {
+    name: 'current_login',
     properties: {
-      user_id: { type: 'int?', default: 0 },
-      user_name: 'string?',
-      user_contact: 'string?',
-      user_address: 'string?',
+      deviceId: 'string?',
+      devicePwd: 'string?',
+      companyId: 'string?',
+      unitId: 'string?',
+      unitLineId: 'string?',
+      shiftId: 'string?',
+      dateTime: 'date?'
     },
   };
 
@@ -51,10 +54,6 @@ const HourInfoSchema = {
           dStartTime: 'string?',
           dEndTimeOfProduction: 'date',
           dEndTime: 'string?',
-          dStartTimeOfEntry: 'date?',
-          dStartEntryTime: 'string?',
-          dEndTimeOfEntry: 'date?',
-          dEndEntryTime: 'string?',
           nHour: 'int?',
           iChangeHour: 'int?',
           iOrderBy: 'int?',
@@ -131,4 +130,4 @@ const DailyPlanSchema = {
     },
   }
 
-  export {CompanyWiseUnitLineSchema, HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, DemoUserSchema, QmsSecurityProductionDeviceInfo};
+  export {CompanyWiseUnitLineSchema, HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, CurrentLoggedInUserSchema, QmsSecurityProductionDeviceInfo};

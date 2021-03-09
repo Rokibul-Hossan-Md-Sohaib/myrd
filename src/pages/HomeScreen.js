@@ -5,7 +5,7 @@ import Mybutton from './components/Mybutton';
 import Toast from 'react-native-toast-message';
 import ProgressDialog from '../utils/loader'
 import {get} from '../utils/apiUtils'
-import {CompanyWiseUnitLineSchema, HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, DemoUserSchema, QmsSecurityProductionDeviceInfo} from '../db/schemas/dbSchema'
+import {HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, CurrentLoggedInUserSchema, QmsSecurityProductionDeviceInfo} from '../db/schemas/dbSchema'
 import Realm from 'realm';
 let realm;
 
@@ -20,8 +20,7 @@ export default class HomeScreen extends React.Component {
     realm = new Realm({
       path: 'QmsDb.realm',
       schema: [
-        DemoUserSchema,
-        //CompanyWiseUnitLineSchema,
+        CurrentLoggedInUserSchema,
         HourInfoSchema,
         DailyPlanSchema,
         DeviceWiseProductionSchema,
@@ -31,10 +30,9 @@ export default class HomeScreen extends React.Component {
   }
 
   componentDidMount(){
-    const deviceinfo = realm.objects(QmsSecurityProductionDeviceInfo.name);  
-    const hourinfo = realm.objects(HourInfoSchema.name);  
-    console.log(deviceinfo.length, hourinfo.length);
-      if(deviceinfo.length == 0 || hourinfo.length == 0){
+    const deviceinfo = realm.objects(QmsSecurityProductionDeviceInfo.name);    
+    console.log(deviceinfo.length);
+      if(deviceinfo.length == 0){
         //this.clearLocalDb();
         this.setState({loading: true}, ()=> this.getInitialData());
           //this.getInitialData();
@@ -50,8 +48,8 @@ clearLocalDb = () => {
   realm.delete(allDeviceInfo);
   //console.log('all device', allDeviceInfo.length)
 
-  let allHourInfo = realm.objects(HourInfoSchema.name);
-  realm.delete(allHourInfo);
+  // let allHourInfo = realm.objects(HourInfoSchema.name);
+  // realm.delete(allHourInfo);
   // Create a book object
   //let book = realm.create('Book', {id: 1, title: 'Recipes', price: 35});
 
@@ -65,15 +63,14 @@ clearLocalDb = () => {
 }
 
   getInitialData(){
-    //this.clearLocalDb();
+    this.clearLocalDb();
     //console.log('came here..')
     get('/GetCompanyUnitLineData')
     .then(response => {
 
         this.setState({loading: false}, ()=>{
             var responseData = response.data;
-          console.log(responseData.compUnitData.length);
-          console.log(responseData.timeHourData.length);
+
         if(responseData){
             Toast.show({
                 type: 'success',
@@ -85,27 +82,17 @@ clearLocalDb = () => {
 
               // try { Write Data if data dosen't exixts
                 realm.write(() => {
-                    responseData.compUnitData.forEach(obj => {
+                    responseData.forEach(obj => {
                       realm.create(QmsSecurityProductionDeviceInfo.name, obj);
-                  });
-
-                    responseData.timeHourData.forEach(obj => {
-                    realm.create(HourInfoSchema.name, obj);
                   });
                   //realm.create('Car', {make: 'Honda', model: 'Accord', drive: 'awd'});
                 });
-              // } catch (e) {
-              //   console.log("Error on creation");
-              // }
-
-            //console.log(responseData);
-            //this.props.navigation.navigate('HomeScreen', responseData.userObj);
         }else{
             Toast.show({
                 type: 'error',
                 position: 'bottom',
                 text1: 'Error!X',
-                text2: responseData.vMessage,
+                text2: "Something wrong happend!",
                 visibilityTime: 1000,
                 })
         }
