@@ -33,6 +33,7 @@ export default class SetupData extends React.Component {
         
         reqObj:[], //data came from previous screen...
         AllPlanInfo: [],
+        filteredPlanInfo:[],
         buyerNames: [],
         styleNames: [],
         expPos:[],
@@ -58,7 +59,7 @@ export default class SetupData extends React.Component {
         console.log('reqObj', reqObj)
        // console.log('isTab', DeviceInfo.isTablet())
 
-      this.setState({AllPlanInfo: comInfo, reqObj}, ()=>{
+      this.setState({AllPlanInfo: comInfo, reqObj, filteredPlanInfo: comInfo}, ()=>{
         const buyerNames = this.setupPickerData(this.state.AllPlanInfo, 'vBuyerName', 'vBuyerId');
         this.setState({
           buyerNames,
@@ -267,7 +268,7 @@ export default class SetupData extends React.Component {
                 this.setState({
                   selectedBuyer: value,
                   styleNames,
-                
+                  //filteredPlanInfo: filteredComData,
                   vBuyerId: value,
                   vStyleId: '',
                   vStyleName: '',
@@ -302,13 +303,12 @@ export default class SetupData extends React.Component {
               items={this.state.styleNames}
               onValueChange={value => {
 
-                var filteredComData = this.state.AllPlanInfo.filter(x => x.vStyleId === value); 
+                var filteredComData = this.state.AllPlanInfo.filter(x => x.vBuyerId === this.state.vBuyerId && x.vStyleId === value); 
                 const expPos = this.setupPickerData(filteredComData, 'vExpPoorderNo', 'vExpPoorderNo', value, 'vStyleId');
 
                   this.setState({
                     selectedStyle: value,
                     expPos,
-  
                     vStyleId: value,
                     vExpPoorderNo: '',
                     vColorId: '',
@@ -340,14 +340,17 @@ export default class SetupData extends React.Component {
               placeholder={placeholder}
               items={this.state.expPos}
               onValueChange={value => {
-
-                var filteredComData = this.state.AllPlanInfo.filter(x => x.vExpPoorderNo === value); 
+                var {vBuyerId, vStyleId } = this.state;
+                var filteredComData = this.state.AllPlanInfo.filter(x => 
+                                                    x.vBuyerId === vBuyerId && 
+                                                    x.vStyleId === vStyleId && 
+                                                    x.vExpPoorderNo === value); 
                 const colorNames = this.setupPickerData(filteredComData, 'vColorName', 'vColorId', value, 'vExpPoorderNo');
 
                   this.setState({
                     selectedExpPo: value,
                     colorNames,
-                  
+                    //filteredPlanInfo: filteredComData,
                     vExpPoorderNo: value,
                     vColorId: '',
                     vColorName: '',
@@ -378,14 +381,19 @@ export default class SetupData extends React.Component {
               placeholder={placeholder}
               items={this.state.colorNames}
               onValueChange={value => {
-
-                var filteredComData = this.state.AllPlanInfo.filter(x => x.vColorId === value); 
+                var {vBuyerId, vStyleId, vExpPoorderNo } = this.state;
+                var filteredComData = this.state.AllPlanInfo.filter(x => 
+                                      x.vBuyerId === vBuyerId && 
+                                      x.vStyleId === vStyleId && 
+                                      x.vExpPoorderNo === vExpPoorderNo && 
+                                      x.vColorId === value);
+                //console.log('filteres',filteredComData);
                 const sizeNames = this.setupPickerData(filteredComData, 'vSizeName', 'vSizeId', value, 'vColorId');
-
+                  //console.log('sizes',sizeNames, 'size', value)
                   this.setState({
                     selectedColor: value,
                     sizeNames,
-                  
+                    //filteredPlanInfo: filteredComData,
                     vColorId: value,
                     vSizeId: '',
                     vSizeName: '',
@@ -423,21 +431,23 @@ export default class SetupData extends React.Component {
                   
                   //TODO: issue with G1 -> L1 -> Target -> PO-210  -> Size XXL -> selectedObj -> undefined
 
+                   var {vBuyerId, vStyleId, vExpPoorderNo, vColorId, vSizeId} = this.state;
 
-                  // var {selectedBuyer, selectedStyle, selectedExpPo, selectedColor, selectedSize} = this.state;
-                  // var selectedObj = this.state.AllPlanInfo.filter(
-                  //                       x=> x.vBuyerId === selectedBuyer && 
-                  //                       x.vStyleId === selectedStyle && 
-                  //                       x.vExpPoorderNo === selectedExpPo && 
-                  //                       x.vColorId === selectedColor && 
-                  //                       x.vSizeId === selectedSize)[0];
-                  //   console.log('selectedObj', selectedObj);
-                  //   this.setState({
-                  //     finalProductionObject: selectedObj, 
-                  //     dShipmentDate: moment(selectedObj.dShipmentDate).format('DD-MM-YYYY')},
-                  //     ()=>{
+                   var selectedObj = this.state.AllPlanInfo.filter(x => 
+                                          x.vBuyerId === vBuyerId && 
+                                          x.vStyleId === vStyleId && 
+                                          x.vExpPoorderNo === vExpPoorderNo && 
+                                          x.vColorId === vColorId &&
+                                          x.vSizeId ===  vSizeId)[0];
+
+                    console.log('selectedObj', selectedObj);
+                    
+                    this.setState({
+                      finalProductionObject: selectedObj, 
+                      dShipmentDate: moment(selectedObj.dShipmentDate).format('DD-MM-YYYY')},
+                      ()=>{
                         
-                  //   })
+                    })
                   //console.log( {selectedBuyer, selectedStyle, selectedExpPo, selectedColor, selectedSize});
               });
               }}
