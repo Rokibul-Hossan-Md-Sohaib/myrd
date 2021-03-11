@@ -9,6 +9,7 @@ import Toast from 'react-native-toast-message';
 import Mybutton from './components/Mybutton';
 import {post} from '../utils/apiUtils'
 import ProgressDialog from '../utils/loader'
+import Orientation from 'react-native-orientation';
 import {DailyPlanSchema} from '../db/schemas/dbSchema'
 import Realm from 'realm';
 let realm;
@@ -18,7 +19,7 @@ export default class SetupData extends React.Component {
     state = {
         loading: false,
         vDeviceId: '',
-        finalProductionObject:[],
+        finalProductionObject: undefined,
         vBuyerId: '',
         vBuyerName: '',
         vStyleId: '',
@@ -49,11 +50,17 @@ export default class SetupData extends React.Component {
     };
 
     constructor(props) {
-    super(props);    
+    super(props);
+    this.props.navigation.addListener(
+      'didFocus',
+      payload => {
+        Orientation.lockToPortrait()
+      });    
     realm = new Realm({ path: 'QmsDb.realm' });
   }
 
     componentDidMount(){
+      Orientation.lockToPortrait()
       const comInfo = realm.objects(DailyPlanSchema.name);
       const reqObj = this.props.navigation.getParam('userData');
         console.log('reqObj', reqObj)
@@ -97,6 +104,19 @@ export default class SetupData extends React.Component {
   setupDataForProduction(){
     var {finalProductionObject} = this.state;
     console.log('setup prod data', finalProductionObject);
+
+    if(finalProductionObject){
+        this.props.navigation.navigate('ProductionCountSizeWise', {userData: finalProductionObject});
+    }else{
+      Toast.show({
+        type: 'error',
+        position: 'top',
+        text1: 'Error!',
+        text2: "Something Went Wrong!",
+        visibilityTime: 1500,
+        })
+    }
+
   //   var {vCompanyId, vUnitId, vUnitLineId, vShiftId, vDeviceId, Password } = this.state;
   //   var reqObj = {
   //     "deviceId": vDeviceId,
@@ -268,6 +288,7 @@ export default class SetupData extends React.Component {
                 this.setState({
                   selectedBuyer: value,
                   styleNames,
+                  finalProductionObject:[],
                   //filteredPlanInfo: filteredComData,
                   vBuyerId: value,
                   vStyleId: '',
@@ -309,6 +330,7 @@ export default class SetupData extends React.Component {
                   this.setState({
                     selectedStyle: value,
                     expPos,
+                    finalProductionObject:[],
                     vStyleId: value,
                     vExpPoorderNo: '',
                     vColorId: '',
@@ -350,6 +372,7 @@ export default class SetupData extends React.Component {
                   this.setState({
                     selectedExpPo: value,
                     colorNames,
+                    finalProductionObject:[],
                     //filteredPlanInfo: filteredComData,
                     vExpPoorderNo: value,
                     vColorId: '',
@@ -393,6 +416,7 @@ export default class SetupData extends React.Component {
                   this.setState({
                     selectedColor: value,
                     sizeNames,
+                    finalProductionObject:[],
                     //filteredPlanInfo: filteredComData,
                     vColorId: value,
                     vSizeId: '',
@@ -484,7 +508,7 @@ export default class SetupData extends React.Component {
             <View paddingVertical={5} />  
             <Mybutton
               title="With Multiple Sizes"
-              //customClick={()=> this.setupDataForProduction()}
+             // customClick={()=> this.props.navigation.navigate('ProductionCountSizeWise')}
             />
           </KeyboardAvoidingView>
         </ScrollView>

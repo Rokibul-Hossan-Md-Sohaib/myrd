@@ -44,6 +44,7 @@ const App = createStackNavigator({
   ProductionCountSizeWise: {
     screen: ProductionCountSizeWise,
     navigationOptions: {
+      headerShown: false,
       title: 'QMS Production Count',
       headerStyle: { backgroundColor: '#3a59b7' },
       headerTintColor: '#ffffff',

@@ -7,6 +7,7 @@ import ProgressDialog from '../utils/loader'
 import {get} from '../utils/apiUtils'
 import {HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, CurrentLoggedInUserSchema, QmsSecurityProductionDeviceInfo} from '../db/schemas/dbSchema'
 import Realm from 'realm';
+import Orientation from 'react-native-orientation';
 let realm;
 
 export default class HomeScreen extends React.Component {
@@ -17,6 +18,11 @@ export default class HomeScreen extends React.Component {
 
   constructor(props) {
     super(props);
+    this.props.navigation.addListener(
+      'didFocus',
+      payload => {
+        Orientation.lockToPortrait()
+      });  
     realm = new Realm({
       path: 'QmsDb.realm',
       schema: [
@@ -30,6 +36,7 @@ export default class HomeScreen extends React.Component {
   }
 
   componentDidMount(){
+    Orientation.lockToPortrait()
     const deviceinfo = realm.objects(QmsSecurityProductionDeviceInfo.name);    
     console.log(deviceinfo.length);
       if(deviceinfo.length == 0){

@@ -8,6 +8,7 @@ import Toast from 'react-native-toast-message';
 import Mybutton from './components/Mybutton';
 import {post} from '../utils/apiUtils'
 import ProgressDialog from '../utils/loader'
+import Orientation from 'react-native-orientation';
 import {QmsSecurityProductionDeviceInfo, DailyPlanSchema, CurrentLoggedInUserSchema, HourInfoSchema} from '../db/schemas/dbSchema'
 import Realm from 'realm';
 let realm;
@@ -43,7 +44,12 @@ export default class DeviceLogin extends React.Component {
     };
 
     constructor(props) {
-    super(props);    
+    super(props);
+    this.props.navigation.addListener(
+      'didFocus',
+      payload => {
+        Orientation.lockToPortrait()
+      });      
     realm = new Realm({ path: 'QmsDb.realm' });
 
     // this.inputRefs = {
@@ -52,6 +58,7 @@ export default class DeviceLogin extends React.Component {
   }
 
     componentDidMount(){
+      Orientation.lockToPortrait()
       const comInfo = realm.objects(QmsSecurityProductionDeviceInfo.name);
       this.setState({AllDeviceInfo: comInfo}, ()=>{
         const comNames = this.setupPickerData(this.state.AllDeviceInfo, 'vCompanyName', 'vCompanyId');
@@ -138,7 +145,7 @@ export default class DeviceLogin extends React.Component {
       "unitId": vUnitId,
       "unitLineId": vUnitLineId,
       "shiftId": vShiftId,
-      "dateTime": "2020-11-04"//moment().format('YYYY-MM-DD')
+      "dateTime": moment().format('YYYY-MM-DD') //"2020-11-04"//moment().format('YYYY-MM-DD')
   }
 
   this.setState({loading: true, reqObj}, ()=>{
