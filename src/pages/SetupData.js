@@ -18,6 +18,8 @@ export default class SetupData extends React.Component {
 
     state = {
         loading: false,
+        disableMultipleSizeButton: true,
+        colorFilteredSizes:[],
         vDeviceId: '',
         finalProductionObject: undefined,
         vBuyerId: '',
@@ -100,6 +102,15 @@ export default class SetupData extends React.Component {
     return DepResult;
   }
  
+  gotoMultipleSizeCountScreen(){
+    if(this.state.colorFilteredSizes.length > 0){
+      this.props.navigation.navigate('MultipleSizeCount', {userData: this.state.colorFilteredSizes});
+    }else{
+      alert("total sizes",this.state.colorFilteredSizes.length);
+    }
+    
+     
+  }
 
   setupDataForProduction(){
     var {finalProductionObject} = this.state;
@@ -289,6 +300,8 @@ export default class SetupData extends React.Component {
                   selectedBuyer: value,
                   styleNames,
                   finalProductionObject:[],
+                  disableMultipleSizeButton: true,
+                  colorFilteredSizes: [],
                   //filteredPlanInfo: filteredComData,
                   vBuyerId: value,
                   vStyleId: '',
@@ -331,6 +344,8 @@ export default class SetupData extends React.Component {
                     selectedStyle: value,
                     expPos,
                     finalProductionObject:[],
+                    disableMultipleSizeButton: true,
+                    colorFilteredSizes: [],
                     vStyleId: value,
                     vExpPoorderNo: '',
                     vColorId: '',
@@ -373,6 +388,8 @@ export default class SetupData extends React.Component {
                     selectedExpPo: value,
                     colorNames,
                     finalProductionObject:[],
+                    disableMultipleSizeButton: true,
+                    colorFilteredSizes: [],
                     //filteredPlanInfo: filteredComData,
                     vExpPoorderNo: value,
                     vColorId: '',
@@ -417,6 +434,8 @@ export default class SetupData extends React.Component {
                     selectedColor: value,
                     sizeNames,
                     finalProductionObject:[],
+                    disableMultipleSizeButton: false,
+                    colorFilteredSizes: filteredComData,
                     //filteredPlanInfo: filteredComData,
                     vColorId: value,
                     vSizeId: '',
@@ -508,7 +527,8 @@ export default class SetupData extends React.Component {
             <View paddingVertical={5} />  
             <Mybutton
               title="With Multiple Sizes"
-             // customClick={()=> this.props.navigation.navigate('ProductionCountSizeWise')}
+              disabled={this.state.disableMultipleSizeButton}
+             customClick={()=>  this.gotoMultipleSizeCountScreen()}
             />
           </KeyboardAvoidingView>
         </ScrollView>

@@ -15,6 +15,7 @@ import DeleteUser from './src/pages/DeleteUser';
 import DeviceLogin from './src/pages/DeviceLogin'
 import SetupData from './src/pages/SetupData'
 import ProductionCountSizeWise from './src/pages/ProductionCountSizeWise'
+import MultipleSizeCount from './src/pages/MultipleSizeCount'
 
 const App = createStackNavigator({
   HomeScreen: {
@@ -46,6 +47,15 @@ const App = createStackNavigator({
     navigationOptions: {
       headerShown: false,
       title: 'QMS Production Count',
+      headerStyle: { backgroundColor: '#3a59b7' },
+      headerTintColor: '#ffffff',
+    }
+  },
+  MultipleSizeCount: {
+    screen: MultipleSizeCount,
+    navigationOptions: {
+      headerShown: false,
+      title: 'QMS Sizes Count',
       headerStyle: { backgroundColor: '#3a59b7' },
       headerTintColor: '#ffffff',
     }
