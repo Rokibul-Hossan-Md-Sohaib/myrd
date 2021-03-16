@@ -1,7 +1,8 @@
 /*Screen to register the user*/
 import React from 'react';
-import { View, ScrollView, KeyboardAvoidingView, Alert, StyleSheet, Text } from 'react-native';
+import { View, ScrollView, KeyboardAvoidingView, Alert, StyleSheet, Text, Pressable } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Mytextinput from './components/Mytextinput';
 import moment from 'moment'
 import Toast from 'react-native-toast-message';
@@ -17,6 +18,7 @@ export default class DeviceLogin extends React.Component {
 
     state = {
         loading: false,
+        displayProductionDateSelection: false,
         vDeviceId: '',
         vCompanyId: '',
         vCompanyName: '',
@@ -36,6 +38,8 @@ export default class DeviceLogin extends React.Component {
         lineNames:[],
         shifts: [],
         reqObj: [],
+        today: moment().format('YYYY-MM-DD'),
+        isDatePickerVisible: false,
         selectedCompany: undefined,
         selectedUnit: undefined,
         selectedLine: undefined,
@@ -45,6 +49,7 @@ export default class DeviceLogin extends React.Component {
 
     constructor(props) {
     super(props);
+    this.passRef= React.createRef();
     this.props.navigation.addListener(
       'didFocus',
       payload => {
@@ -130,22 +135,27 @@ export default class DeviceLogin extends React.Component {
    // console.log('DeviceId', finalObj);
     if(finalObj != undefined){
       var vDeviceId = finalObj.vDeviceId;
-      this.setState({vDeviceId,  deviceId: vDeviceId,}, 
+      this.setState({vDeviceId,  deviceId: vDeviceId, Password: vDeviceId}, 
 //        ()=> console.log('DeviceID',this.state.vDeviceId)
         )
     }
   }
+  showDateSelector(){
+    this.setState({
+      displayProductionDateSelection:  !this.state.displayProductionDateSelection
+    })
+  }
 
   userLoginAndGetData(){
-    var {vCompanyId, vUnitId, vUnitLineId, vShiftId, vDeviceId} = this.state;
+    var {vCompanyId, vUnitId, vUnitLineId, Password, vShiftId, vDeviceId} = this.state;
     var reqObj = {
       "deviceId": vDeviceId,
-      "devicePwd": vDeviceId,//Password,
+      "devicePwd": Password,
       "companyId": vCompanyId,
       "unitId": vUnitId,
       "unitLineId": vUnitLineId,
       "shiftId": vShiftId,
-      "dateTime": moment().format('YYYY-MM-DD') //"2020-11-04"//moment().format('YYYY-MM-DD')
+      "dateTime": this.state.today//moment().format('YYYY-MM-DD') //"2020-11-04"//moment().format('YYYY-MM-DD')
   }
 
   this.setState({loading: true, reqObj}, ()=>{
@@ -164,19 +174,23 @@ export default class DeviceLogin extends React.Component {
 
           this.writeToLocalDb(responseData.dailyProdPlanData, timeHour, reqObj);
           
-            Toast.show({
-                type: toastFlavour,
-                position: 'top',
-                text1: toastTitleTxt,
-                text2: responseData.msg+' 👋 length: '+responseData.dailyProdPlanData.length,
-                visibilityTime: 1500,
-                })
+          Toast.show({
+            type: toastFlavour,
+            position: 'bottom',
+            text1: toastTitleTxt,
+            text2: responseData.msg+' 👋 length: '+responseData.dailyProdPlanData.length,
+            visibilityTime: 1500,
+            })
+
+          if(responseData.dailyProdPlanData.length > 0){
             // this.props.navigation.navigate('SetupData')}
               this.props.navigation.navigate('SetupData',{ userData:  this.state.reqObj });
+          }
+          
         }else{
             Toast.show({
                 type: 'error',
-                position: 'top',
+                position: 'bottom',
                 text1: 'Error!',
                 text2: responseData.msg,
                 visibilityTime: 1500,
@@ -189,7 +203,7 @@ export default class DeviceLogin extends React.Component {
         this.setState({loading: false}, ()=>{
             Toast.show({
                 type: 'error',
-                position: 'top',
+                position: 'bottom',
                 text1: 'Error!',
                 text2: errorMessage
                 })
@@ -252,6 +266,21 @@ export default class DeviceLogin extends React.Component {
    
 }
 
+
+showDatePicker = () => {
+  this.setState({isDatePickerVisible: true});
+};
+
+ hideDatePicker = () => {
+  this.setState({isDatePickerVisible: false});
+};
+
+ handleConfirm(date) {
+  console.log("A date has been picked: ", moment(date).format('YYYY-MM-DD'));
+  this.setState({today: moment(date).format('YYYY-MM-DD')})
+  this.hideDatePicker();
+  this.passRef.current.focus();
+};
 
 //   register_user = () => {
 //     var that = this;
@@ -448,12 +477,30 @@ export default class DeviceLogin extends React.Component {
               placeholder="Device ID"
               editable={false}
               value={this.state.vDeviceId}
-              //onChangeText={user_name => this.setState({ user_name })}
             />
+
+            <View style={{display:this.state.displayProductionDateSelection ? "flex" : 'none'}}>
+              <View paddingVertical={5} />
+              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Production Date</Text>
+              <DateTimePickerModal
+                isVisible={this.state.isDatePickerVisible}
+                mode="date"
+                onConfirm={(dt)=> this.handleConfirm(dt)}
+                onCancel={()=> this.hideDatePicker()}
+              />
+              <Mytextinput
+                refInner={this.secondTextInputRef}
+                placeholder="Date"
+                value={this.state.today}
+                showSoftInputOnFocus={false}
+                onFocus={()=> this.showDatePicker()}
+              />
+            </View>
 
             <View paddingVertical={5} />
             <Text style={{paddingLeft: 25, fontWeight: '700'}}>Password</Text>
             <Mytextinput
+              refInner={this.passRef}
               secureTextEntry
               placeholder="Password"
               value={this.state.Password}
@@ -465,6 +512,7 @@ export default class DeviceLogin extends React.Component {
               title="Get Plan Info"
               customClick={()=> this.userLoginAndGetData()}
             />
+            <Pressable onLongPress={()=> this.showDateSelector()} style={{height: 25, width: 25, borderRadius:25, position:'absolute', top:2, right: 2, backgroundColor:'#fff'}}></Pressable>
           </KeyboardAvoidingView>
         </ScrollView>
       </View>

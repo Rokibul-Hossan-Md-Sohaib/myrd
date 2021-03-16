@@ -21,6 +21,10 @@ const Mytextinput = props => {
         keyboardType={props.keyboardType}
         onChangeText={props.onChangeText}
         textAlign="center"
+        ref={props.refInner}
+        blurOnSubmit={false}
+        onFocus={props.onFocus}
+        showSoftInputOnFocus={props.showSoftInputOnFocus}
         returnKeyType={props.returnKeyType}
         numberOfLines={props.numberOfLines}
         multiline={props.multiline}
