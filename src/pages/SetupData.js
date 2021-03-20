@@ -525,11 +525,11 @@ export default class SetupData extends React.Component {
             />
 
             <View paddingVertical={5} />  
-            <Mybutton
+            {/* <Mybutton
               title="With Multiple Sizes"
               disabled={this.state.disableMultipleSizeButton}
              customClick={()=>  this.gotoMultipleSizeCountScreen()}
-            />
+            /> */}
           </KeyboardAvoidingView>
         </ScrollView>
       </View>

@@ -1,8 +1,11 @@
 import React, { Component } from 'react'
 import { View, Text, StatusBar, Pressable, Dimensions, StyleSheet } from 'react-native';
 import moment from 'moment'
+import {HourInfoSchema} from '../db/schemas/dbSchema'
 import {moderateScale} from 'react-native-size-matters'
 import Orientation from 'react-native-orientation';
+import Realm from 'realm';
+let realm;
 class ProductionCountSizeWise extends Component {
 
     state={
@@ -14,12 +17,26 @@ class ProductionCountSizeWise extends Component {
       screenWidth: null,
       screenHeight: null,
       currentProdObj:[],
+      currentHourObj:[],
+      currentHour: null,
+      isSynced: false,
+    }
+//moment(new Date()).format("hh:00A");
+    constructor(props) {
+      super(props);
+      this.props.navigation.addListener(
+        'didFocus',
+        payload => {
+          Orientation.lockToLandscapeLeft();
+        });    
+      realm = new Realm({ path: 'QmsDb.realm' });
     }
 
     countFtt(){
       this.setState((prevState, props) => ({
         fttCount: prevState.fttCount + 1
       }));
+
     }
 
     countDefect(){
@@ -35,12 +52,66 @@ class ProductionCountSizeWise extends Component {
     }
 
     componentDidMount(){
+
+      var timeNow = '1900-01-01T'+new Date().getHours()+':00:00';
+      var currentHour = null;
+      //var timeStr = '1900-01-01T13:00:00';
+      //var timeStr2 = '1900-01-01T16:00:00';
+      
+      //var endTime = '';
+
+      var nfo = realm.objects(HourInfoSchema.name)
+      .filtered('dStartTimeOfProduction = $0', timeNow);
+
+      if(nfo.length > 0){        
+        console.log('hourData:', nfo);
+        console.log('endTime:', nfo ?? nfo[0]["vHourId"]);
+        currentHour = nfo[0]["vHourId"];
+      }else{
+
+        console.log("No Hour Available Now")
+        currentHour = null;
+        // timeNow = '1900-01-01T'+(new Date().getHours()-1)+':00:00';
+        //   nfo = realm.objects(HourInfoSchema.name)
+        // .filtered('dStartTimeOfProduction = $0', timeNow);
+        // console.log('hour-1:', nfo);
+        // console.log('endTime-1:', nfo ?? nfo[0].dEndTimeOfProduction);
+      }
+      /**
+       * {
+      iAutoId: 'int',
+      vDeviceId: 'string?',
+      dEntryDate: 'date',
+      dLastUpdated: 'date',
+      vProductionPlanId: 'string?',
+      vUnitLineId: 'string?',
+      vHourId: 'string?',
+      dDateOfProduction: 'date',
+      dStartTimeOfProduction: 'date',
+      dEndTimeOfProduction: 'date',
+      iProductionQty: 'int?',
+      iTarget: 'string?',
+      vProTypeId: 'string?',
+      nHour: 'string?',
+      iManPower: 'string?',
+      vPreparedBy: 'string?',
+      vShiftId: 'string?'
+    }
+       */
+      //.filtered('dStartTimeOfProduction >= $0 && dEndTimeOfProduction <= $1', timeStr, timeStr2);
+      //
+
+
+
       const reqObj = this.props.navigation.getParam('userData');
+      console.log(reqObj);
+      //realm.objects('Person').filtered('birthday == 2015-7-2@14:23:17:233')
       this.setState({
-        currentProdObj: reqObj
+        currentProdObj: reqObj,
+        currentHour, currentHourObj: nfo
       });
 
-      Orientation.lockToLandscapeRight();
+      Orientation.lockToLandscapeLeft();
     }
 
     countrectified(){
@@ -77,7 +148,7 @@ class ProductionCountSizeWise extends Component {
           <View style={{flex:.65, flexDirection:'row', justifyContent:'space-evenly', borderWidth: 1, borderColor: 'green'}}>
             <View style={{flex:.1, justifyContent:'center', alignItems:'center'}}>
                 {/* <Text>green</Text> */}
-                <View style={{height: 20, width:20, backgroundColor:'green', borderRadius: 25 }} />
+                <View style={{height: 20, width:20, backgroundColor: this.state.isSynced ? 'green' : 'red', borderRadius: 25 }} />
             </View>
 
 
@@ -96,7 +167,7 @@ class ProductionCountSizeWise extends Component {
 
             
             <View style={{flex:.1, justifyContent:'center', alignItems:'center'}}>
-              <Text>Right</Text>
+              <Text style={{fontSize: 16, fontWeight:'bold'}}>{ this.state.currentHour ?? "N/A"}</Text>
             </View>
           </View>
 
