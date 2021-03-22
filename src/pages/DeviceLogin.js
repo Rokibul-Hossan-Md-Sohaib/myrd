@@ -512,7 +512,7 @@ showDatePicker = () => {
               title="Get Plan Info"
               customClick={()=> this.userLoginAndGetData()}
             />
-            <Pressable onLongPress={()=> this.showDateSelector()} style={{height: 25, width: 25, borderRadius:25, position:'absolute', top:2, right: 2, backgroundColor:'#fff'}}></Pressable>
+            <Pressable onLongPress={()=> this.showDateSelector()} style={{height: 25, width: 25, borderRadius:25, position:'absolute', top:2, right: 2, backgroundColor:'red'}}></Pressable>
           </KeyboardAvoidingView>
         </ScrollView>
       </View>

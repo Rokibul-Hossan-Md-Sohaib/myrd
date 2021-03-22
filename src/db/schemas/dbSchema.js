@@ -108,7 +108,6 @@ const DailyPlanSchema = {
 
   const DeviceWiseProductionSchema = {
     name: 'QMS_DeviceWiseLineProductionDaily',
-    primaryKey: 'iAutoId',
     properties:{
       iAutoId: 'int',
       vDeviceId: 'string?',
@@ -121,10 +120,10 @@ const DailyPlanSchema = {
       dStartTimeOfProduction: 'date',
       dEndTimeOfProduction: 'date',
       iProductionQty: 'int?',
-      iTarget: 'string?',
+      iTarget: 'int?',
       vProTypeId: 'string?',
-      nHour: 'string?',
-      iManPower: 'string?',
+      nHour: 'int?',
+      iManPower: 'int?',
       vPreparedBy: 'string?',
       vShiftId: 'string?'
     },

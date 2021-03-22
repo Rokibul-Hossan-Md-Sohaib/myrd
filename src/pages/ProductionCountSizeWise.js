@@ -1,23 +1,29 @@
 import React, { Component } from 'react'
 import { View, Text, StatusBar, Pressable, Dimensions, StyleSheet } from 'react-native';
 import moment from 'moment'
-import {HourInfoSchema} from '../db/schemas/dbSchema'
+import {HourInfoSchema, CurrentLoggedInUserSchema, DeviceWiseProductionSchema} from '../db/schemas/dbSchema'
 import {moderateScale} from 'react-native-size-matters'
 import Orientation from 'react-native-orientation';
 import Realm from 'realm';
-let realm;
+let realm, dateObj = new Date();
 class ProductionCountSizeWise extends Component {
 
     state={
       fttCount: 0,
+      totalDayFttCount: 0,
+
       defectCount: 0,
       rejectCount: 0,
       rectifiedCount: 0,
       incrementBy: 1,
       screenWidth: null,
       screenHeight: null,
-      currentProdObj:[],
-      currentHourObj:[],
+
+      currentProdObj:{},
+      currentHourObj:{},
+      current_login:{},
+      currentCountObj:[],
+
       currentHour: null,
       isSynced: false,
     }
@@ -33,9 +39,45 @@ class ProductionCountSizeWise extends Component {
     }
 
     countFtt(){
-      this.setState((prevState, props) => ({
-        fttCount: prevState.fttCount + 1
-      }));
+      //vHourId: this.getCurrentHourId(),
+      //get Previous hour check if new hour equels to state hour
+      var thisHourID = this.getCurrentHourId();
+
+      if(thisHourID === undefined){
+          alert("This is not the production Hour!, Try After sometimes.");
+      }else{
+          if(thisHourID["vHourId"] === this.state.currentCountObj.vHourId){    
+            //This is running hour...
+
+            /**TODO: WIP Spread operator not working with set state here, While Adding new Count with Existing count data... 
+             * 
+             * 
+             * MUST BE DONE FIRST...
+             * 
+            */
+            this.setState((prevState, props) => ({
+              fttCount: prevState.fttCount + 1,
+              currentCountObj: { ...prevState.currentCountObj, iProductionQty: prevState.currentCountObj.iProductionQty + 1, dLastUpdated: dateObj },
+              totalDayFttCount: prevState.totalDayFttCount + 1
+            }),()=>{
+              console.log('Production count write to db....', this.state.currentCountObj)
+              //this.writeToLocalDb(this.state.currentCountObj);
+            });
+
+        }else{
+          //New Hour detected, So this will reset hourCounter but main counter will go on...
+          // And will create a new db entry with NEW hour ID
+          this.setState((prevState, props) => ({
+            fttCount: 1,
+            currentCountObj: {...prevState.currentCountObj, iProductionQty: 1, dLastUpdated: dateObj, vHourId: thisHourID["vHourId"]},
+            totalDayFttCount: prevState.totalDayFttCount + 1
+          }),()=>{
+            //console.log('Production count write to db....', this.state.currentCountObj.iProductionQty)
+            alert("New Hour Detected!", thisHourID["vHourId"]);
+            this.writeToLocalDb(this.state.currentCountObj);
+          });
+        }
+      }
 
     }
 
@@ -51,68 +93,135 @@ class ProductionCountSizeWise extends Component {
       });
     }
 
-    componentDidMount(){
-
+    getCurrentHourId(){
       var timeNow = '1900-01-01T'+new Date().getHours()+':00:00';
       var currentHour = null;
-      //var timeStr = '1900-01-01T13:00:00';
-      //var timeStr2 = '1900-01-01T16:00:00';
-      
-      //var endTime = '';
+      var hourObj = realm.objects(HourInfoSchema.name)
+      .filtered('dStartTimeOfProduction = $0', timeNow)[0];
 
-      var nfo = realm.objects(HourInfoSchema.name)
-      .filtered('dStartTimeOfProduction = $0', timeNow);
-
-      if(nfo.length > 0){        
-        console.log('hourData:', nfo);
-        console.log('endTime:', nfo ?? nfo[0]["vHourId"]);
-        currentHour = nfo[0]["vHourId"];
+      if(hourObj != undefined){        
+        //console.log('hour now:', hourObj["vHourId"]);
+        currentHour = hourObj;//["vHourId"];
       }else{
-
-        console.log("No Hour Available Now")
-        currentHour = null;
-        // timeNow = '1900-01-01T'+(new Date().getHours()-1)+':00:00';
-        //   nfo = realm.objects(HourInfoSchema.name)
-        // .filtered('dStartTimeOfProduction = $0', timeNow);
-        // console.log('hour-1:', nfo);
-        // console.log('endTime-1:', nfo ?? nfo[0].dEndTimeOfProduction);
+        //console.log("No Hour Available Now")
+        currentHour = undefined;
       }
-      /**
-       * {
-      iAutoId: 'int',
-      vDeviceId: 'string?',
-      dEntryDate: 'date',
-      dLastUpdated: 'date',
-      vProductionPlanId: 'string?',
-      vUnitLineId: 'string?',
-      vHourId: 'string?',
-      dDateOfProduction: 'date',
-      dStartTimeOfProduction: 'date',
-      dEndTimeOfProduction: 'date',
-      iProductionQty: 'int?',
-      iTarget: 'string?',
-      vProTypeId: 'string?',
-      nHour: 'string?',
-      iManPower: 'string?',
-      vPreparedBy: 'string?',
-      vShiftId: 'string?'
+
+      return currentHour;
     }
-       */
-      //.filtered('dStartTimeOfProduction >= $0 && dEndTimeOfProduction <= $1', timeStr, timeStr2);
-      //
 
 
+    getTodaysTotalFttCount(reqObj){
+      let existingData = realm.objects(DeviceWiseProductionSchema.name)
+      .filtered('dDateOfProduction = $0 && vProductionPlanId =$1', reqObj.dDate, reqObj.vProductionPlanId);
+      if(existingData.length > 0){
+          return existingData.reduce((accumulator, item)=> accumulator + item.iProductionQty, 0);
+      }else{
+          return 0;
+      }
+    }
 
-      const reqObj = this.props.navigation.getParam('userData');
-      console.log(reqObj);
-      //realm.objects('Person').filtered('birthday == 2015-7-2@14:23:17:233')
-      this.setState({
-        currentProdObj: reqObj,
-        currentHour, currentHourObj: nfo
-      });
+    componentWillUnmount(){
+      console.log('unmounted production count');
+    }
 
+    componentDidMount(){
       Orientation.lockToLandscapeLeft();
+      var currentCountObj = {};
+      const reqObj = this.props.navigation.getParam('userData');
+      var current_login = realm.objects(CurrentLoggedInUserSchema.name)[0];
+      var currentHour = this.getCurrentHourId();
+
+      if(currentHour === undefined){
+          alert("This Hour is not available for Production Entry!, Try Again after sometimes.")
+      }else{
+          let existingData = realm.objects(DeviceWiseProductionSchema.name)
+          .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vHourId = $2 && vUnitLineId = $3 && vDeviceId=$4', reqObj.dDate, reqObj.vProductionPlanId, currentHour["vHourId"], current_login.unitLineId, current_login.deviceId)[0];
+          let totalDayFttCount = this.getTodaysTotalFttCount(reqObj);
+          // console.log('Existing Data Count:', existingData)
+          // console.log(typeof(existingData))
+
+              if(existingData === undefined){
+                console.log('Not Found Any Data Count');
+                currentCountObj =
+                    {
+                      iAutoId: 0,
+                      vDeviceId: current_login.deviceId,
+                      dEntryDate: dateObj,
+                      dLastUpdated: dateObj,
+                      vProductionPlanId: reqObj.vProductionPlanId,
+                      vUnitLineId: current_login.unitLineId,
+                      vHourId: currentHour["vHourId"],
+                      dDateOfProduction: reqObj.dDate,
+                      dStartTimeOfProduction: currentHour.dStartTimeOfProduction,
+                      dEndTimeOfProduction: currentHour.dEndTimeOfProduction,
+                      iProductionQty: 0,
+                      iTarget: reqObj.iTarget,
+                      vProTypeId: 'PT1',
+                      nHour: currentHour.nHour,
+                      iManPower: reqObj.iManpower,
+                      vPreparedBy: current_login.deviceId,
+                      vShiftId: reqObj.vShiftId
+                  };
+              }else{
+                console.log('Found Existing Data Count:', existingData.iProductionQty)
+                currentCountObj = existingData;
+              }
+            
+          this.setState({
+            currentProdObj: reqObj,
+            currentHour: currentHour["vHourId"], currentHourObj: currentHour, current_login, currentCountObj, fttCount: currentCountObj.iProductionQty, totalDayFttCount //TODO: totalDayFttCount will be total of all hours ftt summation.
+          },()=>{
+            console.log('write initial production cout object to local db')
+            this.writeToLocalDb(this.state.currentCountObj);
+          });
+          //TODO: dDateOfProduction= dateObj;  should be the today's date, the day production count took place so that if device shutsdown we can retrive earlier production count data of today
+        }
+      /***TODO: Will have to check local db if there is anydata available for -> today -> This hour -> this device -> unitlineId -> production PlanID wise
+       * if exists set current production count object to existing production count object
+       * other wise create new object and insert into localdb and set state object to that new production object...
+       */
+
     }
+
+    
+  writeToLocalDb = (dataToWrite) =>{
+    console.log('write to DB')
+
+    //Clear any existing data in local db
+    //this.clearLocalDb();
+
+      realm.write(() => { //write single data
+        //realm.create(DeviceWiseProductionSchema.name, updatedData);
+        let existingData = realm.objects(DeviceWiseProductionSchema.name)
+                            .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vHourId = $2 && vUnitLineId = $3 && vDeviceId=$4', 
+                            dataToWrite.dDateOfProduction, 
+                            dataToWrite.vProductionPlanId, 
+                            dataToWrite.vHourId, 
+                            dataToWrite.vUnitLineId, 
+                            dataToWrite.vDeviceId)[0];
+
+          if(existingData === undefined){
+            //as no previous data exists, we will create new data row...
+            realm.create(DeviceWiseProductionSchema.name, dataToWrite);
+          }else{
+            existingData.iProductionQty =  dataToWrite.iProductionQty;
+            existingData.dLastUpdated =  dateObj;
+          }                            
+            
+      });
+  }
+
+//   clearLocalDb = () => {
+//     console.log('clear DB')
+//      realm.write(() => {
+//     // Delete multiple books by passing in a `Results`, `List`,
+//     // or JavaScript `Array`
+//      let allPlanData = realm.objects(DeviceWiseProductionSchema.name);
+//      realm.delete(allPlanData); // Deletes all plans
+//   });
+   
+// }
 
     countrectified(){
       this.setState((prevState, props) => ({
@@ -178,7 +287,7 @@ class ProductionCountSizeWise extends Component {
 
             <Pressable onPress={()=>this.countFtt()} style={{...styles.CountTileStyle, backgroundColor: '#45c065'}}>
               <Text style={{fontSize: moderateScale(25), fontWeight:'bold'}}>FTT</Text>
-              <Text style={{fontSize: moderateScale(25), fontWeight:'bold', color: '#fff'}}>{this.state.fttCount}</Text>
+              <Text style={{fontSize: moderateScale(25), fontWeight:'bold', color: '#fff'}}>{this.state.totalDayFttCount}</Text>
             </Pressable >
             
             <Pressable onPress={()=>this.countDefect()} style={{...styles.CountTileStyle, marginLeft:moderateScale(10),  backgroundColor: '#fda912'}}>
