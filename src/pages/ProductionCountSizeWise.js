@@ -46,31 +46,44 @@ class ProductionCountSizeWise extends Component {
       if(thisHourID === undefined){
           alert("This is not the production Hour!, Try After sometimes.");
       }else{
-          if(thisHourID["vHourId"] === this.state.currentCountObj.vHourId){    
-            //This is running hour...
 
-            /**TODO: WIP Spread operator not working with set state here, While Adding new Count with Existing count data... 
-             * 
-             * 
-             * MUST BE DONE FIRST...
-             * 
-            */
-            this.setState((prevState, props) => ({
-              fttCount: prevState.fttCount + 1,
-              currentCountObj: { ...prevState.currentCountObj, iProductionQty: prevState.currentCountObj.iProductionQty + 1, dLastUpdated: dateObj },
-              totalDayFttCount: prevState.totalDayFttCount + 1
+            var {
+              iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId,
+              dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,iProductionQty,
+              iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId
+            } = this.state.currentCountObj;
+
+          if(thisHourID["vHourId"] === this.state.currentCountObj.vHourId){    
+            
+            //This is running hour...
+            this.setState(() => ({
+              fttCount: this.state.fttCount + 1,
+              currentCountObj: { 
+                    iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId,
+                    dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,
+                    iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId, 
+                    iProductionQty: iProductionQty + 1, dLastUpdated: dateObj 
+                    },
+              totalDayFttCount: this.state.totalDayFttCount + 1,
+              currentHour: thisHourID["vHourId"]
             }),()=>{
-              console.log('Production count write to db....', this.state.currentCountObj)
-              //this.writeToLocalDb(this.state.currentCountObj);
+              //console.log('Production count write to db....', this.state.currentCountObj)
+              this.writeToLocalDb(this.state.currentCountObj);
             });
 
         }else{
           //New Hour detected, So this will reset hourCounter but main counter will go on...
           // And will create a new db entry with NEW hour ID
-          this.setState((prevState, props) => ({
+          this.setState(() => ({
             fttCount: 1,
-            currentCountObj: {...prevState.currentCountObj, iProductionQty: 1, dLastUpdated: dateObj, vHourId: thisHourID["vHourId"]},
-            totalDayFttCount: prevState.totalDayFttCount + 1
+            currentCountObj: { 
+              iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId: thisHourID["vHourId"],
+              dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,
+              iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId, 
+              iProductionQty: 1, dLastUpdated: dateObj 
+              },
+            totalDayFttCount: this.state.totalDayFttCount + 1,
+            currentHour: thisHourID["vHourId"]
           }),()=>{
             //console.log('Production count write to db....', this.state.currentCountObj.iProductionQty)
             alert("New Hour Detected!", thisHourID["vHourId"]);

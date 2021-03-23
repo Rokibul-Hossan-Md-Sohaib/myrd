@@ -37,23 +37,36 @@ export default class HomeScreen extends React.Component {
 
   componentDidMount(){
     Orientation.lockToPortrait()
-    const deviceinfo = realm.objects(QmsSecurityProductionDeviceInfo.name);    
-    console.log(deviceinfo.length);
-      if(deviceinfo.length == 0){
+    //const deviceinfo = realm.objects(QmsSecurityProductionDeviceInfo.name);    
+    //console.log(deviceinfo.length);
+      //if(deviceinfo.length == 0){
         //this.clearLocalDb();
         this.setState({loading: true}, ()=> this.getInitialData());
           //this.getInitialData();
-      }
+     // }
   }
 //adb pull /data/data/com.rnrelmdbsync/files/QmsDb.realm QmsDb.realm
 
 clearLocalDb = () => {
-  console.log('clear DB')
+  //todays date
+  let dateObj = new Date();
+
    realm.write(() => {
   
-  let allDeviceInfo = realm.objects(QmsSecurityProductionDeviceInfo.name);
-  realm.delete(allDeviceInfo);
-  //console.log('all device', allDeviceInfo.length)
+    let allDeviceInfo = realm.objects(QmsSecurityProductionDeviceInfo.name);
+    console.log('clear Device info', allDeviceInfo.length)
+    realm.delete(allDeviceInfo);
+
+    let existingData = realm.objects(DeviceWiseProductionSchema.name)
+    .filtered('dDateOfProduction != $0', dateObj);
+    console.log('clear Previous Prod Data', existingData.length)
+    realm.delete(existingData);
+
+    let loginData = realm.objects(CurrentLoggedInUserSchema.name)
+    .filtered('dateTime != $0', dateObj);;
+    console.log('clear Previous login data', loginData.length)
+    realm.delete(loginData);
+  //console.log('all device', allDeviceInfo.length) !=dateTime
 
   // let allHourInfo = realm.objects(HourInfoSchema.name);
   // realm.delete(allHourInfo);
