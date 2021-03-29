@@ -5,7 +5,7 @@ import Mybutton from './components/Mybutton';
 import Toast from 'react-native-toast-message';
 import ProgressDialog from '../utils/loader'
 import {get} from '../utils/apiUtils'
-import {HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, CurrentLoggedInUserSchema, QmsSecurityProductionDeviceInfo} from '../db/schemas/dbSchema'
+import {HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, DefectSchema, CurrentLoggedInUserSchema, QmsSecurityProductionDeviceInfo} from '../db/schemas/dbSchema'
 import Realm from 'realm';
 import Orientation from 'react-native-orientation';
 let realm;
@@ -30,7 +30,8 @@ export default class HomeScreen extends React.Component {
         HourInfoSchema,
         DailyPlanSchema,
         DeviceWiseProductionSchema,
-        QmsSecurityProductionDeviceInfo
+        QmsSecurityProductionDeviceInfo,
+        DefectSchema,
       ],
     });
   }
@@ -66,6 +67,9 @@ clearLocalDb = () => {
     .filtered('dateTime != $0', dateObj);;
     console.log('clear Previous login data', loginData.length)
     realm.delete(loginData);
+
+    let allDefects = realm.objects(DefectSchema.name);
+    realm.delete(allDefects);
   //console.log('all device', allDeviceInfo.length) !=dateTime
 
   // let allHourInfo = realm.objects(HourInfoSchema.name);
@@ -84,7 +88,7 @@ clearLocalDb = () => {
 
   getInitialData(){
     this.clearLocalDb();
-    //console.log('came here..')
+    //console.log('came here..')GetCompanyUnitLineData
     get('/GetCompanyUnitLineData')
     .then(response => {
 
@@ -92,6 +96,9 @@ clearLocalDb = () => {
             var responseData = response.data;
 
         if(responseData){
+          
+          var deviceSecInfo = responseData.compUnitData;
+          var defectRaw = responseData.defectRawData;
             Toast.show({
                 type: 'success',
                 position: 'bottom',
@@ -102,9 +109,13 @@ clearLocalDb = () => {
 
               // try { Write Data if data dosen't exixts
                 realm.write(() => {
-                    responseData.forEach(obj => {
+                  deviceSecInfo.forEach(obj => {
                       realm.create(QmsSecurityProductionDeviceInfo.name, obj);
                   });
+
+                  defectRaw.forEach(obj => {
+                    realm.create(DefectSchema.name, obj);
+                });
                   //realm.create('Car', {make: 'Honda', model: 'Accord', drive: 'awd'});
                 });
         }else{
@@ -131,6 +142,7 @@ clearLocalDb = () => {
   }
   // https://docs.mongodb.com/realm-legacy/docs/javascript/latest/api/tutorial-query-language.html
   //adb root  adb pull /data/data/com.rnrelmdbsync/files/QmsDb.realm QmsDb.realm
+  //adb pull /data/data/com.rnrelmdbsync/files/QmsDb.realm C:\Users\absjabed\Desktop\realmdb\QmsDb.realm
   //https://github.com/lawnstarter/react-native-picker-select
   //https://reactnative.dev/docs/typescript#adding-typescript-to-an-existing-project
   //https://docs.mongodb.com/realm/react-native/objects/

@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
-import { View, Text, StatusBar, Pressable, Dimensions, StyleSheet } from 'react-native';
+import { View, Text, StatusBar, Pressable, Dimensions, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import moment from 'moment'
-import {HourInfoSchema, CurrentLoggedInUserSchema, DeviceWiseProductionSchema} from '../db/schemas/dbSchema'
+import Toast from 'react-native-toast-message';
+import {HourInfoSchema, CurrentLoggedInUserSchema, DeviceWiseProductionSchema, DefectSchema} from '../db/schemas/dbSchema'
 import {moderateScale} from 'react-native-size-matters'
 import Orientation from 'react-native-orientation';
 import Realm from 'realm';
@@ -18,6 +19,8 @@ class ProductionCountSizeWise extends Component {
       incrementBy: 1,
       screenWidth: null,
       screenHeight: null,
+      modalVisible: false,
+      allDefects:[],
 
       currentProdObj:{},
       currentHourObj:{},
@@ -27,6 +30,17 @@ class ProductionCountSizeWise extends Component {
       currentHour: null,
       isSynced: false,
     }
+
+    /**
+     * Toast.show({
+            type: toastFlavour,
+            position: 'bottom',
+            text1: toastTitleTxt,
+            text2: responseData.msg+' 👋 length: '+responseData.dailyProdPlanData.length,
+            visibilityTime: 1500,
+            })
+     *  
+     */
 //moment(new Date()).format("hh:00A");
     constructor(props) {
       super(props);
@@ -44,7 +58,13 @@ class ProductionCountSizeWise extends Component {
       var thisHourID = this.getCurrentHourId();
 
       if(thisHourID === undefined){
-          alert("This is not the production Hour!, Try After sometimes.");
+        Toast.show({
+          type: "error",
+          position: 'bottom',
+          text1: "Alert!",
+          text2: "This is not the production Hour!, Try After sometimes.",
+          visibilityTime: 1500,
+          })
       }else{
 
             var {
@@ -77,7 +97,7 @@ class ProductionCountSizeWise extends Component {
           this.setState(() => ({
             fttCount: 1,
             currentCountObj: { 
-              iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId: thisHourID["vHourId"],
+              iAutoId: 0, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId: thisHourID["vHourId"],
               dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,
               iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId, 
               iProductionQty: 1, dLastUpdated: dateObj 
@@ -86,7 +106,13 @@ class ProductionCountSizeWise extends Component {
             currentHour: thisHourID["vHourId"]
           }),()=>{
             //console.log('Production count write to db....', this.state.currentCountObj.iProductionQty)
-            alert("New Hour Detected!", thisHourID["vHourId"]);
+            Toast.show({
+              type: "info",
+              position: 'bottom',
+              text1: "Info !",
+              text2: "New Hour Detected! "+thisHourID["vHourId"],
+              visibilityTime: 1500,
+              });
             this.writeToLocalDb(this.state.currentCountObj);
           });
         }
@@ -95,15 +121,16 @@ class ProductionCountSizeWise extends Component {
     }
 
     countDefect(){
-      this.setState((prevState, props) => ({
-        defectCount: prevState.defectCount + 1
-      }), ()=>{
-          console.log('count defect')
-        // this.props.navigation.navigate('Details',{
-        //   itemId: 86,
-        //   otherParam: 'anything you want here',
-        // })
-      });
+      // this.setState((prevState, props) => ({
+      //   defectCount: prevState.defectCount + 1,
+      // }), ()=>{
+      //     console.log('count defect')
+      //   // this.props.navigation.navigate('Details',{
+      //   //   itemId: 86,
+      //   //   otherParam: 'anything you want here',
+      //   // })
+      // });
+      this.setModalVisible();
     }
 
     getCurrentHourId(){
@@ -143,10 +170,31 @@ class ProductionCountSizeWise extends Component {
       var currentCountObj = {};
       const reqObj = this.props.navigation.getParam('userData');
       var current_login = realm.objects(CurrentLoggedInUserSchema.name)[0];
+      var allDefects = realm.objects(DefectSchema.name);
       var currentHour = this.getCurrentHourId();
 
       if(currentHour === undefined){
-          alert("This Hour is not available for Production Entry!, Try Again after sometimes.")
+          alert("This Hour is not available for Production Entry!, Try Again after sometimes.");
+              currentCountObj =
+                    {
+                      iAutoId: 0,
+                      vDeviceId: current_login.deviceId,
+                      dEntryDate: dateObj,
+                      dLastUpdated: dateObj,
+                      vProductionPlanId: reqObj.vProductionPlanId,
+                      vUnitLineId: current_login.unitLineId,
+                      vHourId: currentHour["vHourId"],
+                      dDateOfProduction: reqObj.dDate,
+                      dStartTimeOfProduction: currentHour.dStartTimeOfProduction,
+                      dEndTimeOfProduction: currentHour.dEndTimeOfProduction,
+                      iProductionQty: 0,
+                      iTarget: reqObj.iTarget,
+                      vProTypeId: 'PT1',
+                      nHour: currentHour.nHour,
+                      iManPower: reqObj.iManpower,
+                      vPreparedBy: current_login.deviceId,
+                      vShiftId: reqObj.vShiftId
+                  };
       }else{
           let existingData = realm.objects(DeviceWiseProductionSchema.name)
           .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vHourId = $2 && vUnitLineId = $3 && vDeviceId=$4', reqObj.dDate, reqObj.vProductionPlanId, currentHour["vHourId"], current_login.unitLineId, current_login.deviceId)[0];
@@ -182,7 +230,7 @@ class ProductionCountSizeWise extends Component {
               }
             
           this.setState({
-            currentProdObj: reqObj,
+            currentProdObj: reqObj,allDefects,
             currentHour: currentHour["vHourId"], currentHourObj: currentHour, current_login, currentCountObj, fttCount: currentCountObj.iProductionQty, totalDayFttCount //TODO: totalDayFttCount will be total of all hours ftt summation.
           },()=>{
             console.log('write initial production cout object to local db')
@@ -257,6 +305,13 @@ class ProductionCountSizeWise extends Component {
   
     }
 
+    setModalVisible() {
+      //this.setState((prevState)=> {modalVisible: visible});
+      this.setState((prevState/*, props*/) => ({
+        modalVisible: !prevState.modalVisible
+      }));
+    }
+
 
   render() {
     const {screenHeight, screenWidth} = this.state
@@ -325,15 +380,44 @@ class ProductionCountSizeWise extends Component {
           </View>
 
         </View>
-    
-      {/* <Text>Home Screen</Text>
-      <Button
-        title="Go to Details"
-        onPress={() => this.props.navigation.navigate('Details',{
-          itemId: 86,
-          otherParam: 'anything you want here',
-        })}
-        /> */}
+        
+        <View>
+                <Modal
+                  animationType="fade"
+                  transparent={true}
+                  visible={this.state.modalVisible}
+                  onRequestClose={() => this.setModalVisible() }>
+
+                  <View style={{height: this.state.screenHeight, width: this.state.screenWidth, backgroundColor:'rgba(0,0,0,0.7)'}}>
+                  <View style={{ flex:1, flexDirection:'column', justifyContent:'space-between', borderColor:'green', borderWidth:1, borderRadius:10, marginVertical: this.state.screenHeight/8, backgroundColor:'#fff',  margin:10, padding:10}}>
+                        <View style={{flex:1, flexDirection:'column', justifyContent:'space-between',  margin:10}}>
+                          
+                        {
+                          <Text> What are you doing?</Text>
+                            // this.state.sizes.map((item, index) => {
+                            //      return(<View style={{flex:1, flexDirection:'row', justifyContent:'space-around'}} key={index}>
+                            //        {
+                            //          item.map((val, idx)=>{
+                            //           return(
+                            //             <TouchableOpacity key={idx} style={{width:50, height:50, backgroundColor: this.state.selectedSize === val ?'green' : '#06b200', alignItems:'center', justifyContent:'center', padding:5, borderRadius:25}} onPress={() => this.setCurrentStyle(val)}>
+                            //                   <Text style={{fontWeight:'bold', color:'#fff', fontSize: 12}}>{val}</Text>
+                            //             </TouchableOpacity>
+                            //           )
+                            //          })
+                            //        }
+                            //      </View>)
+                            // })
+                          }
+                          </View>
+                          <View style={{flex:1, position:'absolute', right: 0, top: 0, marginTop: -10}}>
+                          <TouchableOpacity style={{width:30, height:30,marginTop:10, borderTopRightRadius:7, borderBottomLeftRadius:7, backgroundColor:'green', flex:1, justifyContent:'center'}} onPress={() => this.setModalVisible()}>
+                              <Text uppercase={false} style={{textAlign:'center', fontWeight:'bold', color:'#fff', fontSize: 15}}>X</Text>
+                          </TouchableOpacity>
+                        </View>
+                  </View>
+                  </View>
+                </Modal>
+              </View>
   </View>
     )
   }

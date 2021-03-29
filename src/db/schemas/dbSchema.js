@@ -106,7 +106,41 @@ const DailyPlanSchema = {
     }
   }
 
-  const DeviceWiseProductionSchema = {
+const DefectSchema ={
+    name: 'vwDefects',
+    properties:{
+      vHeadId: 'string?',
+      vAutoId: 'string?',
+      vHeadName: 'string?',
+      vHeadShortName: 'string?',
+      vDefectCategoryId: 'string?',
+      vDefectCategoryName: 'string?',
+      vCategoryShortName: 'string?',
+      code: 'string?'
+  }
+}
+
+const DeviceWiseDefectSchema = {
+    name: 'QMS_DeviceWiseLineDefectDaily',
+    properties:{
+      iAutoId: 'int',
+      vDeviceId: 'string?',
+      dEntryDate: 'date',
+      dLastUpdated: 'date',
+      vProductionPlanId: 'string?',
+      vUnitLineId: 'string?',
+      dDateOfProduction: 'date',
+      iDefectQty: 'int?',
+      iTarget: 'int?',
+      vProTypeId: 'string?',
+      nHour: 'int?',
+      iManPower: 'int?',
+      vPreparedBy: 'string?',
+      vShiftId: 'string?'
+    },
+  }
+
+const DeviceWiseProductionSchema = {
     name: 'QMS_DeviceWiseLineProductionDaily',
     properties:{
       iAutoId: 'int',
@@ -129,4 +163,4 @@ const DailyPlanSchema = {
     },
   }
 
-  export {CompanyWiseUnitLineSchema, HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, CurrentLoggedInUserSchema, QmsSecurityProductionDeviceInfo};
+  export {CompanyWiseUnitLineSchema, DefectSchema, HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, CurrentLoggedInUserSchema, QmsSecurityProductionDeviceInfo};
