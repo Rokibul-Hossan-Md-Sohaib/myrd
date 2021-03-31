@@ -5,7 +5,7 @@ import Mybutton from './components/Mybutton';
 import Toast from 'react-native-toast-message';
 import ProgressDialog from '../utils/loader'
 import {get} from '../utils/apiUtils'
-import {HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, DefectSchema, CurrentLoggedInUserSchema, QmsSecurityProductionDeviceInfo} from '../db/schemas/dbSchema'
+import {HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, DefectSchema, DeviceWiseDefectSchema, CurrentLoggedInUserSchema, QmsSecurityProductionDeviceInfo} from '../db/schemas/dbSchema'
 import Realm from 'realm';
 import Orientation from 'react-native-orientation';
 let realm;
@@ -32,6 +32,7 @@ export default class HomeScreen extends React.Component {
         DeviceWiseProductionSchema,
         QmsSecurityProductionDeviceInfo,
         DefectSchema,
+        DeviceWiseDefectSchema
       ],
     });
   }

@@ -123,21 +123,19 @@ const DefectSchema ={
 const DeviceWiseDefectSchema = {
     name: 'QMS_DeviceWiseLineDefectDaily',
     properties:{
-      iAutoId: 'int',
+      iAutoId:  'int',
       vDeviceId: 'string?',
-      dEntryDate: 'date',
-      dLastUpdated: 'date',
+      dDateOfProduction: 'date',
       vProductionPlanId: 'string?',
       vUnitLineId: 'string?',
-      dDateOfProduction: 'date',
-      iDefectQty: 'int?',
-      iTarget: 'int?',
-      vProTypeId: 'string?',
-      nHour: 'int?',
-      iManPower: 'int?',
-      vPreparedBy: 'string?',
-      vShiftId: 'string?'
-    },
+      vSizeName: 'string?',
+      vDefectCategoryId: 'string?',
+      vDefectCategoryName: 'string?',
+      vDefectHeadId: 'string?',
+      vDefectHeadName: 'string?',
+      vDefectCode: 'string?',
+      iDefectCount:  'int'
+  }
   }
 
 const DeviceWiseProductionSchema = {
@@ -163,4 +161,4 @@ const DeviceWiseProductionSchema = {
     },
   }
 
-  export {CompanyWiseUnitLineSchema, DefectSchema, HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, CurrentLoggedInUserSchema, QmsSecurityProductionDeviceInfo};
+  export {CompanyWiseUnitLineSchema, DefectSchema, HourInfoSchema, DailyPlanSchema,DeviceWiseDefectSchema, DeviceWiseProductionSchema, CurrentLoggedInUserSchema, QmsSecurityProductionDeviceInfo};
