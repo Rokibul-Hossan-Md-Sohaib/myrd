@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { View, Text, StatusBar, Pressable, Dimensions, StyleSheet, Modal, TouchableOpacity, Button } from 'react-native';
 import moment from 'moment'
 import Toast from 'react-native-toast-message';
-import {HourInfoSchema, CurrentLoggedInUserSchema, DeviceWiseProductionSchema, DefectSchema} from '../db/schemas/dbSchema'
+import {HourInfoSchema, CurrentLoggedInUserSchema, DeviceWiseProductionSchema, DeviceWiseDefectSchema, DefectSchema} from '../db/schemas/dbSchema'
 import {moderateScale} from 'react-native-size-matters'
 import Orientation from 'react-native-orientation';
 import Realm from 'realm';
@@ -13,6 +13,7 @@ class ProductionCountSizeWise extends Component {
     state={
       fttCount: 0,
       totalDayFttCount: 0,
+      totalDayDefectCount: 0,
 
       defectCount: 0,
       rejectCount: 0,
@@ -66,6 +67,7 @@ class ProductionCountSizeWise extends Component {
       //vHourId: this.getCurrentHourId(),
       //get Previous hour check if new hour equels to state hour
       var thisHourID = this.getCurrentHourId();
+      console.log('Now',thisHourID.vHourId)
 
       if(thisHourID === undefined){
         Toast.show({
@@ -78,7 +80,8 @@ class ProductionCountSizeWise extends Component {
       }else{
 
             var {
-              iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId,
+              iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId, 
+              vBuyerName, vSizeName, vExpPoorderNo, vColorName, vStyleName, dShipmentDate,
               dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,iProductionQty,
               iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId
             } = this.state.currentCountObj;
@@ -89,7 +92,8 @@ class ProductionCountSizeWise extends Component {
             this.setState(() => ({
               fttCount: this.state.fttCount + 1,
               currentCountObj: { 
-                    iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId,
+                    iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId, 
+                    vBuyerName, vSizeName, vExpPoorderNo, vColorName, vStyleName, dShipmentDate,
                     dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,
                     iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId, 
                     iProductionQty: iProductionQty + 1, dLastUpdated: dateObj 
@@ -108,6 +112,7 @@ class ProductionCountSizeWise extends Component {
             fttCount: 1,
             currentCountObj: { 
               iAutoId: 0, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId: thisHourID["vHourId"],
+              vBuyerName, vSizeName, vExpPoorderNo, vColorName, vStyleName, dShipmentDate,
               dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,
               iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId, 
               iProductionQty: 1, dLastUpdated: dateObj 
@@ -134,6 +139,7 @@ class ProductionCountSizeWise extends Component {
 
       this.setState((prevState, props) => ({
         defectCount: prevState.defectCount + 1,
+        totalDayDefectCount: prevState.totalDayDefectCount+1
       }), ()=>{
           //console.log('count defect')
           currentDefectCountObj =
@@ -150,6 +156,7 @@ class ProductionCountSizeWise extends Component {
             vDefectHeadName: this.state.selectedDefectObj.vHeadName,
             vDefectCode: this.state.selectedDefectObj.code,
             iDefectCount: this.state.defectCount,
+            dLastUpdated: dateObj
         };
 
         console.log(currentDefectCountObj);
@@ -164,31 +171,54 @@ class ProductionCountSizeWise extends Component {
            /***TODO: Check Esisting Data, if exists Update, otherwise add new entry */
            /**Show total defect count on screen Tile */
            /** defect count should be at size level... */
-           console.log(dataToWrite);
+           realm.write(() => { //write single data
+            //realm.create(DeviceWiseProductionSchema.name, updatedData);
+            let existingData = realm.objects(DeviceWiseDefectSchema.name)
+                                .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId = $2 && vDeviceId=$3 && vDefectCode=$4', 
+                                dataToWrite.dDateOfProduction, 
+                                dataToWrite.vProductionPlanId, 
+                                dataToWrite.vUnitLineId, 
+                                dataToWrite.vDeviceId,
+                                dataToWrite.vDefectCode)[0];
+    
+              if(existingData === undefined){
+                //as no previous data exists, we will create new data row...
+                realm.create(DeviceWiseDefectSchema.name, dataToWrite);
+              }else{
+                existingData.iDefectCount =  dataToWrite.iDefectCount;
+                existingData.dLastUpdated   =  dateObj;
+              }                            
+                
+          });
+           //console.log(dataToWrite);
     }
 
     getCurrentHourId(){
-      var timeNow = '1900-01-01T'+dateObj.getHours()+':00:00';
       var currentHour = null;
+      var timeNow = '1900-01-01T'+new Date().getHours()+':00:00';
+      //console.log('timeNow',timeNow)
       var hourObj = realm.objects(HourInfoSchema.name)
       .filtered('dStartTimeOfProduction = $0', timeNow)[0];
 
-      if(hourObj === undefined){        
-        
-        //console.log("No Hour Available Now")
-        timeNow = '1900-01-01T'+(dateObj.getHours()-1)+':00:00';
-        currentHour =  realm.objects(HourInfoSchema.name)
-      .filtered('dStartTimeOfProduction = $0', timeNow)[0];
-
-        if(currentHour === undefined){ //IF CURRENT HOUR IS 6/7 AM
-            timeNow = '1900-01-01T'+(dateObj.getHours()-2)+':00:00';
-            currentHour =  realm.objects(HourInfoSchema.name)
-          .filtered('dStartTimeOfProduction = $0', timeNow)[0];
-        }
-
-      }else{
-        //console.log('hour now:', hourObj["vHourId"]);
+      if(hourObj != undefined){        
+        //Current Hour info available
         currentHour = hourObj;//["vHourId"];
+      }else{
+        //Current Hour info not available
+        // So set current to 1 hour back
+        timeNow = '1900-01-01T'+(dateObj.getHours()-1)+':00:00';
+        hourObj = realm.objects(HourInfoSchema.name)
+          .filtered('dStartTimeOfProduction = $0', timeNow)[0];
+          if(hourObj != undefined){        
+            currentHour = hourObj;
+          }else{
+            //Current Hour not found in 1 hour back
+            // So set current to 2 hours back
+            timeNow = '1900-01-01T'+(dateObj.getHours()-2)+':00:00';
+            hourObj = realm.objects(HourInfoSchema.name)
+              .filtered('dStartTimeOfProduction = $0', timeNow)[0];
+              currentHour = hourObj;
+          }
       }
 
       return currentHour;
@@ -204,6 +234,17 @@ class ProductionCountSizeWise extends Component {
       .filtered('dDateOfProduction = $0 && vProductionPlanId =$1', reqObj.dDate, reqObj.vProductionPlanId);
       if(existingData.length > 0){
           return existingData.reduce((accumulator, item)=> accumulator + item.iProductionQty, 0);
+      }else{
+          return 0;
+      }
+    }
+
+    getTodaysTotalDefectCount(reqObj){
+      let existingDefectData = realm.objects(DeviceWiseDefectSchema.name)
+          .filtered('dDateOfProduction = $0 && vProductionPlanId =$1', 
+          reqObj.dDate, reqObj.vProductionPlanId);
+      if(existingDefectData.length > 0){
+          return existingDefectData.reduce((accumulator, item)=> accumulator + item.iDefectCount, 0);
       }else{
           return 0;
       }
@@ -247,6 +288,15 @@ class ProductionCountSizeWise extends Component {
               visibilityTime: 1500,
               });
 
+              /***
+               * 
+               * 
+      vStyleName: 'string?',
+      vExpPoorderNo: 'string?',
+      vColorName: 'string?',
+      vSizeName: 'string?',
+               * 
+               */
               // currentCountObj =
               //       {
               //         iAutoId: 0,
@@ -271,6 +321,9 @@ class ProductionCountSizeWise extends Component {
           let existingData = realm.objects(DeviceWiseProductionSchema.name)
           .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vHourId = $2 && vUnitLineId = $3 && vDeviceId=$4', reqObj.dDate, reqObj.vProductionPlanId, currentHour["vHourId"], current_login.unitLineId, current_login.deviceId)[0];
           let totalDayFttCount = this.getTodaysTotalFttCount(reqObj);
+          let totalDayDefectCount = this.getTodaysTotalDefectCount(reqObj);
+          
+          
           // console.log('Existing Data Count:', existingData)
           // console.log(typeof(existingData))
 
@@ -284,10 +337,16 @@ class ProductionCountSizeWise extends Component {
                       dLastUpdated: dateObj,
                       vProductionPlanId: reqObj.vProductionPlanId,
                       vUnitLineId: current_login.unitLineId,
+                      vBuyerName: reqObj.vBuyerName,
+                      vStyleName: reqObj.vStyleName,
+                      vExpPoorderNo: reqObj.vExpPoorderNo,
+                      vColorName: reqObj.vColorName,
+                      vSizeName: reqObj.vSizeName,
                       vHourId: currentHour["vHourId"],
                       dDateOfProduction: reqObj.dDate,
                       dStartTimeOfProduction: currentHour.dStartTimeOfProduction,
                       dEndTimeOfProduction: currentHour.dEndTimeOfProduction,
+                      dShipmentDate: reqObj.dShipmentDate,
                       iProductionQty: 0,
                       iTarget: reqObj.iTarget,
                       vProTypeId: 'PT1',
@@ -303,7 +362,14 @@ class ProductionCountSizeWise extends Component {
             
           this.setState({
             currentProdObj: reqObj,allDefects,defectCategories,
-            currentHour: currentHour["vHourId"], currentHourObj: currentHour, current_login, currentCountObj, fttCount: currentCountObj.iProductionQty, totalDayFttCount //TODO: totalDayFttCount will be total of all hours ftt summation.
+            currentHour: currentHour["vHourId"], 
+            currentHourObj: currentHour, 
+            current_login, 
+            currentCountObj, 
+            fttCount: currentCountObj.iProductionQty, 
+            totalDayFttCount,
+            totalDayDefectCount 
+            //TODO: totalDayFttCount will be total of all hours ftt summation.
           },()=>{
             console.log('write initial production cout object to local db')
             this.writeProductionToLocalDB(this.state.currentCountObj);
@@ -446,7 +512,7 @@ class ProductionCountSizeWise extends Component {
             
             <Pressable onPress={()=>this.setModalVisible()} style={{...styles.CountTileStyle, marginLeft:moderateScale(10),  backgroundColor: '#fda912'}}>
                 <Text style={{fontSize: moderateScale(25), fontWeight:'bold'}}>DEFECT</Text>
-                <Text style={{fontSize: moderateScale(25), fontWeight:'bold', color: '#fff'}}>{this.state.defectCount}</Text>
+                <Text style={{fontSize: moderateScale(25), fontWeight:'bold', color: '#fff'}}>{this.state.totalDayDefectCount}</Text>
             </Pressable>
 
           </View>

@@ -134,7 +134,8 @@ const DeviceWiseDefectSchema = {
       vDefectHeadId: 'string?',
       vDefectHeadName: 'string?',
       vDefectCode: 'string?',
-      iDefectCount:  'int'
+      iDefectCount:  'int',
+      dLastUpdated: 'date',
   }
   }
 
@@ -147,10 +148,16 @@ const DeviceWiseProductionSchema = {
       dLastUpdated: 'date',
       vProductionPlanId: 'string?',
       vUnitLineId: 'string?',
+      vBuyerName: 'string?',
+      vStyleName: 'string?',
+      vExpPoorderNo: 'string?',
+      vColorName: 'string?',
+      vSizeName: 'string?',
       vHourId: 'string?',
       dDateOfProduction: 'date',
       dStartTimeOfProduction: 'date',
       dEndTimeOfProduction: 'date',
+      dShipmentDate: 'date',
       iProductionQty: 'int?',
       iTarget: 'int?',
       vProTypeId: 'string?',
@@ -159,6 +166,6 @@ const DeviceWiseProductionSchema = {
       vPreparedBy: 'string?',
       vShiftId: 'string?'
     },
-  }
+  }//moment(this.state.currentProdObj.dShipmentDate).format('DD-MM-YYYY')
 
   export {CompanyWiseUnitLineSchema, DefectSchema, HourInfoSchema, DailyPlanSchema,DeviceWiseDefectSchema, DeviceWiseProductionSchema, CurrentLoggedInUserSchema, QmsSecurityProductionDeviceInfo};

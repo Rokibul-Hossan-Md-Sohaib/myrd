@@ -2,6 +2,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import Mybutton from './components/Mybutton';
+import moment from 'moment'
 import Toast from 'react-native-toast-message';
 import ProgressDialog from '../utils/loader'
 import {get} from '../utils/apiUtils'
@@ -50,8 +51,9 @@ export default class HomeScreen extends React.Component {
 //adb pull /data/data/com.rnrelmdbsync/files/QmsDb.realm QmsDb.realm
 
 clearLocalDb = () => {
-  //todays date
-  let dateObj = new Date();
+  //todays date  2021-04-03T00:00:00.000Z
+  //let dateObj = new Date();
+  let fullDate = moment().format().split("T")[0]+'T00:00:00.000Z'
 
    realm.write(() => {
   
@@ -60,12 +62,12 @@ clearLocalDb = () => {
     realm.delete(allDeviceInfo);
 
     let existingData = realm.objects(DeviceWiseProductionSchema.name)
-    .filtered('dDateOfProduction != $0', dateObj);
+    .filtered('dDateOfProduction  != $0', fullDate);
     console.log('clear Previous Prod Data', existingData.length)
     realm.delete(existingData);
 
     let loginData = realm.objects(CurrentLoggedInUserSchema.name)
-    .filtered('dateTime != $0', dateObj);;
+    .filtered('dateTime != $0', fullDate);;
     console.log('clear Previous login data', loginData.length)
     realm.delete(loginData);
 
