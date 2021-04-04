@@ -30,7 +30,6 @@ const QmsSecurityProductionDeviceInfo = {
 
       const CompanyWiseUnitLineSchema = {
         name: 'Vw_CompanyWiseUnitLine',
-        //primaryKey: 'vUnitLineId',
         properties:{
           vUnitLineId: 'string?',
           vCompanyChildId: 'string?',
@@ -128,13 +127,29 @@ const DeviceWiseDefectSchema = {
       dDateOfProduction: 'date',
       vProductionPlanId: 'string?',
       vUnitLineId: 'string?',
+
+      vBuyerId:  'string?',
+      vBuyerName: 'string?',
+
+      vStyleId:  'string?',
+      vStyleName: 'string?',
+
+      vExpPoorderNo:  'string?',
+
+      vColorId:  'string?',
+      vColorName: 'string?',
+
+      vSizeId:  'string?',
       vSizeName: 'string?',
+
       vDefectCategoryId: 'string?',
       vDefectCategoryName: 'string?',
       vDefectHeadId: 'string?',
       vDefectHeadName: 'string?',
       vDefectCode: 'string?',
+
       iDefectCount:  'int',
+      
       dLastUpdated: 'date',
   }
   }
@@ -148,11 +163,21 @@ const DeviceWiseProductionSchema = {
       dLastUpdated: 'date',
       vProductionPlanId: 'string?',
       vUnitLineId: 'string?',
+      
+      vBuyerId:  'string?',
       vBuyerName: 'string?',
+
+      vStyleId:  'string?',
       vStyleName: 'string?',
-      vExpPoorderNo: 'string?',
+
+      vExpPoorderNo:  'string?',
+
+      vColorId:  'string?',
       vColorName: 'string?',
+
+      vSizeId:  'string?',
       vSizeName: 'string?',
+
       vHourId: 'string?',
       dDateOfProduction: 'date',
       dStartTimeOfProduction: 'date',
@@ -166,6 +191,78 @@ const DeviceWiseProductionSchema = {
       vPreparedBy: 'string?',
       vShiftId: 'string?'
     },
-  }//moment(this.state.currentProdObj.dShipmentDate).format('DD-MM-YYYY')
+  }
 
-  export {CompanyWiseUnitLineSchema, DefectSchema, HourInfoSchema, DailyPlanSchema,DeviceWiseDefectSchema, DeviceWiseProductionSchema, CurrentLoggedInUserSchema, QmsSecurityProductionDeviceInfo};
+const DeviceWiseRejectSchema = {
+    name: 'QMS_DeviceWiseLineRejectDaily',
+    properties:{
+      iAutoId:  'int',
+      vDeviceId: 'string?',
+      dDateOfProduction: 'date',
+      vProductionPlanId: 'string?',
+      vUnitLineId: 'string?',
+
+      vBuyerId:  'string?',
+      vBuyerName: 'string?',
+
+      vStyleId:  'string?',
+      vStyleName: 'string?',
+
+      vExpPoorderNo:  'string?',
+
+      vColorId:  'string?',
+      vColorName: 'string?',
+
+      vSizeId:  'string?',
+      vSizeName: 'string?',
+
+
+      vDefectCategoryId: 'string?',
+      vDefectCategoryName: 'string?',
+      vDefectHeadId: 'string?',
+      vDefectHeadName: 'string?',
+      vDefectCode: 'string?',
+      iRejectCount:  'int',
+      dLastUpdated: 'date',
+  }
+  }
+
+const DeviceWiseReworkedSchema = {
+    name: 'QMS_DeviceWiseLineReworkedDaily',
+    properties:{
+      iAutoId:  'int',
+      vDeviceId: 'string?',
+      dDateOfProduction: 'date',
+      vProductionPlanId: 'string?',
+      vUnitLineId: 'string?',
+
+      vBuyerId:  'string?',
+      vBuyerName: 'string?',
+
+      vStyleId:  'string?',
+      vStyleName: 'string?',
+
+      vExpPoorderNo:  'string?',
+
+      vColorId:  'string?',
+      vColorName: 'string?',
+
+      vSizeId:  'string?',
+      vSizeName: 'string?',
+
+      iReworkedCount:  'int',
+      dLastUpdated: 'date',
+  }
+}
+
+  export {
+    CompanyWiseUnitLineSchema, 
+    DefectSchema, 
+    HourInfoSchema, 
+    DailyPlanSchema,
+    DeviceWiseDefectSchema, 
+    DeviceWiseProductionSchema,
+    DeviceWiseRejectSchema,
+    DeviceWiseReworkedSchema,
+    CurrentLoggedInUserSchema, 
+    QmsSecurityProductionDeviceInfo};

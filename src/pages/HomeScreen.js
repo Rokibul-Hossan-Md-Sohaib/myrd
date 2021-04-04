@@ -6,7 +6,17 @@ import moment from 'moment'
 import Toast from 'react-native-toast-message';
 import ProgressDialog from '../utils/loader'
 import {get} from '../utils/apiUtils'
-import {HourInfoSchema, DailyPlanSchema, DeviceWiseProductionSchema, DefectSchema, DeviceWiseDefectSchema, CurrentLoggedInUserSchema, QmsSecurityProductionDeviceInfo} from '../db/schemas/dbSchema'
+import {
+  HourInfoSchema, 
+  DailyPlanSchema, 
+  DeviceWiseProductionSchema, 
+  DefectSchema, 
+  DeviceWiseDefectSchema, 
+  DeviceWiseRejectSchema,
+  DeviceWiseReworkedSchema,
+  CurrentLoggedInUserSchema, 
+  QmsSecurityProductionDeviceInfo
+} from '../db/schemas/dbSchema'
 import Realm from 'realm';
 import Orientation from 'react-native-orientation';
 let realm;
@@ -33,7 +43,9 @@ export default class HomeScreen extends React.Component {
         DeviceWiseProductionSchema,
         QmsSecurityProductionDeviceInfo,
         DefectSchema,
-        DeviceWiseDefectSchema
+        DeviceWiseDefectSchema,
+        DeviceWiseRejectSchema,
+        DeviceWiseReworkedSchema
       ],
     });
   }
@@ -65,6 +77,21 @@ clearLocalDb = () => {
     .filtered('dDateOfProduction  != $0', fullDate);
     console.log('clear Previous Prod Data', existingData.length)
     realm.delete(existingData);
+
+    let existingDefectData = realm.objects(DeviceWiseDefectSchema.name)
+    .filtered('dDateOfProduction  != $0', fullDate);
+    console.log('clear Previous Defect Data', existingDefectData.length)
+    realm.delete(existingDefectData);
+
+    let existingRejectData = realm.objects(DeviceWiseRejectSchema.name)
+    .filtered('dDateOfProduction  != $0', fullDate);
+    console.log('clear Previous Reject Data', existingRejectData.length)
+    realm.delete(existingRejectData);
+
+    let existingReworkedData = realm.objects(DeviceWiseReworkedSchema.name)
+    .filtered('dDateOfProduction  != $0', fullDate);
+    console.log('clear Previous Reworked Data', existingReworkedData.length)
+    realm.delete(existingReworkedData);
 
     let loginData = realm.objects(CurrentLoggedInUserSchema.name)
     .filtered('dateTime != $0', fullDate);;
