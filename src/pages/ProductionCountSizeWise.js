@@ -199,7 +199,7 @@ class ProductionCountSizeWise extends Component {
             vDefectHeadId: this.state.selectedDefectObj.vHeadId,
             vDefectHeadName: this.state.selectedDefectObj.vHeadName,
             vDefectCode: this.state.selectedDefectObj.code,
-            iDefectCount: this.state.defectCount,
+            iDefectCount: 1,
             dLastUpdated: dateObj
         };
 
@@ -246,7 +246,7 @@ class ProductionCountSizeWise extends Component {
             vDefectHeadId: this.state.selectedDefectObj.vHeadId,
             vDefectHeadName: this.state.selectedDefectObj.vHeadName,
             vDefectCode: this.state.selectedDefectObj.code,
-            iRejectCount: this.state.rejectCount,
+            iRejectCount: 1,
             dLastUpdated: dateObj
         };
 
@@ -284,7 +284,7 @@ class ProductionCountSizeWise extends Component {
                 //as no previous data exists, we will create new data row...
                 realm.create(DeviceWiseRejectSchema.name, dataToWrite);
               }else{
-                existingData.rejectCount =  dataToWrite.rejectCount;
+                existingData.iRejectCount +=  1;
                 existingData.dLastUpdated   =  dateObj;
               }                            
                 
@@ -316,7 +316,7 @@ class ProductionCountSizeWise extends Component {
                 //as no previous data exists, we will create new data row...
                 realm.create(DeviceWiseDefectSchema.name, dataToWrite);
               }else{
-                existingData.iDefectCount =  dataToWrite.iDefectCount;
+                existingData.iDefectCount +=  1;
                 existingData.dLastUpdated   =  dateObj;
               }                            
                 

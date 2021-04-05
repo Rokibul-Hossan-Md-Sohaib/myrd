@@ -299,7 +299,7 @@ export default class SetupData extends React.Component {
                 this.setState({
                   selectedBuyer: value,
                   styleNames,
-                  finalProductionObject:[],
+                  finalProductionObject: undefined,
                   disableMultipleSizeButton: true,
                   colorFilteredSizes: [],
                   //filteredPlanInfo: filteredComData,
@@ -343,7 +343,7 @@ export default class SetupData extends React.Component {
                   this.setState({
                     selectedStyle: value,
                     expPos,
-                    finalProductionObject:[],
+                    finalProductionObject: undefined,
                     disableMultipleSizeButton: true,
                     colorFilteredSizes: [],
                     vStyleId: value,
@@ -387,7 +387,7 @@ export default class SetupData extends React.Component {
                   this.setState({
                     selectedExpPo: value,
                     colorNames,
-                    finalProductionObject:[],
+                    finalProductionObject: undefined,
                     disableMultipleSizeButton: true,
                     colorFilteredSizes: [],
                     //filteredPlanInfo: filteredComData,
@@ -433,7 +433,7 @@ export default class SetupData extends React.Component {
                   this.setState({
                     selectedColor: value,
                     sizeNames,
-                    finalProductionObject:[],
+                    finalProductionObject: undefined,
                     disableMultipleSizeButton: false,
                     colorFilteredSizes: filteredComData,
                     //filteredPlanInfo: filteredComData,
@@ -441,7 +441,6 @@ export default class SetupData extends React.Component {
                     vSizeId: '',
                     vSizeName: '',
                     dShipmentDate: '',
-
                     selectedSize: '',
                 }, ()=>{
                  
@@ -487,7 +486,7 @@ export default class SetupData extends React.Component {
                     
                     this.setState({
                       finalProductionObject: selectedObj, 
-                      dShipmentDate: moment(selectedObj.dShipmentDate).format('DD-MM-YYYY')},
+                      dShipmentDate: selectedObj ? moment(selectedObj.dShipmentDate).format('DD-MM-YYYY') : ''},
                       ()=>{
                         
                     })
