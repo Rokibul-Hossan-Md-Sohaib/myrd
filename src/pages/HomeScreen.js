@@ -25,6 +25,7 @@ export default class HomeScreen extends React.Component {
 
     state = {
       loading: false,
+      today: moment().format('YYYY-MM-DD'),
     }
 
   constructor(props) {
@@ -52,6 +53,22 @@ export default class HomeScreen extends React.Component {
 
   componentDidMount(){
     Orientation.lockToPortrait()
+
+    /***
+     * //#region TODO:
+     * 
+     * # Parsist Login & Other data for today only (✔)
+     * # Remove other data from any other day (✔)
+     * # Day Close option for production and then sync immediately
+     * # If there is already login data for today fetch those data, otherwsie logout
+     * # Data summery minimal json for sync,
+     * # Sync flag for current data if synced successfully...
+     * 
+     * 
+     * 
+     */
+
+
     //const deviceinfo = realm.objects(QmsSecurityProductionDeviceInfo.name);    
     //console.log(deviceinfo.length);
       //if(deviceinfo.length == 0){
@@ -94,7 +111,7 @@ clearLocalDb = () => {
     realm.delete(existingReworkedData);
 
     let loginData = realm.objects(CurrentLoggedInUserSchema.name)
-    .filtered('dateTime != $0', fullDate);;
+    .filtered('dateTime != $0', fullDate);
     console.log('clear Previous login data', loginData.length)
     realm.delete(loginData);
 
@@ -115,6 +132,25 @@ clearLocalDb = () => {
 });
  
 }
+
+  checkLoggedInAndRouteToSetupData(){
+    let loginData = realm.objects(CurrentLoggedInUserSchema.name)
+    .filtered('dateTime = $0', this.state.today);
+
+    let allDeviceInfo = realm.objects(DailyPlanSchema.name)
+    .filtered('dDate = $0', this.state.today);
+
+    if(loginData.length > 0 && allDeviceInfo.length > 0){
+      console.log('already logged in')
+      var reqObj = loginData[0];
+      this.props.navigation.navigate('SetupData',{ userData:  reqObj });
+      /**Route to Setup Data */
+    }else{
+      /**Route to Device Login */
+      console.log('not logged in')
+      this.props.navigation.navigate('DeviceLogin')
+    }
+  }
 
   getInitialData(){
     this.clearLocalDb();
@@ -193,7 +229,7 @@ clearLocalDb = () => {
         <View style={{position:'absolute', bottom: '10%', width: '100%'}}>
           <Mybutton
             title="Start"
-            customClick={() => this.props.navigation.navigate('DeviceLogin')}
+            customClick={() => this.checkLoggedInAndRouteToSetupData()}
           />
         </View>
         {/* <Mybutton

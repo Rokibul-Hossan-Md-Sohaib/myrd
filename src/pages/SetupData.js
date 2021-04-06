@@ -10,7 +10,7 @@ import Mybutton from './components/Mybutton';
 import {post} from '../utils/apiUtils'
 import ProgressDialog from '../utils/loader'
 import Orientation from 'react-native-orientation';
-import {DailyPlanSchema} from '../db/schemas/dbSchema'
+import {DailyPlanSchema, CurrentLoggedInUserSchema} from '../db/schemas/dbSchema'
 import Realm from 'realm';
 let realm;
 
@@ -59,6 +59,37 @@ export default class SetupData extends React.Component {
         Orientation.lockToPortrait()
       });    
     realm = new Realm({ path: 'QmsDb.realm' });
+  }
+
+  logoutAndGotoLoginPage(){
+    let fullDate = moment().format().split("T")[0]+'T00:00:00.000Z'
+    /**Assuming that previous data already exists... */
+    realm.write(() => {
+  
+      let allDeviceInfo = realm.objects(DailyPlanSchema.name).filtered('dDate = $0', fullDate);
+      //console.log(allDeviceInfo.length)
+      realm.delete(allDeviceInfo);
+  
+      let loginData = realm.objects(CurrentLoggedInUserSchema.name)
+      .filtered('dateTime = $0', fullDate);
+      //console.log(allDeviceInfo.length)
+      realm.delete(loginData);
+  });
+
+  let loggedinData = realm.objects(CurrentLoggedInUserSchema.name)
+  .filtered('dateTime = $0', fullDate);
+
+  let prevPlanData = realm.objects(DailyPlanSchema.name)
+  .filtered('dDate = $0', fullDate);
+
+  if(loggedinData.length == 0 && prevPlanData.length == 0){
+    console.log('logged out')
+     
+      this.props.navigation.navigate('DeviceLogin')
+  }else{
+    console.log("logout failed!")
+  }
+    
   }
 
     componentDidMount(){
@@ -127,77 +158,6 @@ export default class SetupData extends React.Component {
         visibilityTime: 1500,
         })
     }
-
-  //   var {vCompanyId, vUnitId, vUnitLineId, vShiftId, vDeviceId, Password } = this.state;
-  //   var reqObj = {
-  //     "deviceId": vDeviceId,
-  //     "devicePwd": vDeviceId,//Password,
-  //     "companyId": vCompanyId,
-  //     "unitId": vUnitId,
-  //     "unitLineId": vUnitLineId,
-  //     "shiftId": vShiftId,
-  //     "dateTime": "2020-11-04"//moment().format('DD-MM-YYYY')
-  // }
-
-  // this.setState({loading: true}, ()=>{
-  //   post('/GetProductionPlanUnitLineData', reqObj)
-  //   .then(response => {
-  //       this.setState({loading: false}, ()=>{
-  //           var responseData = response.data;
-  //           console.log(responseData);
-  //       if(responseData.auth){
-
-          
-  //         var toastFlavour = responseData.dailyProdPlanData.length > 0 ? "success" : "info";
-  //         var toastTitleTxt = responseData.dailyProdPlanData.length > 0 ? "Successed!" : "Info!";
-
-  //         this.writeToLocalDb(responseData.dailyProdPlanData);
-          
-  //           Toast.show({
-  //               type: toastFlavour,
-  //               position: 'top',
-  //               text1: toastTitleTxt,
-  //               text2: responseData.msg+' 👋 length: '+responseData.dailyProdPlanData.length,
-  //               visibilityTime: 1500,
-  //               })
-  //           //this.props.navigation.navigate('HomeScreen', responseData.userObj);
-  //       }else{
-  //           Toast.show({
-  //               type: 'error',
-  //               position: 'top',
-  //               text1: 'Error!',
-  //               text2: responseData.msg,
-  //               visibilityTime: 1500,
-  //               })
-  //       }
-  //       });
-
-  //   })
-  //   .catch(errorMessage => {   
-  //       this.setState({loading: false}, ()=>{
-  //           Toast.show({
-  //               type: 'error',
-  //               position: 'top',
-  //               text1: 'Error!',
-  //               text2: errorMessage
-  //               })
-  //       }); 
-  //   });
-  // })
-
-    /**
-     * 
-     * {
-        "deviceId": "C6I1L1",
-        "devicePwd": "C6I1L1",
-        "unitId": "U24",
-        "unitLineId": "UL208",
-        "shiftId": "SH1",
-        "dateTime": "2020-11-04"
-      }
-     * 
-     */
-    //console.log(reqObj);
   }
 
 
@@ -529,6 +489,11 @@ export default class SetupData extends React.Component {
               disabled={this.state.disableMultipleSizeButton}
              customClick={()=>  this.gotoMultipleSizeCountScreen()}
             /> */}
+            <Mybutton
+              title="Logout"
+              //disabled={this.state.showLogoutButton}
+             customClick={()=>  this.logoutAndGotoLoginPage()}
+            />
           </KeyboardAvoidingView>
         </ScrollView>
       </View>
