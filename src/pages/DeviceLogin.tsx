@@ -12,11 +12,47 @@ import ProgressDialog from '../utils/loader'
 import Orientation from 'react-native-orientation';
 import {QmsSecurityProductionDeviceInfo, DailyPlanSchema, CurrentLoggedInUserSchema, HourInfoSchema} from '../db/schemas/dbSchema'
 import Realm from 'realm';
-let realm;
+import { NavigationScreenProp } from 'react-navigation';
+let realm: Realm;
 
-export default class DeviceLogin extends React.Component {
+interface Props {
+  navigation: NavigationScreenProp<any,any>
+};
 
-    state = {
+interface State {
+  loading: boolean,
+  displayProductionDateSelection: boolean,
+  vDeviceId: string,
+  vCompanyId: string,
+  vCompanyName: string,
+  vShortCode: string,
+  vUnitId: string,
+  vUnitName: string,
+  vLineId: string,
+  vUnitLineId: string,
+  loginDisabled: true,
+  vShiftId: string,
+  Password: string,
+  AllDeviceInfo: any,
+  filteredDeviceInfo: any[],
+  shiftAvailavle: boolean,
+  comNames: any[],
+  unitNames: any[],
+  lineNames:any[],
+  shifts: any[],
+  reqObj: any[],
+  today: string,
+  isDatePickerVisible: boolean,
+  selectedCompany: any,
+  selectedUnit: any,
+  selectedLine: any,
+  selectedShift: any,
+  deviceId: any
+}
+
+export default class DeviceLogin extends React.Component<Props, State> {
+
+    state: State = {
         loading: false,
         displayProductionDateSelection: false,
         vDeviceId: '',
@@ -44,12 +80,14 @@ export default class DeviceLogin extends React.Component {
         selectedUnit: undefined,
         selectedLine: undefined,
         selectedShift: undefined,
-        deviceId: undefined,
+        deviceId: undefined
     };
+    passRef: React.RefObject<any>;
+    secondTextInputRef: any;
 
-    constructor(props) {
+    constructor(props: Props) {
     super(props);
-    this.passRef= React.createRef();
+    this.passRef = React.createRef();
     this.props.navigation.addListener(
       'didFocus',
       payload => {
@@ -64,9 +102,11 @@ export default class DeviceLogin extends React.Component {
 
     componentDidMount(){
       Orientation.lockToPortrait()
-      const comInfo = realm.objects(QmsSecurityProductionDeviceInfo.name);
+      let comInfo:any = realm.objects(QmsSecurityProductionDeviceInfo.name);
+
       this.setState({AllDeviceInfo: comInfo}, ()=>{
-        const comNames = this.setupPickerData(this.state.AllDeviceInfo, 'vCompanyName', 'vCompanyId');
+        const comNames = this.setupPickerData(this.state.AllDeviceInfo, 'vCompanyName', 'vCompanyId', '', '');
+
         this.setState({
           comNames,
          // loading: false
@@ -75,7 +115,7 @@ export default class DeviceLogin extends React.Component {
       
     }
 
-    setUnitData(comid){
+    setUnitData(comid: string){
       const unitNames = this.setupPickerData(this.state.filteredDeviceInfo, 'vUnitName', 'vUnitId', comid, 'vCompanyId');
       this.setState({unitNames}, 
         // ()=> console.log('units nos', unitNames.length)
@@ -87,29 +127,29 @@ export default class DeviceLogin extends React.Component {
       //   return { value: item["vUnitId"], label: item["vUnitName"] }}); 
     }
 
-    setLineData(unitId){
+    setLineData(unitId: string): void{
       const lineNames = this.setupPickerData(this.state.filteredDeviceInfo, 'vLineId', 'vUnitLineId', unitId, 'vUnitId');
         this.setState({lineNames}, 
           // ()=> console.log('lineName nos', lineNames.length)
           );
     }
 
-    setShiftData(){
-      const shifts = this.setupPickerData(this.state.filteredDeviceInfo, 'vShiftId', 'vShiftId');
+    setShiftData(): void{
+      const shifts = this.setupPickerData(this.state.filteredDeviceInfo, 'vShiftId', 'vShiftId', '', '');
         this.setState({shifts}, 
           //()=> console.log('shifts nos', shifts.length)
           );
     }
 
-  setupPickerData(dataArr, labelName, valueName, filterTxt, filterColumn){
+  setupPickerData(dataArr: any, labelName: string, valueName: string, filterTxt: string, filterColumn: string){
 
     var depid = [];
 
     if(filterTxt && filterColumn){
-      depid = dataArr.filter(x => x[filterColumn] === filterTxt).map((obj,idx) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
+      depid = dataArr.filter((x: any) => x[filterColumn] === filterTxt).map((obj: any) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
       //console.log(depid);
     }else{
-      depid = dataArr.map((obj,idx) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
+      depid = dataArr.map((obj: any) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
     }
       //Filter Company string then map for Unit -> Line etc
     var DepResult = [], mapx = new Map();
@@ -148,7 +188,7 @@ export default class DeviceLogin extends React.Component {
 
   userLoginAndGetData(){
     var {vCompanyId, vUnitId, vUnitLineId, Password, vShiftId, vDeviceId} = this.state;
-    var reqObj = {
+    var reqObj: any = {
       "deviceId": vDeviceId,
       "devicePwd": Password,
       "companyId": vCompanyId,
@@ -228,7 +268,7 @@ export default class DeviceLogin extends React.Component {
 
 
   
-  writeToLocalDb = (dataToWrite, timeHour, current_login) =>{
+  writeToLocalDb = (dataToWrite: any[], timeHour: any[], current_login: any) =>{
     console.log('write to DB')
     //Clear any existing data in local db
     this.clearLocalDb();
@@ -275,7 +315,7 @@ showDatePicker = () => {
   this.setState({isDatePickerVisible: false});
 };
 
- handleConfirm(date) {
+ handleConfirm(date: Date) {
   console.log("A date has been picked: ", moment(date).format('YYYY-MM-DD'));
   this.setState({today: moment(date).format('YYYY-MM-DD')})
   this.hideDatePicker();
@@ -339,16 +379,18 @@ showDatePicker = () => {
             style={{ flex: 1, justifyContent: 'space-between' }}>
             <ProgressDialog loading={this.state.loading} />
 
-            <View paddingVertical={5} />
+            <View style={{paddingVertical: 5}} />
 
             <Text style={{paddingLeft: 25, fontWeight: '700'}}>Company</Text>
-            <View paddingVertical={2} />
+
+            <View style={{paddingVertical: 2}} />
+            
             <RNPickerSelect
             placeholder={placeholder}
             items={this.state.comNames}
             onValueChange={value => {
               //console.log('pickerValue: ',value)
-              var filteredComData = this.state.AllDeviceInfo.filter(x => x.vCompanyId === value); 
+              var filteredComData = this.state.AllDeviceInfo.filter((x: any) => x.vCompanyId === value); 
               //console.log('170', filteredComData);
               var shiftAvailavle =  filteredComData.length == 0 ? false : filteredComData[0].vShiftId != null; 
               //vShiftId
@@ -378,12 +420,12 @@ showDatePicker = () => {
             // }}
             />
 
-            <View paddingVertical={5} />
+            <View style={{paddingVertical: 5}} />
             
             { this.state.selectedCompany ?
               <View>
               <Text style={{paddingLeft: 25, fontWeight: '700'}}>Unit</Text>
-              <View paddingVertical={2} />
+              <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
               items={this.state.unitNames}
@@ -409,13 +451,13 @@ showDatePicker = () => {
               // }}
               />
               
-            <View paddingVertical={5} />              
+            <View style={{paddingVertical: 5}} />              
             </View> : <></>}
 
             { this.state.selectedUnit ?
               <View>
               <Text style={{paddingLeft: 25, fontWeight: '700'}}>Line</Text>
-              <View paddingVertical={2} />
+              <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
               items={this.state.lineNames}
@@ -439,14 +481,14 @@ showDatePicker = () => {
               //     this.inputRefs.favSport1 = el;
               // }}
               />            
-              <View paddingVertical={5} />
+              <View style={{paddingVertical: 5}} />
             </View> : <></>}
   
 
             { (this.state.shiftAvailavle && this.state.selectedLine) ?
               <View>
               <Text style={{paddingLeft: 25, fontWeight: '700'}}>Shift</Text>
-              <View paddingVertical={2} />
+              <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
               items={this.state.shifts}
@@ -469,7 +511,7 @@ showDatePicker = () => {
               //     this.inputRefs.favSport1 = el;
               // }}
               />            
-              <View paddingVertical={5} />  
+              <View style={{paddingVertical: 5}} />  
             </View> : <></>}
 
             <Text style={{paddingLeft: 25, fontWeight: '700'}}>DeviceID</Text>
@@ -480,7 +522,7 @@ showDatePicker = () => {
             />
 
             <View style={{display:this.state.displayProductionDateSelection ? "flex" : 'none'}}>
-              <View paddingVertical={5} />
+              <View style={{paddingVertical: 5}} />
               <Text style={{paddingLeft: 25, fontWeight: '700'}}>Production Date</Text>
               <DateTimePickerModal
                 isVisible={this.state.isDatePickerVisible}
@@ -497,17 +539,17 @@ showDatePicker = () => {
               />
             </View>
 
-            <View paddingVertical={5} />
+            <View style={{paddingVertical: 5}} />
             <Text style={{paddingLeft: 25, fontWeight: '700'}}>Password</Text>
             <Mytextinput
               refInner={this.passRef}
               secureTextEntry
               placeholder="Password"
               value={this.state.Password}
-              onChangeText={Password => this.setState({ Password })}
+              onChangeText={(Password: string) => this.setState({ Password })}
             />
             
-            <View paddingVertical={5} />  
+            <View style={{paddingVertical: 5}} />  
             <Mybutton
               title="Get Plan Info"
               customClick={()=> this.userLoginAndGetData()}
