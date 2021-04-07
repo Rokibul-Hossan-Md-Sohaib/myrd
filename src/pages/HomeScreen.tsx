@@ -19,16 +19,26 @@ import {
 } from '../db/schemas/dbSchema'
 import Realm from 'realm';
 import Orientation from 'react-native-orientation';
-let realm;
+import { NavigationScreenProp } from 'react-navigation';
+let realm: Realm;
 
-export default class HomeScreen extends React.Component {
+interface Props {
+  navigation: NavigationScreenProp<any,any>
+};
 
-    state = {
+interface State  {
+  loading: boolean;
+  today: string
+};
+
+export default class HomeScreen extends React.Component<Props, State> {
+
+    state: State = {
       loading: false,
       today: moment().format('YYYY-MM-DD'),
     }
 
-  constructor(props) {
+  constructor(props: Props) {
     super(props);
     this.props.navigation.addListener(
       'didFocus',
@@ -53,7 +63,7 @@ export default class HomeScreen extends React.Component {
 
   componentDidMount(){
     Orientation.lockToPortrait()
-
+    
     /***
      * //#region TODO:
      * 
@@ -139,8 +149,8 @@ clearLocalDb = () => {
  
 }
 
-  checkLoggedInAndRouteToSetupData(){
-    let loginData = realm.objects(CurrentLoggedInUserSchema.name)
+  checkLoggedInAndRouteToSetupData(): void{
+    let loginData: any = realm.objects(CurrentLoggedInUserSchema.name)
     .filtered('dateTime = $0', this.state.today);
 
     let allDeviceInfo = realm.objects(DailyPlanSchema.name)
@@ -158,7 +168,7 @@ clearLocalDb = () => {
     }
   }
 
-  getInitialData(){
+  getInitialData(): void{
     this.clearLocalDb();
     //console.log('came here..')GetCompanyUnitLineData
     get('/GetCompanyUnitLineData')
@@ -181,11 +191,11 @@ clearLocalDb = () => {
 
               // try { Write Data if data dosen't exixts
                 realm.write(() => {
-                  deviceSecInfo.forEach(obj => {
+                  deviceSecInfo.forEach((obj: any) => {
                       realm.create(QmsSecurityProductionDeviceInfo.name, obj);
                   });
 
-                  defectRaw.forEach(obj => {
+                  defectRaw.forEach((obj: any) => {
                     realm.create(DefectSchema.name, obj);
                 });
                   //realm.create('Car', {make: 'Honda', model: 'Accord', drive: 'awd'});
