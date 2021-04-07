@@ -60,7 +60,7 @@ export default class HomeScreen extends React.Component {
      * # Parsist Login & Other data for today only (✔)
      * # Remove other data from any other day (✔)
      * # Day Close option for production and then sync immediately
-     * # If there is already login data for today fetch those data, otherwsie logout
+     * # If there is already login data for today fetch those data, otherwsie logout (✔)
      * # Data summery minimal json for sync,
      * # Sync flag for current data if synced successfully...
      * 
@@ -115,9 +115,15 @@ clearLocalDb = () => {
     console.log('clear Previous login data', loginData.length)
     realm.delete(loginData);
 
+    let allDailyPlanSchema = realm.objects(DailyPlanSchema.name)
+    .filtered('dDate != $0', fullDate);
+    console.log('clear Previous plan data', allDailyPlanSchema.length)
+    realm.delete(allDailyPlanSchema);
+
     let allDefects = realm.objects(DefectSchema.name);
+    console.log('clear Defects master data', allDefects.length)
     realm.delete(allDefects);
-  //console.log('all device', allDeviceInfo.length) !=dateTime
+  //console.log('all device', allDeviceInfo.length) !=dateTime  DailyPlanSchema
 
   // let allHourInfo = realm.objects(HourInfoSchema.name);
   // realm.delete(allHourInfo);
