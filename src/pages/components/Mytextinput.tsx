@@ -1,7 +1,7 @@
 /*Custom TextInput*/
 import React from 'react';
 import { View, TextInput } from 'react-native';
-const Mytextinput = props => {
+const Mytextinput = (props: any) => {
   return (
     <View
       style={{
@@ -30,7 +30,6 @@ const Mytextinput = props => {
         multiline={props.multiline}
         onSubmitEditing={props.onSubmitEditing}
         style={props.style}
-        blurOnSubmit={false}
         editable={props.editable}
         value={props.value}
       />

@@ -1,15 +1,24 @@
 import React, { Component } from 'react'
 import { Text, View, StyleSheet } from 'react-native'
+import { NavigationScreenProp } from 'react-navigation';
 
-export class MultipleSizeCount extends Component {
+type Props = {
+    navigation: NavigationScreenProp<any,any>
+  };
 
-    state={
+type State ={
+    allSizes: any[]
+}
+
+export class MultipleSizeCount  extends React.Component<Props, State>  {
+
+    state: State={
         allSizes:[]
     }
 
 
     componentDidMount(){
-        const reqObj = this.props.navigation.getParam('userData');
+        const reqObj: any = this.props.navigation.getParam('userData');
         this.setState({allSizes: reqObj}, ()=>{
                 console.log('req sizes', this.state.allSizes.length);
         });

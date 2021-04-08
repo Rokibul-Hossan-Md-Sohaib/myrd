@@ -12,11 +12,50 @@ import ProgressDialog from '../utils/loader'
 import Orientation from 'react-native-orientation';
 import {DailyPlanSchema, CurrentLoggedInUserSchema} from '../db/schemas/dbSchema'
 import Realm from 'realm';
-let realm;
+import { NavigationScreenProp } from 'react-navigation';
+let realm: Realm;
 
-export default class SetupData extends React.Component {
+type Props = {
+  navigation: NavigationScreenProp<any,any>
+};
 
-    state = {
+type State = {
+  loading: boolean,
+  disableMultipleSizeButton: boolean,
+  colorFilteredSizes: any[],
+  vDeviceId: string,
+  finalProductionObject: any,
+  vBuyerId: string,
+  vBuyerName: string,
+  vStyleId: string,
+  vStyleName: string,
+  vExpPoorderNo: string,
+  vColorId: string,
+  vColorName: string,
+  vSizeId: string,
+  vSizeName: string,
+  dShipmentDate: string,
+  dToday: string,
+  reqObj: any, //data came from previous screen...
+  AllPlanInfo: any[],
+  filteredPlanInfo: any[],
+  buyerNames: any[],
+  styleNames: any[],
+  expPos: any[],
+  colorNames: any[],
+  sizeNames: any[],
+  selectedBuyer: any,
+  selectedStyle: any,
+  selectedExpPo: any,
+  selectedColor: any,
+  selectedSize: any,
+  deviceId: any,
+};
+
+
+export default class SetupData extends React.Component<Props, State> {
+
+    state: State = {
         loading: false,
         disableMultipleSizeButton: true,
         colorFilteredSizes:[],
@@ -51,7 +90,7 @@ export default class SetupData extends React.Component {
         deviceId: undefined,
     };
 
-    constructor(props) {
+    constructor(props: Props) {
     super(props);
     this.props.navigation.addListener(
       'didFocus',
@@ -61,12 +100,12 @@ export default class SetupData extends React.Component {
     realm = new Realm({ path: 'QmsDb.realm' });
   }
 
-  logoutAndGotoLoginPage(){
-    let fullDate = moment().format().split("T")[0]+'T00:00:00.000Z'
+  logoutAndGotoLoginPage(): void{
+    let fullDate: string = moment().format().split("T")[0]+'T00:00:00.000Z'
     /**Assuming that previous data already exists... */
     realm.write(() => {
   
-      let allDeviceInfo = realm.objects(DailyPlanSchema.name).filtered('dDate = $0', fullDate);
+      let allDeviceInfo: any = realm.objects(DailyPlanSchema.name).filtered('dDate = $0', fullDate);
       //console.log(allDeviceInfo.length)
       realm.delete(allDeviceInfo);
   
@@ -76,31 +115,31 @@ export default class SetupData extends React.Component {
       realm.delete(loginData);
   });
 
-  let loggedinData = realm.objects(CurrentLoggedInUserSchema.name)
-  .filtered('dateTime = $0', fullDate);
+    let loggedinData = realm.objects(CurrentLoggedInUserSchema.name)
+    .filtered('dateTime = $0', fullDate);
 
-  let prevPlanData = realm.objects(DailyPlanSchema.name)
-  .filtered('dDate = $0', fullDate);
+    let prevPlanData = realm.objects(DailyPlanSchema.name)
+    .filtered('dDate = $0', fullDate);
 
-  if(loggedinData.length == 0 && prevPlanData.length == 0){
-    console.log('logged out')
-     
-      this.props.navigation.navigate('DeviceLogin')
-  }else{
-    console.log("logout failed!")
-  }
+    if(loggedinData.length == 0 && prevPlanData.length == 0){
+      console.log('logged out')
+      
+        this.props.navigation.navigate('DeviceLogin')
+    }else{
+      console.log("logout failed!")
+    }
     
   }
 
     componentDidMount(){
       Orientation.lockToPortrait()
-      const comInfo = realm.objects(DailyPlanSchema.name);
+      const comInfo: any = realm.objects(DailyPlanSchema.name);
       const reqObj = this.props.navigation.getParam('userData');
         console.log('reqObj', reqObj)
        // console.log('isTab', DeviceInfo.isTablet())
 
       this.setState({AllPlanInfo: comInfo, reqObj, filteredPlanInfo: comInfo}, ()=>{
-        const buyerNames = this.setupPickerData(this.state.AllPlanInfo, 'vBuyerName', 'vBuyerId');
+        const buyerNames: any = this.setupPickerData(this.state.AllPlanInfo, 'vBuyerName', 'vBuyerId', '', '');
         this.setState({
           buyerNames,
          // loading: false
@@ -109,15 +148,15 @@ export default class SetupData extends React.Component {
       
     }
 
-  setupPickerData(dataArr, labelName, valueName, filterTxt, filterColumn){
+  setupPickerData(dataArr: any, labelName: string, valueName: string, filterTxt: string, filterColumn: string){
 
     var depid = [];
 
     if(filterTxt && filterColumn){
-      depid = dataArr.filter(x => x[filterColumn] === filterTxt).map((obj,idx) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
+      depid = dataArr.filter((x: any) => x[filterColumn] === filterTxt).map((obj: any) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
       //console.log(depid);
     }else{
-      depid = dataArr.map((obj,idx) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
+      depid = dataArr.map((obj: any) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
     }
       //Filter Company string then map for Unit -> Line etc
     var DepResult = [], mapx = new Map();
@@ -137,7 +176,7 @@ export default class SetupData extends React.Component {
     if(this.state.colorFilteredSizes.length > 0){
       this.props.navigation.navigate('MultipleSizeCount', {userData: this.state.colorFilteredSizes});
     }else{
-      alert("total sizes",this.state.colorFilteredSizes.length);
+      Alert.alert("total sizes",this.state.colorFilteredSizes.length.toString());
     }
     
      
@@ -162,7 +201,7 @@ export default class SetupData extends React.Component {
 
 
   
-  writeToLocalDb = (dataToWrite) =>{
+  writeToLocalDb = (dataToWrite: any[]) =>{
     console.log('write to DB')
     //Clear any existing data in local db
     this.clearLocalDb();
@@ -244,10 +283,10 @@ export default class SetupData extends React.Component {
             style={{ flex: 1, justifyContent: 'space-between' }}>
             <ProgressDialog loading={this.state.loading} />
 
-            <View paddingVertical={5} />
+            <View style={{paddingVertical: 5}} />
 
             <Text style={{paddingLeft: 25, fontWeight: '700'}}>Buyer</Text>
-            <View paddingVertical={2} />
+            <View style={{paddingVertical: 2}} />
             <RNPickerSelect
             placeholder={placeholder}
             items={this.state.buyerNames}
@@ -286,12 +325,12 @@ export default class SetupData extends React.Component {
             useNativeAndroidPickerStyle={false}
             />
 
-            <View paddingVertical={5} />
+            <View style={{paddingVertical: 5}} />
             
             { this.state.selectedBuyer ?
               <View>
               <Text style={{paddingLeft: 25, fontWeight: '700'}}>Style</Text>
-              <View paddingVertical={2} />
+              <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
               items={this.state.styleNames}
@@ -326,13 +365,13 @@ export default class SetupData extends React.Component {
               useNativeAndroidPickerStyle={false}
               />
               
-            <View paddingVertical={5} />              
+            <View style={{paddingVertical: 5}} />              
             </View> : <></>}
 
             { this.state.selectedStyle ?
               <View>
               <Text style={{paddingLeft: 25, fontWeight: '700'}}>Export PO</Text>
-              <View paddingVertical={2} />
+              <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
               items={this.state.expPos}
@@ -369,14 +408,14 @@ export default class SetupData extends React.Component {
               value={this.state.selectedExpPo}
               useNativeAndroidPickerStyle={false}
               />            
-              <View paddingVertical={5} />
+              <View style={{paddingVertical: 5}} />
             </View> : <></>}
   
 
             { this.state.selectedExpPo ?
               <View>
               <Text style={{paddingLeft: 25, fontWeight: '700'}}>Color</Text>
-              <View paddingVertical={2} />
+              <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
               items={this.state.colorNames}
@@ -411,13 +450,13 @@ export default class SetupData extends React.Component {
               value={this.state.selectedColor}
               useNativeAndroidPickerStyle={false}
               />            
-              <View paddingVertical={5} />  
+              <View style={{paddingVertical: 5}} />  
             </View> : <></>}
 
             { this.state.selectedColor ?
               <View>
               <Text style={{paddingLeft: 25, fontWeight: '700'}}>Size</Text>
-              <View paddingVertical={2} />
+              <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
               items={this.state.sizeNames}
@@ -460,7 +499,7 @@ export default class SetupData extends React.Component {
               //     this.inputRefs.favSport1 = el;
               // }}
               />            
-              <View paddingVertical={5} />  
+              <View style={{paddingVertical: 5}} />  
             </View> : <></>}
 
             <Text style={{paddingLeft: 25, fontWeight: '700'}}>Shipment Date</Text>
@@ -471,19 +510,19 @@ export default class SetupData extends React.Component {
               //onChangeText={user_name => this.setState({ user_name })}
             />
 
-            <View paddingVertical={5} />
+            <View style={{paddingVertical: 5}} />
             <Text style={{paddingLeft: 25, fontWeight: '700'}}>Today</Text>
             <Mytextinput
               value={this.state.dToday}
             />
             
-            <View paddingVertical={5} />  
+            <View style={{paddingVertical: 5}} />  
             <Mybutton
               title="Set Up"
               customClick={()=> this.setupDataForProduction()}
             />
 
-            <View paddingVertical={5} />  
+            <View style={{paddingVertical: 5}} />  
             {/* <Mybutton
               title="With Multiple Sizes"
               disabled={this.state.disableMultipleSizeButton}

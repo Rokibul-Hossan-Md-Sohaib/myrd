@@ -22,11 +22,11 @@ import Orientation from 'react-native-orientation';
 import { NavigationScreenProp } from 'react-navigation';
 let realm: Realm;
 
-interface Props {
+type Props = {
   navigation: NavigationScreenProp<any,any>
 };
 
-interface State  {
+type State = {
   loading: boolean;
   today: string
 };
@@ -172,7 +172,7 @@ clearLocalDb = () => {
     this.clearLocalDb();
     //console.log('came here..')GetCompanyUnitLineData
     get('/GetCompanyUnitLineData')
-    .then(response => {
+    .then((response: any) => {
 
         this.setState({loading: false}, ()=>{
             var responseData = response.data;

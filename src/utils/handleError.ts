@@ -1,4 +1,4 @@
-export default (error) => {
+export default (error: any) => {
     const { status, message } = error;
     switch (status) {
       case 401:

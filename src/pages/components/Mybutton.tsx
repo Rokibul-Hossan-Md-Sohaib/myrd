@@ -1,7 +1,7 @@
 /*Custom Button*/
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-const Mybutton = props => {
+const Mybutton = (props: any) => {
   return (
     <TouchableOpacity style={styles.button} disabled={props.disabled} onPress={props.customClick}>
       <Text style={styles.text}>{props.title}</Text>

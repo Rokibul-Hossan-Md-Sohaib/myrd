@@ -15,11 +15,11 @@ import Realm from 'realm';
 import { NavigationScreenProp } from 'react-navigation';
 let realm: Realm;
 
-interface Props {
+type Props = {
   navigation: NavigationScreenProp<any,any>
 };
 
-interface State {
+type State = {
   loading: boolean,
   displayProductionDateSelection: boolean,
   vDeviceId: string,
@@ -200,7 +200,7 @@ export default class DeviceLogin extends React.Component<Props, State> {
 
   this.setState({loading: true, reqObj}, ()=>{
     post('/GetProductionPlanUnitLineData', reqObj)
-    .then(response => {
+    .then((response: any) => {
         this.setState({loading: false}, ()=>{
             var responseData = response.data.compUnitPlanData;
             //console.log(responseData); timeHourData
