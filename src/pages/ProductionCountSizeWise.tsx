@@ -3,14 +3,23 @@ import { View, Text, StatusBar, Pressable, Dimensions, StyleSheet, Modal, Toucha
 import moment from 'moment'
 import Toast from 'react-native-toast-message';
 import {
-  HourInfoSchema, 
   CurrentLoggedInUserSchema, 
-  DeviceWiseProductionSchema, 
-  DeviceWiseDefectSchema, 
-  DefectSchema, 
-  DeviceWiseRejectSchema,
-  DeviceWiseReworkedSchema
+  DeviceWiseProductionSchema,
+  DefectSchema
 } from '../db/schemas/dbSchema'
+import {
+  writeProductionToLocalDB, 
+  writeReworkedToLocalDB, 
+  writeRejectToLocalDB, 
+  writeDefectToLocalDB
+} from '../db/dbServices/__LDB_Count_Services'
+import {    
+  getCurrentHourId,
+  getTodaysTotalFttCount,
+  getTodaysTotalDefectCount,
+  getUniqueAttributes,
+  getTodaysTotalRejectCount,
+  getTodaysTotalReworkCount} from '../db/dbServices/__LDB_Count_Utilities'
 import * as constKVP from '../utils/constKVP'
 import {moderateScale} from 'react-native-size-matters'
 import Orientation from 'react-native-orientation';
@@ -116,7 +125,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
     countFtt(){
       //vHourId: this.getCurrentHourId(),
       //get Previous hour check if new hour equels to state hour
-      var thisHourID: any = this.getCurrentHourId();
+      var thisHourID: any = getCurrentHourId();
       console.log('Now',thisHourID.vHourId)
 
       if(thisHourID === undefined){
@@ -152,7 +161,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
               currentHour: thisHourID["vHourId"]
             }),()=>{
               //console.log('Production count write to db....', this.state.currentCountObj)
-              this.writeProductionToLocalDB(this.state.currentCountObj);
+                writeProductionToLocalDB(this.state.currentCountObj);
             });
 
         }else{
@@ -178,7 +187,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
               text2: "New Hour Detected! "+thisHourID["vHourId"],
               visibilityTime: 1500,
               });
-            this.writeProductionToLocalDB(this.state.currentCountObj);
+                writeProductionToLocalDB(this.state.currentCountObj);
           });
         }
       }
@@ -240,13 +249,12 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         };
 
         console.log(currentDefectCountObj);
-        this.writeDefectToLocalDB(currentDefectCountObj);
+        writeDefectToLocalDB(currentDefectCountObj);
         /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
         /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
         this.setModalVisible(constKVP.__MODAL_FOR_DEFECT);
       });
     }
-
     
     countreject(){
       
@@ -287,7 +295,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         };
 
         console.log(currentRejectCountObj);
-        this.writeRejectToLocalDB(currentRejectCountObj);
+        writeRejectToLocalDB(currentRejectCountObj);
         /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
         /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
         this.setModalVisible(constKVP.__MODAL_FOR_REJECT);
@@ -295,100 +303,43 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
 
     }
 
-    writeRejectToLocalDB = (dataToWrite: any) =>{
-           /***TODO: Check Esisting Data, if exists Update, otherwise add new entry */
-           /**Show total defect count on screen Tile */
-           /** defect count should be at size level... */
-           realm.write(() => { //write single data
-            //realm.create(DeviceWiseProductionSchema.name, updatedData);
-            let existingData: any = realm.objects(DeviceWiseRejectSchema.name)
-            .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId = $2 && vDeviceId=$3 && vDefectCode=$4 && vStyleId=$5 && vSizeId=$6 && vExpPoorderNo=$7 && vColorId=$8 && vBuyerId=$9', 
-                          dataToWrite.dDateOfProduction, 
-                          dataToWrite.vProductionPlanId, 
-                          dataToWrite.vUnitLineId, 
-                          dataToWrite.vDeviceId,
-                          dataToWrite.vDefectCode,
-                          dataToWrite.vStyleId,
-                          dataToWrite.vSizeId,
-                          dataToWrite.vExpPoorderNo,
-                          dataToWrite.vColorId,
-                          dataToWrite.vBuyerId
-                          )[0];
-                    
-    
-              if(existingData === undefined){
-                //as no previous data exists, we will create new data row...
-                realm.create(DeviceWiseRejectSchema.name, dataToWrite);
-              }else{
-                existingData.iRejectCount +=  1;
-                existingData.dLastUpdated   =  dateObj;
-              }                            
-                
-          });
-           //console.log(dataToWrite);
-    }
+    countreworked(){
 
-    writeDefectToLocalDB = (dataToWrite: any) =>{
-           /***TODO: Check Esisting Data, if exists Update, otherwise add new entry */
-           /**Show total defect count on screen Tile */
-           /** defect count should be at size level... */
-           realm.write(() => { //write single data
-            //realm.create(DeviceWiseProductionSchema.name, updatedData);
-            let existingData: any = realm.objects(DeviceWiseDefectSchema.name)
-                                .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId = $2 && vDeviceId=$3 && vDefectCode=$4 && vStyleId=$5 && vSizeId=$6 && vExpPoorderNo=$7 && vColorId=$8 && vBuyerId=$9', 
-                                dataToWrite.dDateOfProduction, 
-                                dataToWrite.vProductionPlanId, 
-                                dataToWrite.vUnitLineId, 
-                                dataToWrite.vDeviceId,
-                                dataToWrite.vDefectCode,
-                                dataToWrite.vStyleId,
-                                dataToWrite.vSizeId,
-                                dataToWrite.vExpPoorderNo,
-                                dataToWrite.vColorId,
-                                dataToWrite.vBuyerId
-                                )[0];
-    
-              if(existingData === undefined){
-                //as no previous data exists, we will create new data row...
-                realm.create(DeviceWiseDefectSchema.name, dataToWrite);
-              }else{
-                existingData.iDefectCount +=  1;
-                existingData.dLastUpdated   =  dateObj;
-              }                            
-                
-          });
-           //console.log(dataToWrite);
-    }
+      this.setState((prevState, props) => ({
+        reworkedCount: prevState.reworkedCount + 1,
+        totalDayReworkedCount: prevState.totalDayReworkedCount+1
+      }), ()=>{
+          //console.log('count defect')
+         var currentReworkedCountObj =
+          {
+            iAutoId: 0,
+            vDeviceId: this.state.current_login.deviceId,
+            dDateOfProduction: this.state.current_login.dateTime,                      
+            vProductionPlanId: this.state.currentProdObj.vProductionPlanId,
+            vUnitLineId: this.state.current_login.unitLineId,
 
-    getCurrentHourId(): any{
-      let currentHour: any = null;
-      let timeNow: string = '1900-01-01T'+new Date().getHours()+':00:00';
-      //console.log('timeNow',timeNow)
-      let hourObj: any = realm.objects(HourInfoSchema.name)
-      .filtered('dStartTimeOfProduction = $0', timeNow)[0];
+            vBuyerId: this.state.currentProdObj.vBuyerId,
+            vBuyerName: this.state.currentProdObj.vBuyerName,
 
-      if(hourObj != undefined){        
-        //Current Hour info available
-        currentHour = hourObj;//["vHourId"];
-      }else{
-        //Current Hour info not available
-        // So set current to 1 hour back
-        timeNow = '1900-01-01T'+(dateObj.getHours()-1)+':00:00';
-        hourObj = realm.objects(HourInfoSchema.name)
-          .filtered('dStartTimeOfProduction = $0', timeNow)[0];
-          if(hourObj != undefined){        
-            currentHour = hourObj;
-          }else{
-            //Current Hour not found in 1 hour back
-            // So set current to 2 hours back
-            timeNow = '1900-01-01T'+(dateObj.getHours()-2)+':00:00';
-            hourObj = realm.objects(HourInfoSchema.name)
-              .filtered('dStartTimeOfProduction = $0', timeNow)[0];
-              currentHour = hourObj;
-          }
-      }
+            vStyleId:  this.state.currentProdObj.vStyleId,
+            vStyleName: this.state.currentProdObj.vStyleName,
+      
+            vExpPoorderNo:  this.state.currentProdObj.vExpPoorderNo,
+      
+            vColorId:  this.state.currentProdObj.vColorId,
+            vColorName: this.state.currentProdObj.vColorName,
+      
+            vSizeId:  this.state.currentProdObj.vSizeId,
+            vSizeName: this.state.currentProdObj.vSizeName,
 
-      return currentHour;
+            iReworkedCount: this.state.reworkedCount,
+            dLastUpdated: dateObj
+        };
+
+        console.log(currentReworkedCountObj);
+        writeReworkedToLocalDB(currentReworkedCountObj);
+
+      });
     }
 
     filterDefectesCategoryWise(categoryId: string){
@@ -396,96 +347,9 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       this.setState({selectedDefectCategory: categoryId, filteredDefects, shwoNextButton:false},()=> console.log("Defectes Count",filteredDefects.length))
     }
 
-    getTodaysTotalFttCount(reqObj: any){
-      let existingData: any = realm.objects(DeviceWiseProductionSchema.name)
-      .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId =$2 && vStyleId=$3 && vSizeId=$4 && vExpPoorderNo=$5 && vColorId=$6 && vBuyerId=$7', 
-                reqObj.dDate, 
-                reqObj.vProductionPlanId, 
-                reqObj.vUnitLineId, 
-                reqObj.vStyleId, 
-                reqObj.vSizeId,
-                reqObj.vExpPoorderNo,
-                reqObj.vColorId,
-                reqObj.vBuyerId);
-      if(existingData.length > 0){
-          return existingData.reduce((accumulator: number, item: any)=> accumulator + item.iProductionQty, 0);
-      }else{
-          return 0;
-      }
-    }
-
-    getTodaysTotalDefectCount(reqObj: any){
-      let existingDefectData = realm.objects(DeviceWiseDefectSchema.name)
-          .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId =$2 && vStyleId=$3 && vSizeId=$4 && vExpPoorderNo=$5 && vColorId=$6 && vBuyerId=$7', 
-                  reqObj.dDate, 
-                  reqObj.vProductionPlanId, 
-                  reqObj.vUnitLineId, 
-                  reqObj.vStyleId, 
-                  reqObj.vSizeId,
-                  reqObj.vExpPoorderNo,
-                  reqObj.vColorId,
-                  reqObj.vBuyerId);
-      if(existingDefectData.length > 0){
-          return existingDefectData.reduce((accumulator: number, item: any)=> accumulator + item.iDefectCount, 0);
-      }else{
-          return 0;
-      }
-    }
-
     componentWillUnmount(){
+      realm.close();
       console.log('unmounted production count');
-    }
-
-    getUniqueAttributes(jsnArr: any[], attrbId: string, attribVal: string, ext: string){
-      //var depid = jsnArr.map((obj,idx) => ({[attrbId]: obj[attrbId], [attribVal]: obj[attribVal]}))
-      var uniqueResult = [], mapx = new Map();
-            for (const item of jsnArr) {
-                if(!mapx.has(item[attrbId])){
-                    mapx.set(item[attrbId], true);    // set any value to Map
-                    uniqueResult.push({
-                        [attrbId]: item[attrbId],
-                        [attribVal]: item[attribVal],
-                        [ext]: item[ext]
-                    });
-                }
-            }
-        return uniqueResult;
-    }
-
-    getTodaysTotalRejectCount(reqObj: any){
-      let existingDefectData = realm.objects(DeviceWiseRejectSchema.name)
-      .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId =$2 && vStyleId=$3 && vSizeId=$4 && vExpPoorderNo=$5 && vColorId=$6 && vBuyerId=$7', 
-                reqObj.dDate, 
-                reqObj.vProductionPlanId, 
-                reqObj.vUnitLineId, 
-                reqObj.vStyleId, 
-                reqObj.vSizeId,
-                reqObj.vExpPoorderNo,
-                reqObj.vColorId,
-                reqObj.vBuyerId);
-      if(existingDefectData.length > 0){
-          return existingDefectData.reduce((accumulator: number, item: any)=> accumulator + item.iRejectCount, 0);
-      }else{
-          return 0;
-      }
-    }
-  
-    getTodaysTotalReworkCount(reqObj: any){
-      let existingDefectData = realm.objects(DeviceWiseReworkedSchema.name)
-      .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId =$2 && vStyleId=$3 && vSizeId=$4 && vExpPoorderNo=$5 && vColorId=$6 && vBuyerId=$7', 
-                reqObj.dDate, 
-                reqObj.vProductionPlanId, 
-                reqObj.vUnitLineId, 
-                reqObj.vStyleId, 
-                reqObj.vSizeId,
-                reqObj.vExpPoorderNo,
-                reqObj.vColorId,
-                reqObj.vBuyerId);
-      if(existingDefectData.length > 0){
-          return existingDefectData.reduce((accumulator: number, item: any)=> accumulator + item.iReworkedCount, 0);
-      }else{
-          return 0;
-      }
     }
 
     componentDidMount(){
@@ -494,8 +358,8 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       const reqObj: any = this.props.navigation.getParam('userData');
       var current_login: any = realm.objects(CurrentLoggedInUserSchema.name)[0];
       let allDefects: any = realm.objects(DefectSchema.name);
-      var defectCategories = this.getUniqueAttributes(allDefects, "vDefectCategoryId", "vDefectCategoryName", "vHeadShortName");
-      var currentHour = this.getCurrentHourId();
+      var defectCategories = getUniqueAttributes(allDefects, "vDefectCategoryId", "vDefectCategoryName", "vHeadShortName");
+      var currentHour = getCurrentHourId();
 
       if(currentHour === undefined){
             Toast.show({
@@ -513,10 +377,10 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                       currentHour["vHourId"], 
                       current_login.unitLineId, 
                       current_login.deviceId)[0];
-          let totalDayFttCount = this.getTodaysTotalFttCount(reqObj);
-          let totalDayDefectCount = this.getTodaysTotalDefectCount(reqObj);
-          let totalDayRejectCount = this.getTodaysTotalRejectCount(reqObj);
-          let totalDayReworkedCount = this.getTodaysTotalReworkCount(reqObj);
+          let totalDayFttCount = getTodaysTotalFttCount(reqObj);
+          let totalDayDefectCount = getTodaysTotalDefectCount(reqObj);
+          let totalDayRejectCount = getTodaysTotalRejectCount(reqObj);
+          let totalDayReworkedCount = getTodaysTotalReworkCount(reqObj);
           
               if(existingData === undefined){
                 console.log('Not Found Any Data Count');
@@ -581,7 +445,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             //TODO: totalDayFttCount will be total of all hours ftt summation.
           },()=>{
             console.log('write initial production cout object to local db')
-            this.writeProductionToLocalDB(this.state.currentCountObj);
+            writeProductionToLocalDB(this.state.currentCountObj);
           });
           //TODO: dDateOfProduction= dateObj;  should be the today's date, the day production count took place so that if device shutsdown we can retrive earlier production count data of today
         }
@@ -591,40 +455,6 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
        */
 
     }
-
-    
-  writeProductionToLocalDB = (dataToWrite: any) =>{
-    console.log('write to DB')
-
-    //Clear any existing data in local db
-    //this.clearLocalDb();
-
-      realm.write(() => { //write single data
-        //realm.create(DeviceWiseProductionSchema.name, updatedData);
-        let existingData: any = realm.objects(DeviceWiseProductionSchema.name)
-                            .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vHourId = $2 && vUnitLineId = $3 && vDeviceId=$4 && vStyleId=$5 && vSizeId=$6 && vExpPoorderNo=$7 && vColorId=$8 && vBuyerId=$9', 
-                            dataToWrite.dDateOfProduction, 
-                            dataToWrite.vProductionPlanId, 
-                            dataToWrite.vHourId, 
-                            dataToWrite.vUnitLineId, 
-                            dataToWrite.vDeviceId,
-                            dataToWrite.vStyleId,
-                            dataToWrite.vSizeId,
-                            dataToWrite.vExpPoorderNo,
-                            dataToWrite.vColorId,
-                            dataToWrite.vBuyerId)[0];
-
-
-          if(existingData === undefined){
-            //as no previous data exists, we will create new data row...
-            realm.create(DeviceWiseProductionSchema.name, dataToWrite);
-          }else{
-            existingData.iProductionQty =  dataToWrite.iProductionQty;
-            existingData.dLastUpdated =  dateObj;
-          }                            
-            
-      });
-  }
 
 
     selectDefectHead(defectHeadCode: string){
@@ -640,77 +470,6 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         console.log("in state",this.state.selectedDefectObj.vHeadName)
       });
     }
-
-    countreworked(){
-
-      this.setState((prevState, props) => ({
-        reworkedCount: prevState.reworkedCount + 1,
-        totalDayReworkedCount: prevState.totalDayReworkedCount+1
-      }), ()=>{
-          //console.log('count defect')
-         var currentReworkedCountObj =
-          {
-            iAutoId: 0,
-            vDeviceId: this.state.current_login.deviceId,
-            dDateOfProduction: this.state.current_login.dateTime,                      
-            vProductionPlanId: this.state.currentProdObj.vProductionPlanId,
-            vUnitLineId: this.state.current_login.unitLineId,
-
-            vBuyerId: this.state.currentProdObj.vBuyerId,
-            vBuyerName: this.state.currentProdObj.vBuyerName,
-
-            vStyleId:  this.state.currentProdObj.vStyleId,
-            vStyleName: this.state.currentProdObj.vStyleName,
-      
-            vExpPoorderNo:  this.state.currentProdObj.vExpPoorderNo,
-      
-            vColorId:  this.state.currentProdObj.vColorId,
-            vColorName: this.state.currentProdObj.vColorName,
-      
-            vSizeId:  this.state.currentProdObj.vSizeId,
-            vSizeName: this.state.currentProdObj.vSizeName,
-
-            iReworkedCount: this.state.reworkedCount,
-            dLastUpdated: dateObj
-        };
-
-        console.log(currentReworkedCountObj);
-        this.writeReworkedToLocalDB(currentReworkedCountObj);
-
-      });
-    }
-
-  writeReworkedToLocalDB = (dataToWrite: any) =>{
-      /***TODO: Check Esisting Data, if exists Update, otherwise add new entry */
-      /**Show total defect count on screen Tile */
-      /** defect count should be at size level... */
-      realm.write(() => { //write single data
-       //realm.create(DeviceWiseProductionSchema.name, updatedData);
-       let existingData: any = realm.objects(DeviceWiseReworkedSchema.name)
-                           .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId = $2 && vDeviceId=$3 && vStyleId=$4 && vSizeId=$5 && vExpPoorderNo=$6 && vColorId=$7 && vBuyerId=$8', 
-                           dataToWrite.dDateOfProduction, 
-                           dataToWrite.vProductionPlanId, 
-                           dataToWrite.vUnitLineId, 
-                           dataToWrite.vDeviceId,
-                           dataToWrite.vStyleId,
-                           dataToWrite.vSizeId,
-                           dataToWrite.vExpPoorderNo,
-                           dataToWrite.vColorId,
-                           dataToWrite.vBuyerId
-                           )[0];
-
-         if(existingData === undefined){
-           //as no previous data exists, we will create new data row...
-           realm.create(DeviceWiseReworkedSchema.name, dataToWrite);
-         }else{
-           existingData.iReworkedCount =  dataToWrite.iReworkedCount;
-           existingData.dLastUpdated   =  dateObj;
-         }                            
-           
-     });
-      //console.log(dataToWrite);
-}
-
 
     _onLayout(e: any) {
       console.log("Screen Orientation Changed...")

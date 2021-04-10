@@ -6,21 +6,14 @@ import moment from 'moment'
 import Toast from 'react-native-toast-message';
 import ProgressDialog from '../utils/loader'
 import {get} from '../utils/apiUtils'
-import {
-  HourInfoSchema, 
-  DailyPlanSchema, 
-  DeviceWiseProductionSchema, 
-  DefectSchema, 
-  DeviceWiseDefectSchema, 
-  DeviceWiseRejectSchema,
-  DeviceWiseReworkedSchema,
-  CurrentLoggedInUserSchema, 
-  QmsSecurityProductionDeviceInfo
-} from '../db/schemas/dbSchema'
-import Realm from 'realm';
 import Orientation from 'react-native-orientation';
 import { NavigationScreenProp } from 'react-navigation';
-let realm: Realm;
+import {
+  clearStaleLocalDb, 
+  getCurrentLoggedInUserForToday, 
+  planDataExistsForToday,
+  setDeviceAndDefectMasterDataLocalDB
+} from '../db/dbServices/__Home_LDB_Func'
 
 type Props = {
   navigation: NavigationScreenProp<any,any>
@@ -43,22 +36,8 @@ export default class HomeScreen extends React.Component<Props, State> {
     this.props.navigation.addListener(
       'didFocus',
       payload => {
-        Orientation.lockToPortrait()
-      });  
-    realm = new Realm({
-      path: 'QmsDb.realm',
-      schema: [
-        CurrentLoggedInUserSchema,
-        HourInfoSchema,
-        DailyPlanSchema,
-        DeviceWiseProductionSchema,
-        QmsSecurityProductionDeviceInfo,
-        DefectSchema,
-        DeviceWiseDefectSchema,
-        DeviceWiseRejectSchema,
-        DeviceWiseReworkedSchema
-      ],
-    });
+        Orientation.lockToPortrait();
+      });
   }
 
   componentDidMount(){
@@ -89,74 +68,13 @@ export default class HomeScreen extends React.Component<Props, State> {
   }
 //adb pull /data/data/com.rnrelmdbsync/files/QmsDb.realm QmsDb.realm
 
-clearLocalDb = () => {
-  //todays date  2021-04-03T00:00:00.000Z
-  //let dateObj = new Date();
-  let fullDate = moment().format().split("T")[0]+'T00:00:00.000Z'
-
-   realm.write(() => {
-  
-    let allDeviceInfo = realm.objects(QmsSecurityProductionDeviceInfo.name);
-    console.log('clear Device info', allDeviceInfo.length)
-    realm.delete(allDeviceInfo);
-
-    let existingData = realm.objects(DeviceWiseProductionSchema.name)
-    .filtered('dDateOfProduction  != $0', fullDate);
-    console.log('clear Previous Prod Data', existingData.length)
-    realm.delete(existingData);
-
-    let existingDefectData = realm.objects(DeviceWiseDefectSchema.name)
-    .filtered('dDateOfProduction  != $0', fullDate);
-    console.log('clear Previous Defect Data', existingDefectData.length)
-    realm.delete(existingDefectData);
-
-    let existingRejectData = realm.objects(DeviceWiseRejectSchema.name)
-    .filtered('dDateOfProduction  != $0', fullDate);
-    console.log('clear Previous Reject Data', existingRejectData.length)
-    realm.delete(existingRejectData);
-
-    let existingReworkedData = realm.objects(DeviceWiseReworkedSchema.name)
-    .filtered('dDateOfProduction  != $0', fullDate);
-    console.log('clear Previous Reworked Data', existingReworkedData.length)
-    realm.delete(existingReworkedData);
-
-    let loginData = realm.objects(CurrentLoggedInUserSchema.name)
-    .filtered('dateTime != $0', fullDate);
-    console.log('clear Previous login data', loginData.length)
-    realm.delete(loginData);
-
-    let allDailyPlanSchema = realm.objects(DailyPlanSchema.name)
-    .filtered('dDate != $0', fullDate);
-    console.log('clear Previous plan data', allDailyPlanSchema.length)
-    realm.delete(allDailyPlanSchema);
-
-    let allDefects = realm.objects(DefectSchema.name);
-    console.log('clear Defects master data', allDefects.length)
-    realm.delete(allDefects);
-  //console.log('all device', allDeviceInfo.length) !=dateTime  DailyPlanSchema
-
-  // let allHourInfo = realm.objects(HourInfoSchema.name);
-  // realm.delete(allHourInfo);
-  // Create a book object
-  //let book = realm.create('Book', {id: 1, title: 'Recipes', price: 35});
-
-  // Delete the book
-  //realm.delete(book);
-
-  // Delete multiple books by passing in a `Results`, `List`,
-  // or JavaScript `Array`
-});
- 
-}
 
   checkLoggedInAndRouteToSetupData(): void{
-    let loginData: any = realm.objects(CurrentLoggedInUserSchema.name)
-    .filtered('dateTime = $0', this.state.today);
+    let loginData = getCurrentLoggedInUserForToday(this.state.today);
+    let planDataExists = planDataExistsForToday(this.state.today);
+    //allDeviceInfo = convertToArray(allDeviceInfo);
 
-    let allDeviceInfo = realm.objects(DailyPlanSchema.name)
-    .filtered('dDate = $0', this.state.today);
-
-    if(loginData.length > 0 && allDeviceInfo.length > 0){
+    if(loginData.length > 0 && planDataExists){
       console.log('already logged in')
       var reqObj = loginData[0];
       this.props.navigation.navigate('SetupData',{ userData:  reqObj });
@@ -169,7 +87,8 @@ clearLocalDb = () => {
   }
 
   getInitialData(): void{
-    this.clearLocalDb();
+    /**Clear Stale Local DB Data */  
+    clearStaleLocalDb();
     //console.log('came here..')GetCompanyUnitLineData
     get('/GetCompanyUnitLineData')
     .then((response: any) => {
@@ -188,18 +107,8 @@ clearLocalDb = () => {
                 text2: 'It\'s ok! 👋',
                 visibilityTime: 1000,
                 })
-
               // try { Write Data if data dosen't exixts
-                realm.write(() => {
-                  deviceSecInfo.forEach((obj: any) => {
-                      realm.create(QmsSecurityProductionDeviceInfo.name, obj);
-                  });
-
-                  defectRaw.forEach((obj: any) => {
-                    realm.create(DefectSchema.name, obj);
-                });
-                  //realm.create('Car', {make: 'Honda', model: 'Accord', drive: 'awd'});
-                });
+              setDeviceAndDefectMasterDataLocalDB(deviceSecInfo, defectRaw);
         }else{
             Toast.show({
                 type: 'error',

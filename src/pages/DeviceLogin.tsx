@@ -9,11 +9,12 @@ import Toast from 'react-native-toast-message';
 import Mybutton from './components/Mybutton';
 import {post} from '../utils/apiUtils'
 import ProgressDialog from '../utils/loader'
+import {setupPickerData} from '../utils/utilityFunctions'
 import Orientation from 'react-native-orientation';
-import {QmsSecurityProductionDeviceInfo, DailyPlanSchema, CurrentLoggedInUserSchema, HourInfoSchema} from '../db/schemas/dbSchema'
-import Realm from 'realm';
+import {getQmsDeviceSecurityData, writeToLocalDb} from '../db/dbServices/__Device_Login_DBF'
+//import Realm from 'realm';
 import { NavigationScreenProp } from 'react-navigation';
-let realm: Realm;
+//let realm: Realm;
 
 type Props = {
   navigation: NavigationScreenProp<any,any>
@@ -91,21 +92,16 @@ export default class DeviceLogin extends React.Component<Props, State> {
     this.props.navigation.addListener(
       'didFocus',
       payload => {
-        Orientation.lockToPortrait()
-      });      
-    realm = new Realm({ path: 'QmsDb.realm' });
-
-    // this.inputRefs = {
-    //     favSport1: null,
-    //   };
+        Orientation.lockToPortrait();
+      });
   }
 
     componentDidMount(){
       Orientation.lockToPortrait()
-      let comInfo:any = realm.objects(QmsSecurityProductionDeviceInfo.name);
+      let comInfo:any = getQmsDeviceSecurityData();
 
       this.setState({AllDeviceInfo: comInfo}, ()=>{
-        const comNames = this.setupPickerData(this.state.AllDeviceInfo, 'vCompanyName', 'vCompanyId', '', '');
+        const comNames = setupPickerData(this.state.AllDeviceInfo, 'vCompanyName', 'vCompanyId', '', '');
 
         this.setState({
           comNames,
@@ -116,7 +112,7 @@ export default class DeviceLogin extends React.Component<Props, State> {
     }
 
     setUnitData(comid: string){
-      const unitNames = this.setupPickerData(this.state.filteredDeviceInfo, 'vUnitName', 'vUnitId', comid, 'vCompanyId');
+      const unitNames = setupPickerData(this.state.filteredDeviceInfo, 'vUnitName', 'vUnitId', comid, 'vCompanyId');
       this.setState({unitNames}, 
         // ()=> console.log('units nos', unitNames.length)
         );
@@ -128,42 +124,19 @@ export default class DeviceLogin extends React.Component<Props, State> {
     }
 
     setLineData(unitId: string): void{
-      const lineNames = this.setupPickerData(this.state.filteredDeviceInfo, 'vLineId', 'vUnitLineId', unitId, 'vUnitId');
+      const lineNames = setupPickerData(this.state.filteredDeviceInfo, 'vLineId', 'vUnitLineId', unitId, 'vUnitId');
         this.setState({lineNames}, 
           // ()=> console.log('lineName nos', lineNames.length)
           );
     }
 
     setShiftData(): void{
-      const shifts = this.setupPickerData(this.state.filteredDeviceInfo, 'vShiftId', 'vShiftId', '', '');
+      const shifts = setupPickerData(this.state.filteredDeviceInfo, 'vShiftId', 'vShiftId', '', '');
         this.setState({shifts}, 
           //()=> console.log('shifts nos', shifts.length)
           );
     }
 
-  setupPickerData(dataArr: any, labelName: string, valueName: string, filterTxt: string, filterColumn: string){
-
-    var depid = [];
-
-    if(filterTxt && filterColumn){
-      depid = dataArr.filter((x: any) => x[filterColumn] === filterTxt).map((obj: any) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
-      //console.log(depid);
-    }else{
-      depid = dataArr.map((obj: any) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
-    }
-      //Filter Company string then map for Unit -> Line etc
-    var DepResult = [], mapx = new Map();
-        for (const item of depid) {
-            if(!mapx.has(item[valueName])){
-                mapx.set(item[valueName], true);    // set any value to Map mapx.has(depid[0]['vCompanyId']);
-                DepResult.push({
-                    value : item[valueName],
-                    label : item[labelName]
-                });
-            }
-        }
-    return DepResult;
-  }
   getDeviceId(){
     var finalObj = [];
 
@@ -212,7 +185,7 @@ export default class DeviceLogin extends React.Component<Props, State> {
           var toastFlavour = responseData.dailyProdPlanData.length > 0 ? "success" : "info";
           var toastTitleTxt = responseData.dailyProdPlanData.length > 0 ? "Successed!" : "Info!";
 
-          this.writeToLocalDb(responseData.dailyProdPlanData, timeHour, reqObj);
+          writeToLocalDb(responseData.dailyProdPlanData, timeHour, reqObj);
           
           Toast.show({
             type: toastFlavour,
@@ -268,43 +241,43 @@ export default class DeviceLogin extends React.Component<Props, State> {
 
 
   
-  writeToLocalDb = (dataToWrite: any[], timeHour: any[], current_login: any) =>{
-    console.log('write to DB')
-    //Clear any existing data in local db
-    this.clearLocalDb();
-      //write plan data to local db
-      //DailyPlanSchema.name
-        realm.write(() => {
-            dataToWrite.forEach(obj => {
-              realm.create(DailyPlanSchema.name, obj);
-          });
+//   writeToLocalDb = (dataToWrite: any[], timeHour: any[], current_login: any) =>{
+//     console.log('write to DB')
+//     //Clear any existing data in local db
+//     this.clearLocalDb();
+//       //write plan data to local db
+//       //DailyPlanSchema.name
+//         realm.write(() => {
+//             dataToWrite.forEach(obj => {
+//               realm.create(DailyPlanSchema.name, obj);
+//           });
 
-         timeHour.forEach(obj => {
-              realm.create(HourInfoSchema.name, obj);
-          });
+//          timeHour.forEach(obj => {
+//               realm.create(HourInfoSchema.name, obj);
+//           });
 
-          realm.create(CurrentLoggedInUserSchema.name, current_login)
+//           realm.create(CurrentLoggedInUserSchema.name, current_login)
 
-        });
-  }
+//         });
+//   }
 
-  clearLocalDb = () => {
-    console.log('clear DB')
-     realm.write(() => {
-    // Delete multiple books by passing in a `Results`, `List`,
-    // or JavaScript `Array`
+//   clearLocalDb = () => {
+//     console.log('clear DB')
+//      realm.write(() => {
+//     // Delete multiple books by passing in a `Results`, `List`,
+//     // or JavaScript `Array`
 
-    let allcCurrentLoginData = realm.objects(CurrentLoggedInUserSchema.name);
-     realm.delete(allcCurrentLoginData);
+//     let allcCurrentLoginData = realm.objects(CurrentLoggedInUserSchema.name);
+//      realm.delete(allcCurrentLoginData);
 
-    let allTimeData = realm.objects(HourInfoSchema.name);
-     realm.delete(allTimeData);
+//     let allTimeData = realm.objects(HourInfoSchema.name);
+//      realm.delete(allTimeData);
 
-     let allPlanData = realm.objects(DailyPlanSchema.name);
-     realm.delete(allPlanData); // Deletes all plans
-  });
+//      let allPlanData = realm.objects(DailyPlanSchema.name);
+//      realm.delete(allPlanData); // Deletes all plans
+//   });
    
-}
+// }
 
 
 showDatePicker = () => {

@@ -10,10 +10,10 @@ import Mybutton from './components/Mybutton';
 import {post} from '../utils/apiUtils'
 import ProgressDialog from '../utils/loader'
 import Orientation from 'react-native-orientation';
-import {DailyPlanSchema, CurrentLoggedInUserSchema} from '../db/schemas/dbSchema'
-import Realm from 'realm';
+
+import {setupPickerData} from '../utils/utilityFunctions'
+import {getAllDailyProductionPlanSummery, loggedOutAndAbleToGoToLoginPage} from '../db/dbServices/__Setup_Data_DBF'
 import { NavigationScreenProp } from 'react-navigation';
-let realm: Realm;
 
 type Props = {
   navigation: NavigationScreenProp<any,any>
@@ -96,81 +96,42 @@ export default class SetupData extends React.Component<Props, State> {
       'didFocus',
       payload => {
         Orientation.lockToPortrait()
-      });    
-    realm = new Realm({ path: 'QmsDb.realm' });
+      });
   }
 
   logoutAndGotoLoginPage(): void{
-    let fullDate: string = moment().format().split("T")[0]+'T00:00:00.000Z'
-    /**Assuming that previous data already exists... */
-    realm.write(() => {
-  
-      let allDeviceInfo: any = realm.objects(DailyPlanSchema.name).filtered('dDate = $0', fullDate);
-      //console.log(allDeviceInfo.length)
-      realm.delete(allDeviceInfo);
-  
-      let loginData = realm.objects(CurrentLoggedInUserSchema.name)
-      .filtered('dateTime = $0', fullDate);
-      //console.log(allDeviceInfo.length)
-      realm.delete(loginData);
-  });
-
-    let loggedinData = realm.objects(CurrentLoggedInUserSchema.name)
-    .filtered('dateTime = $0', fullDate);
-
-    let prevPlanData = realm.objects(DailyPlanSchema.name)
-    .filtered('dDate = $0', fullDate);
-
-    if(loggedinData.length == 0 && prevPlanData.length == 0){
+    let isLoggedOut = loggedOutAndAbleToGoToLoginPage();
+    if(isLoggedOut){
       console.log('logged out')
       
         this.props.navigation.navigate('DeviceLogin')
     }else{
       console.log("logout failed!")
     }
-    
   }
 
     componentDidMount(){
+      console.log("component mounted...")
       Orientation.lockToPortrait()
-      const comInfo: any = realm.objects(DailyPlanSchema.name);
+      let comInfo: any = getAllDailyProductionPlanSummery();
       const reqObj = this.props.navigation.getParam('userData');
         console.log('reqObj', reqObj)
        // console.log('isTab', DeviceInfo.isTablet())
 
       this.setState({AllPlanInfo: comInfo, reqObj, filteredPlanInfo: comInfo}, ()=>{
-        const buyerNames: any = this.setupPickerData(this.state.AllPlanInfo, 'vBuyerName', 'vBuyerId', '', '');
+        const buyerNames: any = setupPickerData(this.state.AllPlanInfo, 'vBuyerName', 'vBuyerId', '', '');
         this.setState({
           buyerNames,
          // loading: false
-        },()=> console.log('buyer', this.state.buyerNames.length))
+        }
+        //,()=> console.log('buyer', this.state.buyerNames.length)
+        )
       })   
       
     }
-
-  setupPickerData(dataArr: any, labelName: string, valueName: string, filterTxt: string, filterColumn: string){
-
-    var depid = [];
-
-    if(filterTxt && filterColumn){
-      depid = dataArr.filter((x: any) => x[filterColumn] === filterTxt).map((obj: any) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
-      //console.log(depid);
-    }else{
-      depid = dataArr.map((obj: any) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
+    componentWillUnmount(){
+      console.log("component unmounted...")
     }
-      //Filter Company string then map for Unit -> Line etc
-    var DepResult = [], mapx = new Map();
-        for (const item of depid) {
-            if(!mapx.has(item[valueName])){
-                mapx.set(item[valueName], true);    // set any value to Map mapx.has(depid[0]['vCompanyId']);
-                DepResult.push({
-                    value : item[valueName],
-                    label : item[labelName]
-                });
-            }
-        }
-    return DepResult;
-  }
  
   gotoMultipleSizeCountScreen(){
     if(this.state.colorFilteredSizes.length > 0){
@@ -178,8 +139,6 @@ export default class SetupData extends React.Component<Props, State> {
     }else{
       Alert.alert("total sizes",this.state.colorFilteredSizes.length.toString());
     }
-    
-     
   }
 
   setupDataForProduction(){
@@ -198,33 +157,6 @@ export default class SetupData extends React.Component<Props, State> {
         })
     }
   }
-
-
-  
-  writeToLocalDb = (dataToWrite: any[]) =>{
-    console.log('write to DB')
-    //Clear any existing data in local db
-    this.clearLocalDb();
-      //write plan data to local db
-      //DailyPlanSchema.name
-        realm.write(() => {
-            dataToWrite.forEach(obj => {
-              realm.create(DailyPlanSchema.name, obj);
-          });
-        });
-  }
-
-  clearLocalDb = () => {
-    console.log('clear DB')
-     realm.write(() => {
-    // Delete multiple books by passing in a `Results`, `List`,
-    // or JavaScript `Array`
-     let allPlanData = realm.objects(DailyPlanSchema.name);
-     realm.delete(allPlanData); // Deletes all plans
-  });
-   
-}
-
 
 //   register_user = () => {
 //     var that = this;
@@ -293,7 +225,7 @@ export default class SetupData extends React.Component<Props, State> {
             onValueChange={value => {
               
               var filteredComData = this.state.AllPlanInfo.filter(x => x.vBuyerId === value); 
-              const styleNames = this.setupPickerData(filteredComData, 'vStyleName', 'vStyleId', value, 'vBuyerId');
+              const styleNames = setupPickerData(filteredComData, 'vStyleName', 'vStyleId', value, 'vBuyerId');
 
                 this.setState({
                   selectedBuyer: value,
@@ -336,8 +268,8 @@ export default class SetupData extends React.Component<Props, State> {
               items={this.state.styleNames}
               onValueChange={value => {
 
-                var filteredComData = this.state.AllPlanInfo.filter(x => x.vBuyerId === this.state.vBuyerId && x.vStyleId === value); 
-                const expPos = this.setupPickerData(filteredComData, 'vExpPoorderNo', 'vExpPoorderNo', value, 'vStyleId');
+                var filteredComData = this.state.AllPlanInfo.filter(x => x.vBuyerId === this.state.vBuyerId && x.vStyleId === value);
+                const expPos = setupPickerData(filteredComData, 'vExpPoorderNo', 'vExpPoorderNo', value, 'vStyleId');
 
                   this.setState({
                     selectedStyle: value,
@@ -381,7 +313,7 @@ export default class SetupData extends React.Component<Props, State> {
                                                     x.vBuyerId === vBuyerId && 
                                                     x.vStyleId === vStyleId && 
                                                     x.vExpPoorderNo === value); 
-                const colorNames = this.setupPickerData(filteredComData, 'vColorName', 'vColorId', value, 'vExpPoorderNo');
+                const colorNames = setupPickerData(filteredComData, 'vColorName', 'vColorId', value, 'vExpPoorderNo');
 
                   this.setState({
                     selectedExpPo: value,
@@ -427,7 +359,7 @@ export default class SetupData extends React.Component<Props, State> {
                                       x.vExpPoorderNo === vExpPoorderNo && 
                                       x.vColorId === value);
                 //console.log('filteres',filteredComData);
-                const sizeNames = this.setupPickerData(filteredComData, 'vSizeName', 'vSizeId', value, 'vColorId');
+                const sizeNames = setupPickerData(filteredComData, 'vSizeName', 'vSizeId', value, 'vColorId');
                   //console.log('sizes',sizeNames, 'size', value)
                   this.setState({
                     selectedColor: value,

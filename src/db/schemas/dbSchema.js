@@ -28,7 +28,7 @@ const QmsSecurityProductionDeviceInfo = {
         },
       };
 
-      const CompanyWiseUnitLineSchema = {
+const CompanyWiseUnitLineSchema = {
         name: 'Vw_CompanyWiseUnitLine',
         properties:{
           vUnitLineId: 'string?',
