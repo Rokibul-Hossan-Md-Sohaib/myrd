@@ -3,11 +3,6 @@ import { View, Text, StatusBar, Pressable, Dimensions, StyleSheet, Modal, Toucha
 import moment from 'moment'
 import Toast from 'react-native-toast-message';
 import {
-  CurrentLoggedInUserSchema, 
-  DeviceWiseProductionSchema,
-  DefectSchema
-} from '../db/schemas/dbSchema'
-import {
   writeProductionToLocalDB, 
   writeReworkedToLocalDB, 
   writeRejectToLocalDB, 
@@ -19,14 +14,17 @@ import {
   getTodaysTotalDefectCount,
   getUniqueAttributes,
   getTodaysTotalRejectCount,
-  getTodaysTotalReworkCount} from '../db/dbServices/__LDB_Count_Utilities'
+  getTodaysTotalReworkCount,
+  getCurrentLoggedInUserForToday,
+  getAllDefects,
+  getCurrentHourExistingData
+} from '../db/dbServices/__LDB_Count_Utilities'
 import * as constKVP from '../utils/constKVP'
 import {moderateScale} from 'react-native-size-matters'
 import Orientation from 'react-native-orientation';
-import Realm from 'realm';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProp } from 'react-navigation';
-let realm: Realm, dateObj: Date = new Date();
+let dateObj: Date = new Date();
 
 
 type Props = {
@@ -34,6 +32,7 @@ type Props = {
 };
 
 type State = {
+  today: string,
   totalDayFttCount: number,
   totalDayDefectCount: number,
   totalDayRejectCount:number,
@@ -75,6 +74,7 @@ type State = {
 class ProductionCountSizeWise extends React.Component<Props, State> {
 
     state: State ={
+      today: moment().format('YYYY-MM-DD'),
       totalDayFttCount: 0,
       totalDayDefectCount: 0,
       totalDayRejectCount:0,
@@ -118,15 +118,14 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         'didFocus',
         payload => {
           Orientation.lockToLandscapeLeft();
-        });    
-      realm = new Realm({ path: 'QmsDb.realm' });
+        });
     }
 
     countFtt(){
       //vHourId: this.getCurrentHourId(),
       //get Previous hour check if new hour equels to state hour
       var thisHourID: any = getCurrentHourId();
-      console.log('Now',thisHourID.vHourId)
+      //console.log('Now',thisHourID)
 
       if(thisHourID === undefined){
         Toast.show({
@@ -248,7 +247,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             dLastUpdated: dateObj
         };
 
-        console.log(currentDefectCountObj);
+        //console.log(currentDefectCountObj);
         writeDefectToLocalDB(currentDefectCountObj);
         /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
         /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
@@ -294,7 +293,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             dLastUpdated: dateObj
         };
 
-        console.log(currentRejectCountObj);
+        //console.log(currentRejectCountObj);
         writeRejectToLocalDB(currentRejectCountObj);
         /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
         /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
@@ -336,7 +335,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             dLastUpdated: dateObj
         };
 
-        console.log(currentReworkedCountObj);
+        //console.log(currentReworkedCountObj);
         writeReworkedToLocalDB(currentReworkedCountObj);
 
       });
@@ -348,7 +347,6 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
     }
 
     componentWillUnmount(){
-      realm.close();
       console.log('unmounted production count');
     }
 
@@ -356,8 +354,8 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       Orientation.lockToLandscapeLeft();
       var currentCountObj: any = {};
       const reqObj: any = this.props.navigation.getParam('userData');
-      var current_login: any = realm.objects(CurrentLoggedInUserSchema.name)[0];
-      let allDefects: any = realm.objects(DefectSchema.name);
+      var current_login: any = getCurrentLoggedInUserForToday(this.state.today);
+      let allDefects: any = getAllDefects();
       var defectCategories = getUniqueAttributes(allDefects, "vDefectCategoryId", "vDefectCategoryName", "vHeadShortName");
       var currentHour = getCurrentHourId();
 
@@ -370,13 +368,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
               visibilityTime: 1500,
               });
       }else{
-          let existingData: any = realm.objects(DeviceWiseProductionSchema.name)
-          .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vHourId = $2 && vUnitLineId = $3 && vDeviceId=$4', 
-                      reqObj.dDate, 
-                      reqObj.vProductionPlanId, 
-                      currentHour["vHourId"], 
-                      current_login.unitLineId, 
-                      current_login.deviceId)[0];
+          let existingData: any = getCurrentHourExistingData(reqObj, currentHour, current_login)
           let totalDayFttCount = getTodaysTotalFttCount(reqObj);
           let totalDayDefectCount = getTodaysTotalDefectCount(reqObj);
           let totalDayRejectCount = getTodaysTotalRejectCount(reqObj);

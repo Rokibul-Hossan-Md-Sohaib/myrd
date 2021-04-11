@@ -1,26 +1,24 @@
 import {
-    HourInfoSchema, 
-    CurrentLoggedInUserSchema, 
     DeviceWiseProductionSchema, 
-    DeviceWiseDefectSchema, 
-    DefectSchema, 
+    DeviceWiseDefectSchema,
     DeviceWiseRejectSchema,
     DeviceWiseReworkedSchema
-  } from '../schemas/dbSchema'
-import Realm from 'realm';
-const realm: Realm = new Realm({ path: 'QmsDb.realm' }), dateObj: Date = new Date();
+} from '../schemas/realm-schema';
+import { QMS_DeviceWiseLineDefectDaily, QMS_DeviceWiseLineProductionDaily, QMS_DeviceWiseLineRejectDaily, QMS_DeviceWiseLineReworkedDaily } from '../schemas/entities';
+import Realm from "../schemas/realm";
+const dateObj: Date = new Date();
 
 const writeProductionToLocalDB = (dataToWrite: any) =>{
-    console.log('write to DB')
+    //console.log('write to DB')
 
-    // const realm = new Realm({
+    // const Realm = new Realm({
     //   path: 'QmsDb.realm',
     //   schema: [DeviceWiseProductionSchema],
     // });
     
-      realm.write(() => { //write single data
-        //realm.create(DeviceWiseProductionSchema.name, updatedData);
-        let existingData: any = realm.objects(DeviceWiseProductionSchema.name)
+      Realm.write(() => { //write single data
+        //Realm.create(DeviceWiseProductionSchema.name, updatedData);
+        let existingData: any = Realm.objects<QMS_DeviceWiseLineProductionDaily>(DeviceWiseProductionSchema.name)
                             .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vHourId = $2 && vUnitLineId = $3 && vDeviceId=$4 && vStyleId=$5 && vSizeId=$6 && vExpPoorderNo=$7 && vColorId=$8 && vBuyerId=$9', 
                             dataToWrite.dDateOfProduction, 
                             dataToWrite.vProductionPlanId, 
@@ -36,14 +34,14 @@ const writeProductionToLocalDB = (dataToWrite: any) =>{
 
           if(existingData === undefined){
             //as no previous data exists, we will create new data row...
-            realm.create(DeviceWiseProductionSchema.name, dataToWrite);
+            Realm.create(DeviceWiseProductionSchema.name, dataToWrite);
           }else{
             existingData.iProductionQty =  dataToWrite.iProductionQty;
             existingData.dLastUpdated =  dateObj;
           }
       });
 
-      // realm.close();
+      // Realm.close();
   }
 
 const writeReworkedToLocalDB = (dataToWrite: any) =>{
@@ -51,14 +49,14 @@ const writeReworkedToLocalDB = (dataToWrite: any) =>{
     /**Show total defect count on screen Tile */
     /** defect count should be at size level... */
 
-    // const realm = new Realm({
-    //   path: 'QmsDb.realm',
+    // const Realm = new Realm({
+    //   path: 'QmsDb.Realm',
     //   schema: [DeviceWiseReworkedSchema],
     // });
 
-    realm.write(() => { //write single data
-     //realm.create(DeviceWiseProductionSchema.name, updatedData);
-     let existingData: any = realm.objects(DeviceWiseReworkedSchema.name)
+    Realm.write(() => { //write single data
+     //Realm.create(DeviceWiseProductionSchema.name, updatedData);
+     let existingData: any = Realm.objects<QMS_DeviceWiseLineReworkedDaily>(DeviceWiseReworkedSchema.name)
                          .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId = $2 && vDeviceId=$3 && vStyleId=$4 && vSizeId=$5 && vExpPoorderNo=$6 && vColorId=$7 && vBuyerId=$8', 
                          dataToWrite.dDateOfProduction, 
                          dataToWrite.vProductionPlanId, 
@@ -73,7 +71,7 @@ const writeReworkedToLocalDB = (dataToWrite: any) =>{
 
        if(existingData === undefined){
          //as no previous data exists, we will create new data row...
-         realm.create(DeviceWiseReworkedSchema.name, dataToWrite);
+         Realm.create(DeviceWiseReworkedSchema.name, dataToWrite);
        }else{
          existingData.iReworkedCount =  dataToWrite.iReworkedCount;
          existingData.dLastUpdated   =  dateObj;
@@ -81,16 +79,16 @@ const writeReworkedToLocalDB = (dataToWrite: any) =>{
          
    });
     
-   //realm.close();
+   //Realm.close();
 }
 
 const writeRejectToLocalDB = (dataToWrite: any) =>{
     /***TODO: Check Esisting Data, if exists Update, otherwise add new entry */
     /**Show total defect count on screen Tile */
     /** defect count should be at size level... */
-    realm.write(() => { //write single data
-     //realm.create(DeviceWiseProductionSchema.name, updatedData);
-     let existingData: any = realm.objects(DeviceWiseRejectSchema.name)
+    Realm.write(() => { //write single data
+     //Realm.create(DeviceWiseProductionSchema.name, updatedData);
+     let existingData: any = Realm.objects<QMS_DeviceWiseLineRejectDaily>(DeviceWiseRejectSchema.name)
      .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId = $2 && vDeviceId=$3 && vDefectCode=$4 && vStyleId=$5 && vSizeId=$6 && vExpPoorderNo=$7 && vColorId=$8 && vBuyerId=$9', 
                    dataToWrite.dDateOfProduction, 
                    dataToWrite.vProductionPlanId, 
@@ -106,7 +104,7 @@ const writeRejectToLocalDB = (dataToWrite: any) =>{
              
        if(existingData === undefined){
          //as no previous data exists, we will create new data row...
-         realm.create(DeviceWiseRejectSchema.name, dataToWrite);
+         Realm.create(DeviceWiseRejectSchema.name, dataToWrite);
        }else{
          existingData.iRejectCount +=  1;
          existingData.dLastUpdated   =  dateObj;
@@ -120,9 +118,9 @@ const writeDefectToLocalDB = (dataToWrite: any) =>{
     /***TODO: Check Esisting Data, if exists Update, otherwise add new entry */
     /**Show total defect count on screen Tile */
     /** defect count should be at size level... */
-    realm.write(() => { //write single data
-     //realm.create(DeviceWiseProductionSchema.name, updatedData);
-     let existingData: any = realm.objects(DeviceWiseDefectSchema.name)
+    Realm.write(() => { //write single data
+     //Realm.create(DeviceWiseProductionSchema.name, updatedData);
+     let existingData: any = Realm.objects<QMS_DeviceWiseLineDefectDaily>(DeviceWiseDefectSchema.name)
                          .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId = $2 && vDeviceId=$3 && vDefectCode=$4 && vStyleId=$5 && vSizeId=$6 && vExpPoorderNo=$7 && vColorId=$8 && vBuyerId=$9', 
                          dataToWrite.dDateOfProduction, 
                          dataToWrite.vProductionPlanId, 
@@ -138,7 +136,7 @@ const writeDefectToLocalDB = (dataToWrite: any) =>{
 
        if(existingData === undefined){
          //as no previous data exists, we will create new data row...
-         realm.create(DeviceWiseDefectSchema.name, dataToWrite);
+         Realm.create(DeviceWiseDefectSchema.name, dataToWrite);
        }else{
          existingData.iDefectCount +=  1;
          existingData.dLastUpdated   =  dateObj;
