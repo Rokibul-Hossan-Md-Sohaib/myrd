@@ -2,23 +2,23 @@ import Realm from "../schemas/realm";
 import { 
     DefectSchema,
     DailyPlanSchema,
-    DeviceWiseDefectSchema, 
-    DeviceWiseProductionSchema,
-    DeviceWiseRejectSchema,
-    DeviceWiseReworkedSchema,
+    DefectCountSchema, 
+    ProductionCountSchema,
+    RejectCountSchema,
+    ReworkedCountSchema,
     CurrentLoggedInUserSchema, 
     QmsSecurityProductionDeviceInfo
  } from "../schemas/realm-schema";
 import { 
     DailyProductionPlanSummery,
-    current_login
+    LoggedIn_Session
  } from "../schemas/entities";
 import moment from 'moment'
 import {convertToArray} from '../../utils/utilityFunctions'
 import { RealmQuery } from "../lib/realm-helper.types";
 
 export function getCurrentLoggedInUserForToday(dayString: string) {
-    let currLoginData: RealmQuery = Realm.objects<current_login>(CurrentLoggedInUserSchema.name).filtered('dateTime = $0', dayString);
+    let currLoginData: RealmQuery = Realm.objects<LoggedIn_Session>(CurrentLoggedInUserSchema.name).filtered('dateTime = $0', dayString);
     currLoginData = convertToArray(currLoginData);
     return currLoginData;
 }
@@ -53,22 +53,22 @@ export function clearStaleLocalDb() {
       console.log('clear Device info', allDeviceInfo.length)
       Realm.delete(allDeviceInfo);
   
-      let existingData = Realm.objects(DeviceWiseProductionSchema.name)
+      let existingData = Realm.objects(ProductionCountSchema.name)
       .filtered('dDateOfProduction  != $0', fullDate);
       console.log('clear Previous Prod Data', existingData.length)
       Realm.delete(existingData);
   
-      let existingDefectData = Realm.objects(DeviceWiseDefectSchema.name)
+      let existingDefectData = Realm.objects(DefectCountSchema.name)
       .filtered('dDateOfProduction  != $0', fullDate);
       console.log('clear Previous Defect Data', existingDefectData.length)
       Realm.delete(existingDefectData);
   
-      let existingRejectData = Realm.objects(DeviceWiseRejectSchema.name)
+      let existingRejectData = Realm.objects(RejectCountSchema.name)
       .filtered('dDateOfProduction  != $0', fullDate);
       console.log('clear Previous Reject Data', existingRejectData.length)
       Realm.delete(existingRejectData);
   
-      let existingReworkedData = Realm.objects(DeviceWiseReworkedSchema.name)
+      let existingReworkedData = Realm.objects(ReworkedCountSchema.name)
       .filtered('dDateOfProduction  != $0', fullDate);
       console.log('clear Previous Reworked Data', existingReworkedData.length)
       Realm.delete(existingReworkedData);

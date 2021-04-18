@@ -1,19 +1,10 @@
 import Realm from "./realm";
 import { 
-    CompanyWiseUnitLineSchema, 
-    DefectSchema, 
-    HourInfoSchema, 
-    DailyPlanSchema,
-    DeviceWiseDefectSchema, 
-    DeviceWiseProductionSchema,
-    DeviceWiseRejectSchema,
-    DeviceWiseReworkedSchema,
-    CurrentLoggedInUserSchema, 
-    QmsSecurityProductionDeviceInfo
+    CurrentLoggedInUserSchema
  } from "./realm-schema";
-import { current_login } from "./entities";
+import { LoggedIn_Session } from "./entities";
 
 export function getCurrentLoggedInUserForToday(dayString: string) {
-  return Realm.objects<current_login>(CurrentLoggedInUserSchema.name).filtered('dateTime = $0', dayString);
+  return Realm.objects<LoggedIn_Session>(CurrentLoggedInUserSchema.name).filtered('dateTime = $0', dayString);
 }
 

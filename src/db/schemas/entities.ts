@@ -1,28 +1,28 @@
 import { Nullable } from '../lib/generic.types';
 
-export type EntityName = "current_login" | 
+export type EntityName = "LoggedIn_Session" | 
                          "QMS_SecurityProductionDeviceInfo" | 
                          "Vw_CompanyWiseUnitLine" | 
                          "vwTimeInfo" | 
                          "DailyProductionPlanSummery" | 
                          "vwDefects" |
-                         "QMS_DeviceWiseLineDefectDaily" |
-                         "QMS_DeviceWiseLineRejectDaily" |
-                         "QMS_DeviceWiseLineReworkedDaily" |
-                         "QMS_DeviceWiseLineProductionDaily";
+                         "QMS_DefectCountDaily" |
+                         "QMS_RejectCountDaily" |
+                         "QMS_ReworkedCountDaily" |
+                         "QMS_ProductionCountHourly";
 
-export type EntityNameOpt = "current_login?" | 
+export type EntityNameOpt = "LoggedIn_Session?" | 
                             "QMS_SecurityProductionDeviceInfo?" | 
                             "Vw_CompanyWiseUnitLine?" | 
                             "vwTimeInfo?" | 
                             "DailyProductionPlanSummery?" | 
                             "vwDefects?" |
-                            "QMS_DeviceWiseLineDefectDaily?" |
-                            "QMS_DeviceWiseLineRejectDaily?" |
-                            "QMS_DeviceWiseLineReworkedDaily?" |
-                            "QMS_DeviceWiseLineProductionDaily?";
+                            "QMS_DefectCountDaily?" |
+                            "QMS_RejectCountDaily?" |
+                            "QMS_ReworkedCountDaily?" |
+                            "QMS_ProductionCountHourly?";
 
-export interface current_login {
+export interface LoggedIn_Session {
   readonly deviceId: Nullable<string>,
   readonly devicePwd: Nullable<string>,
   readonly companyId: Nullable<string>,
@@ -44,17 +44,6 @@ export interface QMS_SecurityProductionDeviceInfo {
   readonly vUnitLineId: Nullable<string>,
   readonly vShiftId: Nullable<string>,
   readonly bIsActive: Nullable<boolean>
-}
-
-export interface Vw_CompanyWiseUnitLine {
-  readonly vUnitLineId: Nullable<string>,
-  readonly vCompanyChildId: Nullable<string>,
-  readonly vUnitDescription: Nullable<string>,
-  readonly vShortCode: Nullable<string>,
-  readonly vUnitId: Nullable<string>,
-  readonly vUnitName: Nullable<string>,
-  readonly vLineId: Nullable<string>,
-  readonly vShiftId: Nullable<string>
 }
 
 export interface vwTimeInfo {
@@ -124,7 +113,7 @@ export interface vwDefects {
   readonly code: Nullable<string>
 }
 
-export interface QMS_DeviceWiseLineDefectDaily {
+export interface QMS_DefectCountDaily {
     readonly iAutoId:  number,
     readonly vDeviceId: Nullable<string>,
     readonly dDateOfProduction: Date,
@@ -148,7 +137,7 @@ export interface QMS_DeviceWiseLineDefectDaily {
     readonly dLastUpdated: Date,
 }
 
-export interface QMS_DeviceWiseLineProductionDaily {
+export interface QMS_ProductionCountHourly {
    readonly iAutoId: number,
    readonly vDeviceId: Nullable<string>,
    readonly dEntryDate: Date,
@@ -184,7 +173,7 @@ export interface QMS_DeviceWiseLineProductionDaily {
    readonly vShiftId: Nullable<string>
 }
 
-export interface QMS_DeviceWiseLineRejectDaily {
+export interface QMS_RejectCountDaily {
    readonly iAutoId:  number,
    readonly vDeviceId: Nullable<string>,
    readonly dDateOfProduction: Date,
@@ -215,7 +204,7 @@ export interface QMS_DeviceWiseLineRejectDaily {
    readonly dLastUpdated: Date,
 }
 
-export interface QMS_DeviceWiseLineReworkedDaily {
+export interface QMS_ReworkedCountDaily {
   readonly iAutoId:  number,
   readonly vDeviceId: Nullable<string>,
   readonly dDateOfProduction: Date,

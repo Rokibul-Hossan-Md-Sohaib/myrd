@@ -1,27 +1,25 @@
 import Realm, { ObjectSchema } from "realm";
 
 import {
-  CompanyWiseUnitLineSchema, 
   DefectSchema, 
   HourInfoSchema, 
   DailyPlanSchema,
-  DeviceWiseDefectSchema, 
-  DeviceWiseProductionSchema,
-  DeviceWiseRejectSchema,
-  DeviceWiseReworkedSchema,
+  DefectCountSchema, 
+  ProductionCountSchema,
+  RejectCountSchema,
+  ReworkedCountSchema,
   CurrentLoggedInUserSchema, 
   QmsSecurityProductionDeviceInfo
 } from "./realm-schema";
 
 const schema = [
-  CompanyWiseUnitLineSchema, 
   DefectSchema, 
   HourInfoSchema, 
   DailyPlanSchema,
-  DeviceWiseDefectSchema, 
-  DeviceWiseProductionSchema,
-  DeviceWiseRejectSchema,
-  DeviceWiseReworkedSchema,
+  DefectCountSchema, 
+  ProductionCountSchema,
+  RejectCountSchema,
+  ReworkedCountSchema,
   CurrentLoggedInUserSchema, 
   QmsSecurityProductionDeviceInfo
 ] as ObjectSchema[];

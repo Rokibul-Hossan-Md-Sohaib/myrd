@@ -1,15 +1,15 @@
 import { 
   DefectSchema,
   HourInfoSchema,
-  DeviceWiseProductionSchema, 
-  DeviceWiseDefectSchema,
-  DeviceWiseRejectSchema,
-  DeviceWiseReworkedSchema,
+  ProductionCountSchema, 
+  DefectCountSchema,
+  RejectCountSchema,
+  ReworkedCountSchema,
   CurrentLoggedInUserSchema } from '../schemas/realm-schema';
 import {convertToArray} from '../../utils/utilityFunctions'
 import { RealmQuery } from "../lib/realm-helper.types";
 import Realm from "../schemas/realm";
-import { current_login, QMS_DeviceWiseLineProductionDaily, vwDefects, vwTimeInfo } from '../schemas/entities';
+import { LoggedIn_Session, QMS_ProductionCountHourly, vwDefects, vwTimeInfo } from '../schemas/entities';
 const dateObj: Date = new Date();
 
 const  getCurrentHourId = (): vwTimeInfo => {
@@ -49,7 +49,7 @@ const  getCurrentHourId = (): vwTimeInfo => {
   }
 
 const getTodaysTotalFttCount = (reqObj: any) => {
-    let existingData: any = Realm.objects(DeviceWiseProductionSchema.name)
+    let existingData: any = Realm.objects(ProductionCountSchema.name)
     .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId =$2 && vStyleId=$3 && vSizeId=$4 && vExpPoorderNo=$5 && vColorId=$6 && vBuyerId=$7', 
               reqObj.dDate, 
               reqObj.vProductionPlanId, 
@@ -67,7 +67,7 @@ const getTodaysTotalFttCount = (reqObj: any) => {
   }
 
 const getTodaysTotalDefectCount = (reqObj: any)=>{
-    let existingDefectData = Realm.objects(DeviceWiseDefectSchema.name)
+    let existingDefectData = Realm.objects(DefectCountSchema.name)
         .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId =$2 && vStyleId=$3 && vSizeId=$4 && vExpPoorderNo=$5 && vColorId=$6 && vBuyerId=$7', 
                 reqObj.dDate, 
                 reqObj.vProductionPlanId, 
@@ -101,7 +101,7 @@ const getUniqueAttributes=(jsnArr: any[], attrbId: string, attribVal: string, ex
   }
 
 const getTodaysTotalRejectCount = (reqObj: any)=>{
-  let existingDefectData = Realm.objects(DeviceWiseRejectSchema.name)
+  let existingDefectData = Realm.objects(RejectCountSchema.name)
   .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId =$2 && vStyleId=$3 && vSizeId=$4 && vExpPoorderNo=$5 && vColorId=$6 && vBuyerId=$7', 
             reqObj.dDate, 
             reqObj.vProductionPlanId, 
@@ -119,7 +119,7 @@ const getTodaysTotalRejectCount = (reqObj: any)=>{
 }
 
 const getTodaysTotalReworkCount=(reqObj: any)=>{
-    let existingDefectData = Realm.objects(DeviceWiseReworkedSchema.name)
+    let existingDefectData = Realm.objects(ReworkedCountSchema.name)
     .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId =$2 && vStyleId=$3 && vSizeId=$4 && vExpPoorderNo=$5 && vColorId=$6 && vBuyerId=$7', 
               reqObj.dDate, 
               reqObj.vProductionPlanId, 
@@ -137,7 +137,7 @@ const getTodaysTotalReworkCount=(reqObj: any)=>{
   }
 
 const getCurrentLoggedInUserForToday=(dayString: string)=>{
-    let currLoginData: RealmQuery = Realm.objects<current_login>(CurrentLoggedInUserSchema.name).filtered('dateTime = $0', dayString);
+    let currLoginData: RealmQuery = Realm.objects<LoggedIn_Session>(CurrentLoggedInUserSchema.name).filtered('dateTime = $0', dayString);
     currLoginData = convertToArray(currLoginData);
     return currLoginData[0];
 }
@@ -148,8 +148,8 @@ const getAllDefects=()=>{
     return allDefects;
 }
 
-const getCurrentHourExistingData=(reqObj: any, currentHour: vwTimeInfo, current_login: current_login)=>{
-  let existingData: any = Realm.objects<QMS_DeviceWiseLineProductionDaily>(DeviceWiseProductionSchema.name)
+const getCurrentHourExistingData=(reqObj: any, currentHour: vwTimeInfo, current_login: LoggedIn_Session)=>{
+  let existingData: any = Realm.objects<QMS_ProductionCountHourly>(ProductionCountSchema.name)
           .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vHourId = $2 && vUnitLineId = $3 && vDeviceId=$4', 
                       reqObj.dDate, 
                       reqObj.vProductionPlanId, 

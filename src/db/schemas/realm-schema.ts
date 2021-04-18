@@ -1,21 +1,20 @@
 import { RealmSchema } from '../lib/realm-schema.types';
 import { EntityName, EntityNameOpt, 
          DailyProductionPlanSummery, 
-         QMS_DeviceWiseLineDefectDaily, 
-         QMS_DeviceWiseLineProductionDaily,
-         QMS_DeviceWiseLineRejectDaily,
-         QMS_DeviceWiseLineReworkedDaily,
+         QMS_DefectCountDaily, 
+         QMS_ProductionCountHourly,
+         QMS_RejectCountDaily,
+         QMS_ReworkedCountDaily,
          QMS_SecurityProductionDeviceInfo,
-         Vw_CompanyWiseUnitLine,
-         current_login,
+         LoggedIn_Session,
          vwDefects,
          vwTimeInfo
         } from './entities';
 
 interface Schema<TEntity extends object> extends RealmSchema<TEntity, EntityName, EntityName | EntityNameOpt> {};   
 
-export const CurrentLoggedInUserSchema: Schema<current_login>  = {
-  name: 'current_login',
+export const CurrentLoggedInUserSchema: Schema<LoggedIn_Session>  = {
+  name: 'LoggedIn_Session',
   properties: {
     deviceId: 'string?',
     devicePwd: 'string?',
@@ -41,20 +40,6 @@ export const QmsSecurityProductionDeviceInfo: Schema<QMS_SecurityProductionDevic
         vUnitLineId: 'string?',
         vShiftId: 'string?',
         bIsActive: 'bool?'
-      },
-    };
-
-export const CompanyWiseUnitLineSchema: Schema<Vw_CompanyWiseUnitLine> = {
-      name: 'Vw_CompanyWiseUnitLine',
-      properties:{
-        vUnitLineId: 'string?',
-        vCompanyChildId: 'string?',
-        vUnitDescription: 'string?',
-        vShortCode: 'string?',
-        vUnitId: 'string?',
-        vUnitName: 'string?',
-        vLineId: 'string?',
-        vShiftId: 'string?'
       },
     };
 
@@ -135,8 +120,8 @@ export const DefectSchema: Schema<vwDefects> ={
 }
 }
 
-export const DeviceWiseDefectSchema: Schema<QMS_DeviceWiseLineDefectDaily> = {
-  name: 'QMS_DeviceWiseLineDefectDaily',
+export const DefectCountSchema: Schema<QMS_DefectCountDaily> = {
+  name: 'QMS_DefectCountDaily',
   properties:{
     iAutoId:  'int',
     vDeviceId: 'string?',
@@ -170,8 +155,8 @@ export const DeviceWiseDefectSchema: Schema<QMS_DeviceWiseLineDefectDaily> = {
 }
 }
 
-export const DeviceWiseProductionSchema: Schema<QMS_DeviceWiseLineProductionDaily> = {
-  name: 'QMS_DeviceWiseLineProductionDaily',
+export const ProductionCountSchema: Schema<QMS_ProductionCountHourly> = {
+  name: 'QMS_ProductionCountHourly',
   properties:{
     iAutoId: 'int',
     vDeviceId: 'string?',
@@ -209,8 +194,8 @@ export const DeviceWiseProductionSchema: Schema<QMS_DeviceWiseLineProductionDail
   },
 }
 
-export const DeviceWiseRejectSchema: Schema<QMS_DeviceWiseLineRejectDaily> = {
-  name: 'QMS_DeviceWiseLineRejectDaily',
+export const RejectCountSchema: Schema<QMS_RejectCountDaily> = {
+  name: 'QMS_RejectCountDaily',
   properties:{
     iAutoId:  'int',
     vDeviceId: 'string?',
@@ -243,8 +228,8 @@ export const DeviceWiseRejectSchema: Schema<QMS_DeviceWiseLineRejectDaily> = {
 }
 }
 
-export const DeviceWiseReworkedSchema: Schema<QMS_DeviceWiseLineReworkedDaily> = {
-  name: 'QMS_DeviceWiseLineReworkedDaily',
+export const ReworkedCountSchema: Schema<QMS_ReworkedCountDaily> = {
+  name: 'QMS_ReworkedCountDaily',
   properties:{
     iAutoId:  'int',
     vDeviceId: 'string?',
