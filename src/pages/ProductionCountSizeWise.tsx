@@ -537,7 +537,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
           <View style={{flex: 3, marginBottom:moderateScale(10), flexDirection:'row'}}>
 
             <Pressable onPress={()=>this.countFtt()} style={{...styles.CountTileStyle, backgroundColor: '#45c065'}}>
-              <Text style={{fontSize: moderateScale(25), fontWeight:'bold'}}>FTT</Text>
+              <Text style={{fontSize: moderateScale(25), fontWeight:'bold'}}>ACCEPT</Text>
               <Text style={{fontSize: moderateScale(25), fontWeight:'bold', color: '#fff'}}>{this.state.totalDayFttCount}</Text>
             </Pressable >
             

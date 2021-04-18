@@ -21,7 +21,7 @@ const  getCurrentHourId = (): vwTimeInfo => {
 
     hourObj = convertToArray(hourObj)
 
-    if(hourObj != undefined || hourObj.length > 0){        
+    if(hourObj.length > 0){        
       //Current Hour info available
       currentHour = hourObj[0];//["vHourId"];
     }else{
@@ -32,7 +32,7 @@ const  getCurrentHourId = (): vwTimeInfo => {
         .filtered('dStartTimeOfProduction = $0', timeNow);
       hourObj = convertToArray(hourObj)
 
-        if(hourObj != undefined || hourObj.length > 0){       
+        if(hourObj.length > 0){       
           currentHour = hourObj[0];
         }else{
           //Current Hour not found in 1 hour back
