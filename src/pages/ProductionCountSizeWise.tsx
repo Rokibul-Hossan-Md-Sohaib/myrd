@@ -219,10 +219,10 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         var currentDefectCountObj =
           {
             iAutoId: 0,
-            vDeviceId: this.state.current_login.deviceId,
-            dDateOfProduction: this.state.current_login.dateTime,                      
+            vDeviceId: this.state.current_login.vDeviceId,
+            dDateOfProduction: this.state.current_login.dLoginDateTime,                      
             vProductionPlanId: this.state.currentProdObj.vProductionPlanId,
-            vUnitLineId: this.state.current_login.unitLineId,
+            vUnitLineId: this.state.current_login.vUnitLineId,
 
             vBuyerId: this.state.currentProdObj.vBuyerId,
             vBuyerName: this.state.currentProdObj.vBuyerName,
@@ -265,10 +265,10 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
          var currentRejectCountObj =
           {
             iAutoId: 0,
-            vDeviceId: this.state.current_login.deviceId,
-            dDateOfProduction: this.state.current_login.dateTime,                      
+            vDeviceId: this.state.current_login.vDeviceId,
+            dDateOfProduction: this.state.current_login.dLoginDateTime,                      
             vProductionPlanId: this.state.currentProdObj.vProductionPlanId,
-            vUnitLineId: this.state.current_login.unitLineId,
+            vUnitLineId: this.state.current_login.vUnitLineId,
 
             vBuyerId: this.state.currentProdObj.vBuyerId,
             vBuyerName: this.state.currentProdObj.vBuyerName,
@@ -312,10 +312,10 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
          var currentReworkedCountObj =
           {
             iAutoId: 0,
-            vDeviceId: this.state.current_login.deviceId,
-            dDateOfProduction: this.state.current_login.dateTime,                      
+            vDeviceId: this.state.current_login.vDeviceId,
+            dDateOfProduction: this.state.current_login.dLoginDateTime,                      
             vProductionPlanId: this.state.currentProdObj.vProductionPlanId,
-            vUnitLineId: this.state.current_login.unitLineId,
+            vUnitLineId: this.state.current_login.vUnitLineId,
 
             vBuyerId: this.state.currentProdObj.vBuyerId,
             vBuyerName: this.state.currentProdObj.vBuyerName,
@@ -379,11 +379,11 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                 currentCountObj =
                     {
                       iAutoId: 0,
-                      vDeviceId: current_login.deviceId,
+                      vDeviceId: current_login.vDeviceId,
                       dEntryDate: dateObj,
                       dLastUpdated: dateObj,
                       vProductionPlanId: reqObj.vProductionPlanId,
-                      vUnitLineId: current_login.unitLineId,
+                      vUnitLineId: current_login.vUnitLineId,
 
                       vBuyerId:  reqObj.vBuyerId,
                       vBuyerName: reqObj.vBuyerName,
@@ -410,7 +410,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                       vProTypeId: 'PT1',
                       nHour: currentHour.nHour,
                       iManPower: reqObj.iManpower,
-                      vPreparedBy: current_login.deviceId,
+                      vPreparedBy: current_login.vDeviceId,
                       vShiftId: reqObj.vShiftId
                   };
               }else{

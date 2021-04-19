@@ -48,8 +48,7 @@ type State = {
   selectedStyle: any,
   selectedExpPo: any,
   selectedColor: any,
-  selectedSize: any,
-  deviceId: any,
+  selectedSize: any
 };
 
 
@@ -86,8 +85,7 @@ export default class SetupData extends React.Component<Props, State> {
         selectedStyle: undefined,
         selectedExpPo: undefined,
         selectedColor: undefined,
-        selectedSize: undefined,
-        deviceId: undefined,
+        selectedSize: undefined
     };
 
     constructor(props: Props) {
@@ -114,6 +112,13 @@ export default class SetupData extends React.Component<Props, State> {
       console.log("component mounted...")
       Orientation.lockToPortrait()
       let comInfo: any = getAllDailyProductionPlanSummery();
+      /**
+       * TODO: We need to check for any existing data for today to rehydrate local db from main server 
+       * if there is no data exixts in local db and the user is already logged in.
+       * 
+       * TODO: Might need store login session data in redis db / central db
+       * for avoiding data inconsistency across devices with multiple ogin with same id
+       */
       const reqObj = this.props.navigation.getParam('userData');
         console.log('reqObj', reqObj)
        // console.log('isTab', DeviceInfo.isTablet())
@@ -157,49 +162,6 @@ export default class SetupData extends React.Component<Props, State> {
         })
     }
   }
-
-//   register_user = () => {
-//     var that = this;
-//     const { user_name } = this.state;
-//     const { user_contact } = this.state;
-//     const { user_address } = this.state;
-//     if (user_name) {
-//       if (user_contact) {
-//         if (user_address) {
-//           realm.write(() => {
-//             var ID =
-//               realm.objects('user_details').sorted('user_id', true).length > 0
-//                 ? realm.objects('user_details').sorted('user_id', true)[0]
-//                     .user_id + 1
-//                 : 1;
-//             realm.create('user_details', {
-//               user_id: ID,
-//               user_name: that.state.user_name,
-//               user_contact: that.state.user_contact,
-//               user_address: that.state.user_address,
-//             });
-//             Alert.alert(
-//               'Success',
-//               'You are registered successfully',
-//               [
-//                 {
-//                   text: 'Ok',
-//                   onPress: () => that.props.navigation.navigate('HomeScreen'),
-//                 },
-//               ],
-//               { cancelable: false }
-//             );
-//           });
-//         } else {
-//           alert('Please fill Address');
-//         }
-//       } else {
-//         alert('Please fill Contact Number');
-//       }
-//     } else {
-//       alert('Please fill Name');
-//     }
-//   };
 
   render() {
     const placeholder = {

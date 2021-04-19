@@ -16,13 +16,13 @@ interface Schema<TEntity extends object> extends RealmSchema<TEntity, EntityName
 export const CurrentLoggedInUserSchema: Schema<LoggedIn_Session>  = {
   name: 'LoggedIn_Session',
   properties: {
-    deviceId: 'string?',
-    devicePwd: 'string?',
-    companyId: 'string?',
-    unitId: 'string?',
-    unitLineId: 'string?',
-    shiftId: 'string?',
-    dateTime: 'date?'
+    vDeviceId: 'string?',
+    vDeviceSec: 'string?',
+    vCompanyId: 'string?',
+    vUnitId: 'string?',
+    vUnitLineId: 'string?',
+    vShiftId: 'string?',
+    dLoginDateTime: 'date?'
   },
 };
 

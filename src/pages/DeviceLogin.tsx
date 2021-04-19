@@ -148,7 +148,7 @@ export default class DeviceLogin extends React.Component<Props, State> {
    // console.log('DeviceId', finalObj);
     if(finalObj != undefined){
       var vDeviceId = finalObj.vDeviceId;
-      this.setState({vDeviceId,  deviceId: vDeviceId, Password: vDeviceId}, 
+      this.setState({vDeviceId, deviceId: vDeviceId, Password: vDeviceId}, 
 //        ()=> console.log('DeviceID',this.state.vDeviceId)
         )
     }
@@ -162,13 +162,13 @@ export default class DeviceLogin extends React.Component<Props, State> {
   userLoginAndGetData(){
     var {vCompanyId, vUnitId, vUnitLineId, Password, vShiftId, vDeviceId} = this.state;
     var reqObj: any = {
-      "deviceId": vDeviceId,
-      "devicePwd": Password,
-      "companyId": vCompanyId,
-      "unitId": vUnitId,
-      "unitLineId": vUnitLineId,
-      "shiftId": vShiftId,
-      "dateTime": this.state.today//moment().format('YYYY-MM-DD') //"2020-11-04"//moment().format('YYYY-MM-DD')
+      "vDeviceId": vDeviceId,
+      "vDeviceSec": Password,
+      "vCompanyId": vCompanyId,
+      "vUnitId": vUnitId,
+      "vUnitLineId": vUnitLineId,
+      "vShiftId": vShiftId,
+      "dLoginDateTime": this.state.today//moment().format('YYYY-MM-DD') //"2020-11-04"//moment().format('YYYY-MM-DD')
   }
 
   this.setState({loading: true, reqObj}, ()=>{
@@ -224,61 +224,8 @@ export default class DeviceLogin extends React.Component<Props, State> {
     });
   })
 
-    /**
-     * 
-     * {
-        "deviceId": "C6I1L1",
-        "devicePwd": "C6I1L1",
-        "unitId": "U24",
-        "unitLineId": "UL208",
-        "shiftId": "SH1",
-        "dateTime": "2020-11-04"
-      }
-     * 
-     */
     //console.log(reqObj);
   }
-
-
-  
-//   writeToLocalDb = (dataToWrite: any[], timeHour: any[], current_login: any) =>{
-//     console.log('write to DB')
-//     //Clear any existing data in local db
-//     this.clearLocalDb();
-//       //write plan data to local db
-//       //DailyPlanSchema.name
-//         realm.write(() => {
-//             dataToWrite.forEach(obj => {
-//               realm.create(DailyPlanSchema.name, obj);
-//           });
-
-//          timeHour.forEach(obj => {
-//               realm.create(HourInfoSchema.name, obj);
-//           });
-
-//           realm.create(CurrentLoggedInUserSchema.name, current_login)
-
-//         });
-//   }
-
-//   clearLocalDb = () => {
-//     console.log('clear DB')
-//      realm.write(() => {
-//     // Delete multiple books by passing in a `Results`, `List`,
-//     // or JavaScript `Array`
-
-//     let allcCurrentLoginData = realm.objects(CurrentLoggedInUserSchema.name);
-//      realm.delete(allcCurrentLoginData);
-
-//     let allTimeData = realm.objects(HourInfoSchema.name);
-//      realm.delete(allTimeData);
-
-//      let allPlanData = realm.objects(DailyPlanSchema.name);
-//      realm.delete(allPlanData); // Deletes all plans
-//   });
-   
-// }
-
 
 showDatePicker = () => {
   this.setState({isDatePickerVisible: true});
@@ -294,49 +241,6 @@ showDatePicker = () => {
   this.hideDatePicker();
   this.passRef.current.focus();
 };
-
-//   register_user = () => {
-//     var that = this;
-//     const { user_name } = this.state;
-//     const { user_contact } = this.state;
-//     const { user_address } = this.state;
-//     if (user_name) {
-//       if (user_contact) {
-//         if (user_address) {
-//           realm.write(() => {
-//             var ID =
-//               realm.objects('user_details').sorted('user_id', true).length > 0
-//                 ? realm.objects('user_details').sorted('user_id', true)[0]
-//                     .user_id + 1
-//                 : 1;
-//             realm.create('user_details', {
-//               user_id: ID,
-//               user_name: that.state.user_name,
-//               user_contact: that.state.user_contact,
-//               user_address: that.state.user_address,
-//             });
-//             Alert.alert(
-//               'Success',
-//               'You are registered successfully',
-//               [
-//                 {
-//                   text: 'Ok',
-//                   onPress: () => that.props.navigation.navigate('HomeScreen'),
-//                 },
-//               ],
-//               { cancelable: false }
-//             );
-//           });
-//         } else {
-//           alert('Please fill Address');
-//         }
-//       } else {
-//         alert('Please fill Contact Number');
-//       }
-//     } else {
-//       alert('Please fill Name');
-//     }
-//   };
 
   render() {
     const placeholder = {

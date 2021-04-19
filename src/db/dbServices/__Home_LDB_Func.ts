@@ -18,7 +18,7 @@ import {convertToArray} from '../../utils/utilityFunctions'
 import { RealmQuery } from "../lib/realm-helper.types";
 
 export function getCurrentLoggedInUserForToday(dayString: string) {
-    let currLoginData: RealmQuery = Realm.objects<LoggedIn_Session>(CurrentLoggedInUserSchema.name).filtered('dateTime = $0', dayString);
+    let currLoginData: RealmQuery = Realm.objects<LoggedIn_Session>(CurrentLoggedInUserSchema.name).filtered('dLoginDateTime = $0', dayString);
     currLoginData = convertToArray(currLoginData);
     return currLoginData;
 }
@@ -74,7 +74,7 @@ export function clearStaleLocalDb() {
       Realm.delete(existingReworkedData);
   
       let loginData = Realm.objects(CurrentLoggedInUserSchema.name)
-      .filtered('dateTime != $0', fullDate);
+      .filtered('dLoginDateTime != $0', fullDate);
       console.log('clear Previous login data', loginData.length)
       Realm.delete(loginData);
   

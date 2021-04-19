@@ -23,13 +23,13 @@ export type EntityNameOpt = "LoggedIn_Session?" |
                             "QMS_ProductionCountHourly?";
 
 export interface LoggedIn_Session {
-  readonly deviceId: Nullable<string>,
-  readonly devicePwd: Nullable<string>,
-  readonly companyId: Nullable<string>,
-  readonly unitId: Nullable<string>,
-  readonly unitLineId: Nullable<string>,
-  readonly shiftId: Nullable<string>,
-  readonly dateTime: Nullable<Date>
+  readonly vDeviceId: Nullable<string>,
+  readonly vDeviceSec: Nullable<string>,
+  readonly vCompanyId: Nullable<string>,
+  readonly vUnitId: Nullable<string>,
+  readonly vUnitLineId: Nullable<string>,
+  readonly vShiftId: Nullable<string>,
+  readonly dLoginDateTime: Nullable<Date>
 }
 
 export interface QMS_SecurityProductionDeviceInfo {

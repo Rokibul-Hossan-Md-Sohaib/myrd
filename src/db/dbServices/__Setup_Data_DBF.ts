@@ -41,13 +41,13 @@ export function loggedOutAndAbleToGoToLoginPage(): boolean{
       Realm.delete(allDeviceInfo);
   
       let loginData = Realm.objects(CurrentLoggedInUserSchema.name)
-      .filtered('dateTime = $0', fullDate);
+      .filtered('dLoginDateTime = $0', fullDate);
       //console.log(allDeviceInfo.length)
       Realm.delete(loginData);
   });
 
     let loggedinData = Realm.objects(CurrentLoggedInUserSchema.name)
-    .filtered('dateTime = $0', fullDate);
+    .filtered('dLoginDateTime = $0', fullDate);
 
     let prevPlanData = Realm.objects(DailyPlanSchema.name)
     .filtered('dDate = $0', fullDate);

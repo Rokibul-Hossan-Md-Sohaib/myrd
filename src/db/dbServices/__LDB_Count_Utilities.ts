@@ -137,7 +137,7 @@ const getTodaysTotalReworkCount=(reqObj: any)=>{
   }
 
 const getCurrentLoggedInUserForToday=(dayString: string)=>{
-    let currLoginData: RealmQuery = Realm.objects<LoggedIn_Session>(CurrentLoggedInUserSchema.name).filtered('dateTime = $0', dayString);
+    let currLoginData: RealmQuery = Realm.objects<LoggedIn_Session>(CurrentLoggedInUserSchema.name).filtered('dLoginDateTime = $0', dayString);
     currLoginData = convertToArray(currLoginData);
     return currLoginData[0];
 }
@@ -154,8 +154,8 @@ const getCurrentHourExistingData=(reqObj: any, currentHour: vwTimeInfo, current_
                       reqObj.dDate, 
                       reqObj.vProductionPlanId, 
                       currentHour.vHourId, 
-                      current_login.unitLineId, 
-                      current_login.deviceId);
+                      current_login.vUnitLineId, 
+                      current_login.vDeviceId);
       existingData = convertToArray(existingData);
 
       return existingData[0];
