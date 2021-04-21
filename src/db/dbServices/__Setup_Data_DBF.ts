@@ -46,6 +46,7 @@ export function loggedOutAndAbleToGoToLoginPage(): boolean{
       Realm.delete(loginData);
   });
 
+    /**Making sure logout successfull */
     let loggedinData = Realm.objects(CurrentLoggedInUserSchema.name)
     .filtered('dLoginDateTime = $0', fullDate);
 

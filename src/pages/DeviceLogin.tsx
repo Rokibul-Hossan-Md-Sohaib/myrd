@@ -1,6 +1,6 @@
 /*Screen to register the user*/
 import React from 'react';
-import { View, ScrollView, KeyboardAvoidingView, Alert, StyleSheet, Text, Pressable } from 'react-native';
+import { View, ScrollView, KeyboardAvoidingView, StyleSheet, Text, Pressable } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Mytextinput from './components/Mytextinput';
@@ -10,8 +10,9 @@ import Mybutton from './components/Mybutton';
 import {post} from '../utils/apiUtils'
 import ProgressDialog from '../utils/loader'
 import {setupPickerData} from '../utils/utilityFunctions'
+import {handleAndroidBackButton, removeAndroidBackButtonHandler} from '../utils/backHandler.config';
 import Orientation from 'react-native-orientation';
-import {getQmsDeviceSecurityData, writeToLocalDb} from '../db/dbServices/__Device_Login_DBF'
+import {getQmsDeviceSecurityData, rehydrateExistingdata, writeToLocalDb} from '../db/dbServices/__Device_Login_DBF'
 //import Realm from 'realm';
 import { NavigationScreenProp } from 'react-navigation';
 //let realm: Realm;
@@ -93,8 +94,18 @@ export default class DeviceLogin extends React.Component<Props, State> {
       'didFocus',
       payload => {
         Orientation.lockToPortrait();
+        handleAndroidBackButton(this.navigateBack);
       });
   }
+
+  
+  navigateBack = ()=>{
+    this.props.navigation.navigate("HomeScreen");
+}
+
+    componentWillUnmount(){
+      removeAndroidBackButtonHandler();
+    }
 
     componentDidMount(){
       Orientation.lockToPortrait()
@@ -172,20 +183,21 @@ export default class DeviceLogin extends React.Component<Props, State> {
   }
 
   this.setState({loading: true, reqObj}, ()=>{
-    post('/GetProductionPlanUnitLineData', reqObj)
+    post('/ApiData/GetProductionPlanUnitLineData', reqObj)
     .then((response: any) => {
         this.setState({loading: false}, ()=>{
-            var responseData = response.data.compUnitPlanData;
+            var responseData = response.data;//.compUnitPlanData;
+            var rehydrateData = responseData.existingAvailableData;
             //console.log(responseData); timeHourData
-            //.compUnitPlanData.msg
+            //.compUnitPlanData.msg GetProductionPlanUnitLineData
         if(responseData.auth){
-
-          var timeHour = response.data.timeHourData
+          var timeHour = responseData.timeInfos;
           
           var toastFlavour = responseData.dailyProdPlanData.length > 0 ? "success" : "info";
           var toastTitleTxt = responseData.dailyProdPlanData.length > 0 ? "Successed!" : "Info!";
 
           writeToLocalDb(responseData.dailyProdPlanData, timeHour, reqObj);
+          rehydrateExistingdata(rehydrateData[0].productionData, rehydrateData[1].defectData, rehydrateData[2].rejectData, rehydrateData[3].reworkedData);
           
           Toast.show({
             type: toastFlavour,
@@ -206,7 +218,7 @@ export default class DeviceLogin extends React.Component<Props, State> {
                 position: 'bottom',
                 text1: 'Error!',
                 text2: responseData.msg,
-                visibilityTime: 1500,
+                visibilityTime: 2000,
                 })
         }
         });

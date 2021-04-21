@@ -90,7 +90,7 @@ export default class HomeScreen extends React.Component<Props, State> {
     /**Clear Stale Local DB Data */  
     clearStaleLocalDb();
     //console.log('came here..')GetCompanyUnitLineData
-    get('/GetCompanyUnitLineData')
+    get('/ApiData/GetCompanyUnitLineData')
     .then((response: any) => {
 
         this.setState({loading: false}, ()=>{
@@ -149,7 +149,6 @@ export default class HomeScreen extends React.Component<Props, State> {
           flexDirection: 'column',
         }}>
         <ProgressDialog loading={this.state.loading} />
-        {/* <Mytext text="RealM Example" /> */}
         <View></View>
         <View style={{position:'absolute', bottom: '10%', width: '100%'}}>
           <Mybutton
@@ -157,26 +156,6 @@ export default class HomeScreen extends React.Component<Props, State> {
             customClick={() => this.checkLoggedInAndRouteToSetupData()}
           />
         </View>
-        {/* <Mybutton
-          title="Register"
-          customClick={() => this.props.navigation.navigate('Register')}
-        />
-        <Mybutton
-          title="Update"
-          customClick={() => this.props.navigation.navigate('Update')}
-        />
-        <Mybutton
-          title="View"
-          customClick={() => this.props.navigation.navigate('View')}
-        />
-        <Mybutton
-          title="View All"
-          customClick={() => this.props.navigation.navigate('ViewAll')}
-        />
-        <Mybutton
-          title="Delete"
-          customClick={() => this.props.navigation.navigate('Delete')}
-        /> */}
       </View>
     );
   }

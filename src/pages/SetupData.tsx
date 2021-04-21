@@ -1,6 +1,6 @@
 /*Screen to register the user*/
 import React from 'react';
-import { View, ScrollView, KeyboardAvoidingView, Alert, StyleSheet, Text } from 'react-native';
+import { View, ScrollView, KeyboardAvoidingView, Alert, StyleSheet, Text, BackHandler } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import Mytextinput from './components/Mytextinput';
 import DeviceInfo from 'react-native-device-info'
@@ -10,7 +10,7 @@ import Mybutton from './components/Mybutton';
 import {post} from '../utils/apiUtils'
 import ProgressDialog from '../utils/loader'
 import Orientation from 'react-native-orientation';
-
+import {handleAndroidBackButton, removeAndroidBackButtonHandler} from '../utils/backHandler.config';
 import {setupPickerData} from '../utils/utilityFunctions'
 import {getAllDailyProductionPlanSummery, loggedOutAndAbleToGoToLoginPage} from '../db/dbServices/__Setup_Data_DBF'
 import { NavigationScreenProp } from 'react-navigation';
@@ -93,15 +93,58 @@ export default class SetupData extends React.Component<Props, State> {
     this.props.navigation.addListener(
       'didFocus',
       payload => {
-        Orientation.lockToPortrait()
+        Orientation.lockToPortrait();
+        handleAndroidBackButton(this.navigateBack);
       });
   }
 
+  navigateBack = ()=>{
+    Alert.alert(
+      "Do you want to really quit the app?",
+      "",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        },
+        { text: "Exit", onPress: () => BackHandler.exitApp()}
+      ]
+    );
+  }
+
+  syncAndLogout(){
+    Alert.alert(
+      "Do you Want to Logout?",
+      "Data Needs to be synced before logout.",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        },
+        { text: "Sync & Logout", onPress: () => this.syncBulkData() }
+      ]
+    );
+  }
+
+  syncBulkData(){
+    /**TODO: BULK DATA SYNC */
+    console.log("data will be synced")
+    /**Here Bulk Data Will be synced  then call logoutAndGotoLoginPage() */
+
+    this.logoutAndGotoLoginPage();
+  }
+
   logoutAndGotoLoginPage(): void{
+    /**Logout from Server */
+    post('/ApiData/LogoutFunction', this.state.reqObj)
+    .then(() => {}).catch(errorMessage => console.log(errorMessage));
+
+    /**Logout from LocalDb as well */
     let isLoggedOut = loggedOutAndAbleToGoToLoginPage();
     if(isLoggedOut){
       console.log('logged out')
-      
         this.props.navigation.navigate('DeviceLogin')
     }else{
       console.log("logout failed!")
@@ -113,6 +156,15 @@ export default class SetupData extends React.Component<Props, State> {
       Orientation.lockToPortrait()
       let comInfo: any = getAllDailyProductionPlanSummery();
       /**
+       * {
+    "vCompanyId": "C0002",
+    "dLoginDateTime": "2021-04-11",
+    "vDeviceId": "C2G1L1",
+    "vDeviceSec": "C2G1L1",
+    "vShiftId": null,
+    "vUnitId": "U8",
+    "vUnitLineId": "UL57"
+}
        * TODO: We need to check for any existing data for today to rehydrate local db from main server 
        * if there is no data exixts in local db and the user is already logged in.
        * 
@@ -135,7 +187,8 @@ export default class SetupData extends React.Component<Props, State> {
       
     }
     componentWillUnmount(){
-      console.log("component unmounted...")
+      console.log("component unmounted...");
+      removeAndroidBackButtonHandler();
     }
  
   gotoMultipleSizeCountScreen(){
@@ -425,7 +478,7 @@ export default class SetupData extends React.Component<Props, State> {
             <Mybutton
               title="Logout"
               //disabled={this.state.showLogoutButton}
-             customClick={()=>  this.logoutAndGotoLoginPage()}
+             customClick={()=>   this.syncAndLogout()}
             />
           </KeyboardAvoidingView>
         </ScrollView>

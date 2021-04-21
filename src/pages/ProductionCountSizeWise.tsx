@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import { View, Text, StatusBar, Pressable, Dimensions, StyleSheet, Modal, TouchableOpacity, Button } from 'react-native';
 import moment from 'moment'
 import Toast from 'react-native-toast-message';
+import {handleAndroidBackButton, removeAndroidBackButtonHandler} from '../utils/backHandler.config';
+import NetInfo, {NetInfoSubscription, NetInfoState} from '@react-native-community/netinfo'
 import {
   writeProductionToLocalDB, 
   writeReworkedToLocalDB, 
@@ -24,6 +26,7 @@ import {moderateScale} from 'react-native-size-matters'
 import Orientation from 'react-native-orientation';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProp } from 'react-navigation';
+import { post, SERVER_DOMAIN } from '../utils/apiUtils';
 let dateObj: Date = new Date();
 
 
@@ -66,12 +69,14 @@ type State = {
   currentCountObj:any,
 
   currentHour: any,
-  isSynced: boolean,
+  isConnected: boolean | null;
 };
 
 
 
 class ProductionCountSizeWise extends React.Component<Props, State> {
+
+    _subscription: NetInfoSubscription | null = null;
 
     state: State ={
       today: moment().format('YYYY-MM-DD'),
@@ -108,7 +113,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       currentCountObj:{},
 
       currentHour: null,
-      isSynced: false,
+      isConnected: false,
     }
 
 //moment(new Date()).format("hh:00A");
@@ -118,8 +123,13 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         'didFocus',
         payload => {
           Orientation.lockToLandscapeLeft();
+          handleAndroidBackButton(this.navigateBack);
         });
     }
+
+    navigateBack = ()=>{
+      this.props.navigation.goBack();
+  }
 
     countFtt(){
       //vHourId: this.getCurrentHourId(),
@@ -160,7 +170,14 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
               currentHour: thisHourID["vHourId"]
             }),()=>{
               //console.log('Production count write to db....', this.state.currentCountObj)
-                writeProductionToLocalDB(this.state.currentCountObj);
+            var {currentCountObj} = this.state;
+            /**Send Data to Server for persistance */
+            post('/DataTracking/TrackProductionData', currentCountObj)
+            .then((response) => console.log(response)).catch(errorMessage => console.log('err:',errorMessage));
+            
+            /**Send Data to local persistance */
+            writeProductionToLocalDB(currentCountObj);
+
             });
 
         }else{
@@ -186,7 +203,14 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
               text2: "New Hour Detected! "+thisHourID["vHourId"],
               visibilityTime: 1500,
               });
-                writeProductionToLocalDB(this.state.currentCountObj);
+
+              var {currentCountObj} = this.state;
+              /**Send Data to Server for persistance */
+              post('/DataTracking/TrackProductionData', currentCountObj)
+              .then((response) => console.log(response)).catch(errorMessage => console.log('err:',errorMessage));
+              
+              /**Send Data to local persistance */
+              writeProductionToLocalDB(currentCountObj);
           });
         }
       }
@@ -199,23 +223,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         defectCount: prevState.defectCount + 1,
         totalDayDefectCount: prevState.totalDayDefectCount+1
       }), ()=>{
-          //console.log('count defect')
-          
-        /**
-         *                       vBuyerId:  reqObj.vBuyerId,
-                      vBuyerName: reqObj.vBuyerName,
-                
-                      vStyleId:  reqObj.vStyleId,
-                      vStyleName: reqObj.vStyleName,
-                
-                      vExpPoorderNo:  reqObj.vExpPoorderNo,
-                
-                      vColorId:  reqObj.vColorId,
-                      vColorName: reqObj.vColorName,
-                
-                      vSizeId:  reqObj.vSizeId,
-                      vSizeName: reqObj.vSizeName,
-         */
+        
         var currentDefectCountObj =
           {
             iAutoId: 0,
@@ -247,7 +255,11 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             dLastUpdated: dateObj
         };
 
-        //console.log(currentDefectCountObj);
+        /**Send Data to Server for persistance */
+        post('/DataTracking/TrackDefectData', currentDefectCountObj)
+        .then((response) => console.log(response)).catch(errorMessage => console.log('err:',errorMessage));
+        
+        /**Send Data to local persistance */
         writeDefectToLocalDB(currentDefectCountObj);
         /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
         /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
@@ -293,6 +305,9 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             dLastUpdated: dateObj
         };
 
+         /**Send Data to Server for persistance */
+         post('/DataTracking/TrackRejectData', currentRejectCountObj)
+         .then((response) => console.log(response)).catch(errorMessage => console.log('err:',errorMessage));
         //console.log(currentRejectCountObj);
         writeRejectToLocalDB(currentRejectCountObj);
         /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
@@ -335,6 +350,11 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             dLastUpdated: dateObj
         };
 
+
+         /**Send Data to Server for persistance */
+         post('/DataTracking/TrackReworkedData', currentReworkedCountObj)
+         .then((response) => console.log(response)).catch(errorMessage => console.log('err:',errorMessage));
+
         //console.log(currentReworkedCountObj);
         writeReworkedToLocalDB(currentReworkedCountObj);
 
@@ -346,12 +366,34 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       this.setState({selectedDefectCategory: categoryId, filteredDefects, shwoNextButton:false},()=> console.log("Defectes Count",filteredDefects.length))
     }
 
+    _handleConnectivityChange = (state: NetInfoState) => {
+      this.setState({
+        isConnected: state.isConnected,
+      });
+    };
+
     componentWillUnmount(){
+      this._subscription && this._subscription();
+      removeAndroidBackButtonHandler();
       console.log('unmounted production count');
     }
 
     componentDidMount(){
+
+      NetInfo.configure({
+        reachabilityUrl: SERVER_DOMAIN+"/DataTracking/ConnectionOk",//'https://clients3.google.com/generate_204',
+        reachabilityTest: async (response) => response.status === 200,
+        //reachabilityLongTimeout: 20 * 1000, // 60s
+        //reachabilityShortTimeout: 5 * 1000, // 5s
+        reachabilityRequestTimeout: 10 * 1000, // 15s
+      });
+
       Orientation.lockToLandscapeLeft();
+      
+      this._subscription = NetInfo.addEventListener(
+        this._handleConnectivityChange
+      );
+
       var currentCountObj: any = {};
       const reqObj: any = this.props.navigation.getParam('userData');
       var current_login: any = getCurrentLoggedInUserForToday(this.state.today);
@@ -508,7 +550,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
           <View style={{flex:.65, flexDirection:'row', justifyContent:'space-evenly', borderWidth: 1, borderColor: 'green'}}>
             <View style={{flex:.1, justifyContent:'center', alignItems:'center'}}>
                 {/* <Text>green</Text> */}
-                <View style={{height: 20, width:20, backgroundColor: this.state.isSynced ? 'green' : 'red', borderRadius: 25 }} />
+                <View style={{height: 20, width:20, backgroundColor: this.state.isConnected ? 'green' : 'red', borderRadius: 25 }} />
             </View>
 
 

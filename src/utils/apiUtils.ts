@@ -1,8 +1,7 @@
 import axios from 'axios';
 import handleError from './handleError';
-const SERVER_DOMAIN = 'http://192.168.111.212:84/ApiData';
+export const SERVER_DOMAIN = 'http://192.168.111.212:84';
 
-//http://192.168.111.212:84/ApiData/GetCompanyUnitLineData
 const getHeaders: any = () => {
   return {
     timeout: 5000,
