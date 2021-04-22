@@ -3,7 +3,6 @@ import React from 'react';
 import { View, ScrollView, KeyboardAvoidingView, Alert, StyleSheet, Text, BackHandler } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import Mytextinput from './components/Mytextinput';
-import DeviceInfo from 'react-native-device-info'
 import moment from 'moment'
 import Toast from 'react-native-toast-message';
 import Mybutton from './components/Mybutton';

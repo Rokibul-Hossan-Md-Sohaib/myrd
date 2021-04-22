@@ -24,6 +24,7 @@ const App = createStackNavigator({
       title: 'QMS Home',
       headerStyle: { backgroundColor: '#3a59b7' },
       headerTintColor: '#ffffff',
+      headerLeft: ()=> null
     },
   },
   DeviceLogin: {
@@ -32,6 +33,7 @@ const App = createStackNavigator({
       title: 'QMS Login',
       headerStyle: { backgroundColor: '#3a59b7' },
       headerTintColor: '#ffffff',
+      headerLeft: ()=> null
     },
   },
   SetupData: {
@@ -40,6 +42,7 @@ const App = createStackNavigator({
       title: 'QMS Data Setup',
       headerStyle: { backgroundColor: '#3a59b7' },
       headerTintColor: '#ffffff',
+      headerLeft: ()=> null
     },
   },
   ProductionCountSizeWise: {
