@@ -6,6 +6,7 @@ import {
 } from '../schemas/realm-schema';
 import { QMS_DefectCountDaily, QMS_ProductionCountHourly, QMS_RejectCountDaily, QMS_ReworkedCountDaily } from '../schemas/entities';
 import Realm from "../schemas/realm";
+import { post } from '../../utils/apiUtils';
 const dateObj: Date = new Date();
 
 const writeProductionToLocalDB = (dataToWrite: any) =>{
@@ -41,6 +42,9 @@ const writeProductionToLocalDB = (dataToWrite: any) =>{
           }
       });
 
+      /**Send Data to Server for persistance */
+      post('/DataTracking/TrackProductionData', dataToWrite)
+      .then((response: any) => console.log(response.data)).catch(errorMessage => console.log('err prod count :',errorMessage));
       // Realm.close();
   }
 
@@ -78,7 +82,10 @@ const writeReworkedToLocalDB = (dataToWrite: any) =>{
        }                            
          
    });
-    
+   
+      /**Send Data to Server for persistance */
+     post('/DataTracking/TrackReworkedData', dataToWrite)
+    .then((response: any) => console.log(response.data)).catch(errorMessage => console.log('err reworked count:',errorMessage));
    //Realm.close();
 }
 
@@ -108,10 +115,18 @@ const writeRejectToLocalDB = (dataToWrite: any) =>{
        }else{
          existingData.iRejectCount +=  1;
          existingData.dLastUpdated   =  dateObj;
+
+         dataToWrite.iRejectCount = existingData.iRejectCount;
+         dataToWrite.dLastUpdated = existingData.dLastUpdated;
        }                            
          
    });
+    console.log('reject Obj count',dataToWrite.iRejectCount);
+    console.log('reject Obj updated',dataToWrite.dLastUpdated);
     //console.log(dataToWrite);
+     /**Send Data to Server for persistance */
+    post('/DataTracking/TrackRejectData', dataToWrite)
+    .then((response: any) => console.log(response.data)).catch(errorMessage => console.log('err:',errorMessage));
 }
 
 const writeDefectToLocalDB = (dataToWrite: any) =>{
@@ -140,10 +155,15 @@ const writeDefectToLocalDB = (dataToWrite: any) =>{
        }else{
          existingData.iDefectCount +=  1;
          existingData.dLastUpdated   =  dateObj;
+
+         dataToWrite.iDefectCount = existingData.iDefectCount;
+         dataToWrite.dLastUpdated = existingData.dLastUpdated;
        }                            
          
    });
-    //console.log(dataToWrite);
+   /**Send Data to Server for persistance */
+   post('/DataTracking/TrackDefectData', dataToWrite)
+   .then((response: any) => console.log(response.data)).catch(errorMessage => console.log('err:',errorMessage));
 }
 
   export {

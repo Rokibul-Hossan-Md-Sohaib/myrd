@@ -171,9 +171,6 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             }),()=>{
               //console.log('Production count write to db....', this.state.currentCountObj)
             var {currentCountObj} = this.state;
-            /**Send Data to Server for persistance */
-            post('/DataTracking/TrackProductionData', currentCountObj)
-            .then((response) => console.log(response)).catch(errorMessage => console.log('err:',errorMessage));
             
             /**Send Data to local persistance */
             writeProductionToLocalDB(currentCountObj);
@@ -205,9 +202,6 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
               });
 
               var {currentCountObj} = this.state;
-              /**Send Data to Server for persistance */
-              post('/DataTracking/TrackProductionData', currentCountObj)
-              .then((response) => console.log(response)).catch(errorMessage => console.log('err:',errorMessage));
               
               /**Send Data to local persistance */
               writeProductionToLocalDB(currentCountObj);
@@ -255,10 +249,6 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             dLastUpdated: dateObj
         };
 
-        /**Send Data to Server for persistance */
-        post('/DataTracking/TrackDefectData', currentDefectCountObj)
-        .then((response) => console.log(response)).catch(errorMessage => console.log('err:',errorMessage));
-        
         /**Send Data to local persistance */
         writeDefectToLocalDB(currentDefectCountObj);
         /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
@@ -305,9 +295,6 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             dLastUpdated: dateObj
         };
 
-         /**Send Data to Server for persistance */
-         post('/DataTracking/TrackRejectData', currentRejectCountObj)
-         .then((response) => console.log(response)).catch(errorMessage => console.log('err:',errorMessage));
         //console.log(currentRejectCountObj);
         writeRejectToLocalDB(currentRejectCountObj);
         /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
@@ -352,8 +339,8 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
 
 
          /**Send Data to Server for persistance */
-         post('/DataTracking/TrackReworkedData', currentReworkedCountObj)
-         .then((response) => console.log(response)).catch(errorMessage => console.log('err:',errorMessage));
+        //  post('/DataTracking/TrackReworkedData', currentReworkedCountObj)
+        //  .then((response) => console.log(response)).catch(errorMessage => console.log('err:',errorMessage));
 
         //console.log(currentReworkedCountObj);
         writeReworkedToLocalDB(currentReworkedCountObj);
@@ -363,7 +350,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
 
     filterDefectesCategoryWise(categoryId: string){
       var filteredDefects = this.state.allDefects.filter(x=> x.vDefectCategoryId === categoryId);
-      this.setState({selectedDefectCategory: categoryId, filteredDefects, shwoNextButton:false},()=> console.log("Defectes Count",filteredDefects.length))
+      this.setState({selectedDefectCategory: categoryId, filteredDefects, shwoNextButton:false});
     }
 
     _handleConnectivityChange = (state: NetInfoState) => {
