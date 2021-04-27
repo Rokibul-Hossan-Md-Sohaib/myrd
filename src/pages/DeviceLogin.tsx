@@ -15,6 +15,7 @@ import Orientation from 'react-native-orientation';
 import {getQmsDeviceSecurityData, rehydrateExistingdata, writeToLocalDb} from '../db/dbServices/__Device_Login_DBF'
 //import Realm from 'realm';
 import { NavigationScreenProp } from 'react-navigation';
+import { __REHYDRATING_DATA_PATH } from '../utils/constKVP';
 //let realm: Realm;
 
 type Props = {
@@ -183,7 +184,7 @@ export default class DeviceLogin extends React.Component<Props, State> {
   }
 
   this.setState({loading: true, reqObj}, ()=>{
-    post('/ApiData/GetProductionPlanUnitLineData', reqObj)
+    post(__REHYDRATING_DATA_PATH, reqObj)
     .then((response: any) => {
         this.setState({loading: false}, ()=>{
             var responseData = response.data;//.compUnitPlanData;

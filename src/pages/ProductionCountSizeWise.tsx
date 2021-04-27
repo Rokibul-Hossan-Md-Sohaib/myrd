@@ -26,9 +26,17 @@ import {moderateScale} from 'react-native-size-matters'
 import Orientation from 'react-native-orientation';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProp } from 'react-navigation';
-import { post, SERVER_DOMAIN } from '../utils/apiUtils';
+import { get } from '../utils/apiUtils';
+import { __API_OK_PATH } from '../utils/constKVP';
 let dateObj: Date = new Date();
 
+/**
+ * /DataTracking/SyncBulkProductionData
+ * /DataTracking/SyncBulkDefectData
+ * /DataTracking/SyncBulkRejectData
+ * /DataTracking/SyncBulkReworkedData
+ * 
+ */
 
 type Props = {
   navigation: NavigationScreenProp<any,any>
@@ -69,7 +77,8 @@ type State = {
   currentCountObj:any,
 
   currentHour: any,
-  isConnected: boolean | null;
+  isConnected: boolean | null,
+  isApiOK: boolean | null
 };
 
 
@@ -114,6 +123,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
 
       currentHour: null,
       isConnected: false,
+      isApiOK: true,
     }
 
 //moment(new Date()).format("hh:00A");
@@ -132,6 +142,8 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
   }
 
     countFtt(){
+      /**Check if the API End is available now */
+      //this.checkApiAvailability();
       //vHourId: this.getCurrentHourId(),
       //get Previous hour check if new hour equels to state hour
       var thisHourID: any = getCurrentHourId();
@@ -212,6 +224,8 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
     }
 
     countDefect(){
+      /**Check if the API End is available now */
+      //this.checkApiAvailability();
 
       this.setState((prevState, props) => ({
         defectCount: prevState.defectCount + 1,
@@ -258,7 +272,9 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
     }
     
     countreject(){
-      
+      /**Check if the API End is available now */
+      //this.checkApiAvailability();
+
       this.setState((prevState, props) => ({
         rejectCount: prevState.rejectCount + 1,
         totalDayRejectCount: prevState.totalDayRejectCount+1
@@ -305,6 +321,8 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
     }
 
     countreworked(){
+      /**Check if the API End is available now */
+      //this.checkApiAvailability();
 
       this.setState((prevState, props) => ({
         reworkedCount: prevState.reworkedCount + 1,
@@ -365,18 +383,23 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       console.log('unmounted production count');
     }
 
-    componentDidMount(){
-
-      NetInfo.configure({
-        reachabilityUrl: SERVER_DOMAIN+"/DataTracking/ConnectionOk",//'https://clients3.google.com/generate_204',
-        reachabilityTest: async (response) => response.status === 200,
-        //reachabilityLongTimeout: 20 * 1000, // 60s
-        //reachabilityShortTimeout: 5 * 1000, // 5s
-        reachabilityRequestTimeout: 10 * 1000, // 15s
+    checkApiAvailability= async()=>{
+      await get(__API_OK_PATH)
+      .then((response: any) => {
+        console.log(response);
+        this.setState({isApiOK: true},()=> console.log('api ok', response.data));
+      })
+      .catch(errorMessage => {
+        this.setState({isApiOK: false},()=> console.log('api ok false', errorMessage));
       });
+    }
+
+    componentDidMount= async()=>{
 
       Orientation.lockToLandscapeLeft();
-      
+      /**Check if the API End is available now */
+      await this.checkApiAvailability();
+
       this._subscription = NetInfo.addEventListener(
         this._handleConnectivityChange
       );
@@ -537,7 +560,8 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
           <View style={{flex:.65, flexDirection:'row', justifyContent:'space-evenly', borderWidth: 1, borderColor: 'green'}}>
             <View style={{flex:.1, justifyContent:'center', alignItems:'center'}}>
                 {/* <Text>green</Text> */}
-                <View style={{height: 20, width:20, backgroundColor: this.state.isConnected ? 'green' : 'red', borderRadius: 25 }} />
+                <View style={{height: 25, width:25, backgroundColor: this.state.isConnected ? '#45c065' : '#ff5353', borderRadius: 25 }} />
+                <View style={{position:'absolute', height: 15, width:15, backgroundColor: (this.state.isConnected && this.state.isApiOK) ? '#45c065' : '#fda912', borderRadius: 25 }} />
             </View>
 
 

@@ -6,16 +6,12 @@ import {
 } from '../schemas/realm-schema';
 import { QMS_DefectCountDaily, QMS_ProductionCountHourly, QMS_RejectCountDaily, QMS_ReworkedCountDaily } from '../schemas/entities';
 import Realm from "../schemas/realm";
-import { post } from '../../utils/apiUtils';
+import {post, syncDataRequest } from '../../utils/apiUtils';
+import { convertToArray } from '../../utils/utilityFunctions';
+import { __TRACK_DFCT_DATA, __TRACK_PROD_DATA, __TRACK_REJT_DATA, __TRACK_REWD_DATA } from '../../utils/constKVP';
 const dateObj: Date = new Date();
 
 const writeProductionToLocalDB = (dataToWrite: any) =>{
-    //console.log('write to DB')
-
-    // const Realm = new Realm({
-    //   path: 'QmsDb.realm',
-    //   schema: [ProductionCountSchema],
-    // });
     
       Realm.write(() => { //write single data
         //Realm.create(ProductionCountSchema.name, updatedData);
@@ -43,20 +39,12 @@ const writeProductionToLocalDB = (dataToWrite: any) =>{
       });
 
       /**Send Data to Server for persistance */
-      post('/DataTracking/TrackProductionData', dataToWrite)
+      post(__TRACK_PROD_DATA, dataToWrite)
       .then((response: any) => console.log(response.data)).catch(errorMessage => console.log('err prod count :',errorMessage));
       // Realm.close();
   }
 
 const writeReworkedToLocalDB = (dataToWrite: any) =>{
-    /***TODO: Check Esisting Data, if exists Update, otherwise add new entry */
-    /**Show total defect count on screen Tile */
-    /** defect count should be at size level... */
-
-    // const Realm = new Realm({
-    //   path: 'QmsDb.Realm',
-    //   schema: [ReworkedCountSchema],
-    // });
 
     Realm.write(() => { //write single data
      //Realm.create(ProductionCountSchema.name, updatedData);
@@ -84,15 +72,13 @@ const writeReworkedToLocalDB = (dataToWrite: any) =>{
    });
    
       /**Send Data to Server for persistance */
-     post('/DataTracking/TrackReworkedData', dataToWrite)
+     post(__TRACK_REWD_DATA, dataToWrite)
     .then((response: any) => console.log(response.data)).catch(errorMessage => console.log('err reworked count:',errorMessage));
    //Realm.close();
 }
 
 const writeRejectToLocalDB = (dataToWrite: any) =>{
-    /***TODO: Check Esisting Data, if exists Update, otherwise add new entry */
-    /**Show total defect count on screen Tile */
-    /** defect count should be at size level... */
+    
     Realm.write(() => { //write single data
      //Realm.create(ProductionCountSchema.name, updatedData);
      let existingData: any = Realm.objects<QMS_RejectCountDaily>(RejectCountSchema.name)
@@ -125,16 +111,14 @@ const writeRejectToLocalDB = (dataToWrite: any) =>{
     console.log('reject Obj updated',dataToWrite.dLastUpdated);
     //console.log(dataToWrite);
      /**Send Data to Server for persistance */
-    post('/DataTracking/TrackRejectData', dataToWrite)
+    post(__TRACK_REJT_DATA, dataToWrite)
     .then((response: any) => console.log(response.data)).catch(errorMessage => console.log('err:',errorMessage));
 }
 
 const writeDefectToLocalDB = (dataToWrite: any) =>{
-    /***TODO: Check Esisting Data, if exists Update, otherwise add new entry */
-    /**Show total defect count on screen Tile */
-    /** defect count should be at size level... */
+
     Realm.write(() => { //write single data
-     //Realm.create(ProductionCountSchema.name, updatedData);
+
      let existingData: any = Realm.objects<QMS_DefectCountDaily>(DefectCountSchema.name)
                          .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId = $2 && vDeviceId=$3 && vDefectCode=$4 && vStyleId=$5 && vSizeId=$6 && vExpPoorderNo=$7 && vColorId=$8 && vBuyerId=$9', 
                          dataToWrite.dDateOfProduction, 
@@ -162,13 +146,35 @@ const writeDefectToLocalDB = (dataToWrite: any) =>{
          
    });
    /**Send Data to Server for persistance */
-   post('/DataTracking/TrackDefectData', dataToWrite)
+   post(__TRACK_DFCT_DATA, dataToWrite)
    .then((response: any) => console.log(response.data)).catch(errorMessage => console.log('err:',errorMessage));
+}
+
+const syncBulkData = async () =>{
+  
+    var prodData: any, defectData: any, rejectData: any, reworkData: any;
+
+    prodData = Realm.objects(ProductionCountSchema.name);
+    prodData = convertToArray(prodData);
+
+    defectData = Realm.objects(DefectCountSchema.name);
+    defectData = convertToArray(defectData);
+
+    rejectData = Realm.objects(RejectCountSchema.name);
+    rejectData = convertToArray(rejectData);
+
+    reworkData = Realm.objects(ReworkedCountSchema.name);
+    reworkData = convertToArray(reworkData);
+    
+    await syncDataRequest(prodData, defectData, rejectData, reworkData)
+    .then((response: any) => console.log('\nsync response:',"\n"+response[0].data, "\n"+response[1].data, "\n"+response[2].data, "\n"+response[3].data)).catch(errorMessage => console.log('err prod count :',errorMessage));
+  
 }
 
   export {
       writeProductionToLocalDB, 
       writeReworkedToLocalDB,
       writeRejectToLocalDB,
-      writeDefectToLocalDB
+      writeDefectToLocalDB,
+      syncBulkData
     };

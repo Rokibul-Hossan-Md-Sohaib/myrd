@@ -14,6 +14,8 @@ import {
   planDataExistsForToday,
   setDeviceAndDefectMasterDataLocalDB
 } from '../db/dbServices/__Home_LDB_Func'
+import {syncBulkData} from '../db/dbServices/__LDB_Count_Services'
+import { __MASTER_DATA_PATH } from '../utils/constKVP';
 
 type Props = {
   navigation: NavigationScreenProp<any,any>
@@ -86,11 +88,13 @@ export default class HomeScreen extends React.Component<Props, State> {
     }
   }
 
-  getInitialData(): void{
+  getInitialData = async () => {
+    /**Sync Old data before data cleaning */
+    await syncBulkData();
     /**Clear Stale Local DB Data */  
     clearStaleLocalDb();
     //console.log('came here..')GetCompanyUnitLineData
-    get('/ApiData/GetCompanyUnitLineData')
+    get(__MASTER_DATA_PATH)
     .then((response: any) => {
 
         this.setState({loading: false}, ()=>{

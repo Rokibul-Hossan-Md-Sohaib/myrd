@@ -13,6 +13,8 @@ import {handleAndroidBackButton, removeAndroidBackButtonHandler} from '../utils/
 import {setupPickerData} from '../utils/utilityFunctions'
 import {getAllDailyProductionPlanSummery, loggedOutAndAbleToGoToLoginPage} from '../db/dbServices/__Setup_Data_DBF'
 import { NavigationScreenProp } from 'react-navigation';
+import { syncBulkData } from '../db/dbServices/__LDB_Count_Services';
+import { __LOGOUT_PATH } from '../utils/constKVP';
 
 type Props = {
   navigation: NavigationScreenProp<any,any>
@@ -122,22 +124,22 @@ export default class SetupData extends React.Component<Props, State> {
           onPress: () => console.log("Cancel Pressed"),
           style: "cancel"
         },
-        { text: "Sync & Logout", onPress: () => this.syncBulkData() }
+        { text: "Sync & Logout", onPress: () => this.syncData() }
       ]
     );
   }
 
-  syncBulkData(){
+  syncData(){
     /**TODO: BULK DATA SYNC */
+    syncBulkData();
     console.log("data will be synced")
     /**Here Bulk Data Will be synced  then call logoutAndGotoLoginPage() */
-
     this.logoutAndGotoLoginPage();
   }
 
   logoutAndGotoLoginPage(): void{
     /**Logout from Server */
-    post('/ApiData/LogoutFunction', this.state.reqObj)
+    post(__LOGOUT_PATH, this.state.reqObj)
     .then(() => {}).catch(errorMessage => console.log(errorMessage));
 
     /**Logout from LocalDb as well */
@@ -473,7 +475,13 @@ export default class SetupData extends React.Component<Props, State> {
               title="With Multiple Sizes"
               disabled={this.state.disableMultipleSizeButton}
              customClick={()=>  this.gotoMultipleSizeCountScreen()}
+               /**Sync Old data before data cleaning 
             /> */}
+            <Mybutton
+              title="Sync Data"
+              //disabled={this.state.showLogoutButton}
+             customClick={()=>   syncBulkData()}
+            />
             <Mybutton
               title="Logout"
               //disabled={this.state.showLogoutButton}
