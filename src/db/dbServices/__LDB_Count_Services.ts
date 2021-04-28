@@ -11,8 +11,8 @@ import { convertToArray } from '../../utils/utilityFunctions';
 import { __TRACK_DFCT_DATA, __TRACK_PROD_DATA, __TRACK_REJT_DATA, __TRACK_REWD_DATA } from '../../utils/constKVP';
 const dateObj: Date = new Date();
 
-const writeProductionToLocalDB = (dataToWrite: any) =>{
-    
+const writeProductionToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
+      var isApiOK: boolean = false;
       Realm.write(() => { //write single data
         //Realm.create(ProductionCountSchema.name, updatedData);
         let existingData: any = Realm.objects<QMS_ProductionCountHourly>(ProductionCountSchema.name)
@@ -39,13 +39,20 @@ const writeProductionToLocalDB = (dataToWrite: any) =>{
       });
 
       /**Send Data to Server for persistance */
-      post(__TRACK_PROD_DATA, dataToWrite)
-      .then((response: any) => console.log(response.data)).catch(errorMessage => console.log('err prod count :',errorMessage));
+      await post(__TRACK_PROD_DATA, dataToWrite)
+      .then((response: any) => {
+        console.log(response.data);
+        isApiOK = true;
+      }).catch(errorMessage => {
+        console.log('err prod count :',errorMessage);
+        isApiOK = false;
+      });
       // Realm.close();
+      return Promise.resolve(isApiOK);
   }
 
-const writeReworkedToLocalDB = (dataToWrite: any) =>{
-
+const writeReworkedToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
+    var isApiOK: boolean = false;
     Realm.write(() => { //write single data
      //Realm.create(ProductionCountSchema.name, updatedData);
      let existingData: any = Realm.objects<QMS_ReworkedCountDaily>(ReworkedCountSchema.name)
@@ -72,13 +79,22 @@ const writeReworkedToLocalDB = (dataToWrite: any) =>{
    });
    
       /**Send Data to Server for persistance */
-     post(__TRACK_REWD_DATA, dataToWrite)
-    .then((response: any) => console.log(response.data)).catch(errorMessage => console.log('err reworked count:',errorMessage));
+     await post(__TRACK_REWD_DATA, dataToWrite)
+    .then((response: any) => {
+      console.log(response.data)
+      isApiOK = true;
+    })
+    .catch(errorMessage => {
+      console.log('err reworked count:',errorMessage);
+      isApiOK = false;
+    });
    //Realm.close();
+
+   return Promise.resolve(isApiOK);
 }
 
-const writeRejectToLocalDB = (dataToWrite: any) =>{
-    
+const writeRejectToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
+    var isApiOK: boolean = false;
     Realm.write(() => { //write single data
      //Realm.create(ProductionCountSchema.name, updatedData);
      let existingData: any = Realm.objects<QMS_RejectCountDaily>(RejectCountSchema.name)
@@ -111,12 +127,21 @@ const writeRejectToLocalDB = (dataToWrite: any) =>{
     console.log('reject Obj updated',dataToWrite.dLastUpdated);
     //console.log(dataToWrite);
      /**Send Data to Server for persistance */
-    post(__TRACK_REJT_DATA, dataToWrite)
-    .then((response: any) => console.log(response.data)).catch(errorMessage => console.log('err:',errorMessage));
+    await post(__TRACK_REJT_DATA, dataToWrite)
+    .then((response: any) => {
+      console.log(response.data)
+      isApiOK = true;
+    })
+    .catch(errorMessage => {
+      console.log('err:',errorMessage);
+      isApiOK = false;
+    });
+
+    return Promise.resolve(isApiOK);
 }
 
-const writeDefectToLocalDB = (dataToWrite: any) =>{
-
+const writeDefectToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
+    var isApiOK: boolean = false;
     Realm.write(() => { //write single data
 
      let existingData: any = Realm.objects<QMS_DefectCountDaily>(DefectCountSchema.name)
@@ -146,12 +171,21 @@ const writeDefectToLocalDB = (dataToWrite: any) =>{
          
    });
    /**Send Data to Server for persistance */
-   post(__TRACK_DFCT_DATA, dataToWrite)
-   .then((response: any) => console.log(response.data)).catch(errorMessage => console.log('err:',errorMessage));
+   await post(__TRACK_DFCT_DATA, dataToWrite)
+   .then((response: any) => {
+     console.log(response.data);
+     isApiOK = true;
+    })
+   .catch(errorMessage => {
+     console.log('err:',errorMessage)
+     isApiOK = false;
+    });
+
+    return Promise.resolve(isApiOK);
 }
 
-const syncBulkData = async () =>{
-  
+const syncBulkData = async (): Promise<boolean> =>{
+    var isSuccessful: boolean = false;
     var prodData: any, defectData: any, rejectData: any, reworkData: any;
 
     prodData = Realm.objects(ProductionCountSchema.name);
@@ -167,8 +201,20 @@ const syncBulkData = async () =>{
     reworkData = convertToArray(reworkData);
     
     await syncDataRequest(prodData, defectData, rejectData, reworkData)
-    .then((response: any) => console.log('\nsync response:',"\n"+response[0].data, "\n"+response[1].data, "\n"+response[2].data, "\n"+response[3].data)).catch(errorMessage => console.log('err prod count :',errorMessage));
+    .then((response: any) =>{
+        if(Array.isArray(response) && response.length == 4){
+          isSuccessful = true;
+          console.log('\nsync response:',"\n"+response[0].data, "\n"+response[1].data, "\n"+response[2].data, "\n"+response[3].data);
+        }else{
+          isSuccessful = false;
+        }
+    })
+    .catch(errorMessage => {
+        isSuccessful = false;
+        console.log('err prod count :',errorMessage)
+    });
   
+    return Promise.resolve(isSuccessful);
 }
 
   export {

@@ -21,12 +21,12 @@ import {
   getAllDefects,
   getCurrentHourExistingData
 } from '../db/dbServices/__LDB_Count_Utilities'
+import Icon from 'react-native-vector-icons/FontAwesome5'
 import * as constKVP from '../utils/constKVP'
 import {moderateScale} from 'react-native-size-matters'
 import Orientation from 'react-native-orientation';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProp } from 'react-navigation';
-import { get } from '../utils/apiUtils';
 import { __API_OK_PATH } from '../utils/constKVP';
 let dateObj: Date = new Date();
 
@@ -180,12 +180,19 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                     },
               totalDayFttCount: this.state.totalDayFttCount + 1, //independent of hour
               currentHour: thisHourID["vHourId"]
-            }),()=>{
+            }),async ()=>{
               //console.log('Production count write to db....', this.state.currentCountObj)
             var {currentCountObj} = this.state;
             
             /**Send Data to local persistance */
-            writeProductionToLocalDB(currentCountObj);
+            var isOk = await writeProductionToLocalDB(currentCountObj);
+            this.setState({isApiOK: isOk});
+              // isOk.then((val)=>{
+              //       this.setState({isApiOK: val});
+              // }).catch(errorMessage => {
+              //   console.log(errorMessage);
+              //   this.setState({isApiOK: false});
+              // });
 
             });
 
@@ -203,7 +210,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
               },
             totalDayFttCount: this.state.totalDayFttCount + 1,
             currentHour: thisHourID["vHourId"]
-          }),()=>{
+          }),async ()=>{
             //console.log('Production count write to db....', this.state.currentCountObj.iProductionQty)
             Toast.show({
               type: "info",
@@ -216,7 +223,14 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
               var {currentCountObj} = this.state;
               
               /**Send Data to local persistance */
-              writeProductionToLocalDB(currentCountObj);
+              var isOk = await writeProductionToLocalDB(currentCountObj);
+              this.setState({isApiOK: isOk});
+              // isOk.then((val)=>{
+              //       this.setState({isApiOK: val});
+              // }).catch(errorMessage => {
+              //   console.log(errorMessage);
+              //   this.setState({isApiOK: false});
+              // });
           });
         }
       }
@@ -230,7 +244,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       this.setState((prevState, props) => ({
         defectCount: prevState.defectCount + 1,
         totalDayDefectCount: prevState.totalDayDefectCount+1
-      }), ()=>{
+      }), async ()=>{
         
         var currentDefectCountObj =
           {
@@ -264,10 +278,16 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         };
 
         /**Send Data to local persistance */
-        writeDefectToLocalDB(currentDefectCountObj);
+        var isOk = await writeDefectToLocalDB(currentDefectCountObj);
+        //this.setState({isApiOK: isOk}, ()=> this.setModalVisible(constKVP.__MODAL_FOR_DEFECT));
+        this.setState((prev)=>({
+          isApiOK: isOk, 
+          modalVisible: !prev.modalVisible, 
+          modeCode: constKVP.__MODAL_FOR_DEFECT,
+          modeColor: constKVP.__MODAL_DEFECT_BUTTON_COLOR
+        }));
         /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
         /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
-        this.setModalVisible(constKVP.__MODAL_FOR_DEFECT);
       });
     }
     
@@ -278,7 +298,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       this.setState((prevState, props) => ({
         rejectCount: prevState.rejectCount + 1,
         totalDayRejectCount: prevState.totalDayRejectCount+1
-      }), ()=>{
+      }), async ()=>{
           //console.log('count defect')
          var currentRejectCountObj =
           {
@@ -312,10 +332,15 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         };
 
         //console.log(currentRejectCountObj);
-        writeRejectToLocalDB(currentRejectCountObj);
+        var isOk = await writeRejectToLocalDB(currentRejectCountObj);
+        this.setState((prev)=>({
+          isApiOK: isOk, 
+          modalVisible: !prev.modalVisible, 
+          modeCode: constKVP.__MODAL_FOR_REJECT,
+          modeColor: constKVP.__MODAL_REJECT_BUTTON_COLOR
+        }));
         /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
         /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
-        this.setModalVisible(constKVP.__MODAL_FOR_REJECT);
       });
 
     }
@@ -327,7 +352,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       this.setState((prevState, props) => ({
         reworkedCount: prevState.reworkedCount + 1,
         totalDayReworkedCount: prevState.totalDayReworkedCount+1
-      }), ()=>{
+      }), async ()=>{
           //console.log('count defect')
          var currentReworkedCountObj =
           {
@@ -354,15 +379,11 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             iReworkedCount: this.state.reworkedCount,
             dLastUpdated: dateObj
         };
-
-
-         /**Send Data to Server for persistance */
-        //  post('/DataTracking/TrackReworkedData', currentReworkedCountObj)
-        //  .then((response) => console.log(response)).catch(errorMessage => console.log('err:',errorMessage));
-
+        
         //console.log(currentReworkedCountObj);
-        writeReworkedToLocalDB(currentReworkedCountObj);
-
+        var isOk = await writeReworkedToLocalDB(currentReworkedCountObj);
+        this.setState({isApiOK: isOk});
+        
       });
     }
 
@@ -383,22 +404,22 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       console.log('unmounted production count');
     }
 
-    checkApiAvailability= async()=>{
-      await get(__API_OK_PATH)
-      .then((response: any) => {
-        console.log(response);
-        this.setState({isApiOK: true},()=> console.log('api ok', response.data));
-      })
-      .catch(errorMessage => {
-        this.setState({isApiOK: false},()=> console.log('api ok false', errorMessage));
-      });
-    }
+    // checkApiAvailability= async()=>{
+    //   await get(__API_OK_PATH)
+    //   .then((response: any) => {
+    //     console.log(response);
+    //     this.setState({isApiOK: true},()=> console.log('api ok', response.data));
+    //   })
+    //   .catch(errorMessage => {
+    //     this.setState({isApiOK: false},()=> console.log('api ok false', errorMessage));
+    //   });
+    // }
 
     componentDidMount= async()=>{
 
       Orientation.lockToLandscapeLeft();
       /**Check if the API End is available now */
-      await this.checkApiAvailability();
+      //await this.checkApiAvailability();
 
       this._subscription = NetInfo.addEventListener(
         this._handleConnectivityChange
@@ -487,9 +508,16 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             totalDayRejectCount,
             totalDayReworkedCount
             //TODO: totalDayFttCount will be total of all hours ftt summation.
-          },()=>{
-            console.log('write initial production cout object to local db')
-            writeProductionToLocalDB(this.state.currentCountObj);
+          },async ()=>{
+            console.log('write initial production cout object to local db');
+            var isOk = await writeProductionToLocalDB(this.state.currentCountObj);
+            this.setState({isApiOK: isOk});
+            // isOk.then((val)=>{
+            //       this.setState({isApiOK: val});
+            // }).catch(errorMessage => {
+            //   console.log(errorMessage);
+            //   this.setState({isApiOK: false});
+            // });
           });
           //TODO: dDateOfProduction= dateObj;  should be the today's date, the day production count took place so that if device shutsdown we can retrive earlier production count data of today
         }
@@ -561,7 +589,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             <View style={{flex:.1, justifyContent:'center', alignItems:'center'}}>
                 {/* <Text>green</Text> */}
                 <View style={{height: 25, width:25, backgroundColor: this.state.isConnected ? '#45c065' : '#ff5353', borderRadius: 25 }} />
-                <View style={{position:'absolute', height: 15, width:15, backgroundColor: (this.state.isConnected && this.state.isApiOK) ? '#45c065' : '#fda912', borderRadius: 25 }} />
+                <View style={{position:'absolute', height: 15, width:15, backgroundColor: this.state.isApiOK ? '#45c065' : '#fda912', borderRadius: 25 }} />
             </View>
 
 
@@ -578,9 +606,10 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             </View>
           </View>
 
-            
-            <View style={{flex:.1, justifyContent:'center', alignItems:'center'}}>
+            <View style={{flex:.1, justifyContent:'space-evenly', flexDirection:'row', alignItems:'center'}}>
               <Text style={{fontSize: 16, fontWeight:'bold'}}>{ this.state.currentHour ?? "N/A"}</Text>
+              <Icon onPress={()=> console.log("Sync Now!")} name="sync" size={20} color={(this.state.isApiOK && this.state.isConnected)? '#45c065' : "#ff5353"} />
+              {/* <Text style={{fontSize: 16, fontWeight:'bold'}}>Sync</Text> */}
             </View>
           </View>
 

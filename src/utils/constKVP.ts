@@ -1,6 +1,9 @@
 export const __MODAL_FOR_REJECT = 111;
 export const __MODAL_FOR_DEFECT = 222;
-
+export const __MODAL_CLOSED = -1;
+export const __MODAL_REJECT_BUTTON_COLOR = "#ff5353";
+export const __MODAL_DEFECT_BUTTON_COLOR = "#fda912";
+export const __MODAL_CLOSED_COLOR = "#3d9efd";
 
 export const __MASTER_DATA_PATH = "/ApiData/GetCompanyUnitLineData";
 export const __REHYDRATING_DATA_PATH = "/ApiData/GetProductionPlanUnitLineData";

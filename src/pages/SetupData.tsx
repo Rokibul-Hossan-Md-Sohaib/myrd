@@ -49,7 +49,8 @@ type State = {
   selectedStyle: any,
   selectedExpPo: any,
   selectedColor: any,
-  selectedSize: any
+  selectedSize: any,
+  isSyncSuccessful: boolean
 };
 
 
@@ -86,7 +87,8 @@ export default class SetupData extends React.Component<Props, State> {
         selectedStyle: undefined,
         selectedExpPo: undefined,
         selectedColor: undefined,
-        selectedSize: undefined
+        selectedSize: undefined,
+        isSyncSuccessful: false
     };
 
     constructor(props: Props) {
@@ -129,17 +131,17 @@ export default class SetupData extends React.Component<Props, State> {
     );
   }
 
-  syncData(){
+  syncData = async () =>{
     /**TODO: BULK DATA SYNC */
-    syncBulkData();
+    await syncBulkData();
     console.log("data will be synced")
     /**Here Bulk Data Will be synced  then call logoutAndGotoLoginPage() */
     this.logoutAndGotoLoginPage();
   }
 
-  logoutAndGotoLoginPage(): void{
+  async logoutAndGotoLoginPage(): Promise<void>{
     /**Logout from Server */
-    post(__LOGOUT_PATH, this.state.reqObj)
+    await post(__LOGOUT_PATH, this.state.reqObj)
     .then(() => {}).catch(errorMessage => console.log(errorMessage));
 
     /**Logout from LocalDb as well */
@@ -150,6 +152,36 @@ export default class SetupData extends React.Component<Props, State> {
     }else{
       console.log("logout failed!")
     }
+  }
+
+  SyncAllDataWithServer(){
+    var isOk = syncBulkData();
+        isOk.then((val)=>{
+              /**Show Toast */
+              if(val){
+                Toast.show({
+                  type: "success",
+                  position: 'bottom',
+                  text1: "Data Syncying Successful.",
+                  visibilityTime: 1500,
+                  });
+              }else{
+                Toast.show({
+                  type: "error",
+                  position: 'bottom',
+                  text1: "Something Wrong with Data Sync.",
+                  visibilityTime: 1500,
+                  });
+              }
+        }).catch(errorMessage => {
+          console.log(errorMessage);
+          Toast.show({
+            type: "error",
+            position: 'bottom',
+            text1: "Something Exceptionally wrong with data Sync.",
+            visibilityTime: 1500,
+            });
+        });
   }
 
     componentDidMount(){
@@ -480,7 +512,7 @@ export default class SetupData extends React.Component<Props, State> {
             <Mybutton
               title="Sync Data"
               //disabled={this.state.showLogoutButton}
-             customClick={()=>   syncBulkData()}
+             customClick={()=> this.SyncAllDataWithServer()}
             />
             <Mybutton
               title="Logout"
