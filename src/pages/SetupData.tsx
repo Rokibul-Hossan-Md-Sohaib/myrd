@@ -154,56 +154,29 @@ export default class SetupData extends React.Component<Props, State> {
     }
   }
 
-  SyncAllDataWithServer(){
-    var isOk = syncBulkData();
-        isOk.then((val)=>{
-              /**Show Toast */
-              if(val){
-                Toast.show({
-                  type: "success",
-                  position: 'bottom',
-                  text1: "Data Syncying Successful.",
-                  visibilityTime: 1500,
-                  });
-              }else{
-                Toast.show({
-                  type: "error",
-                  position: 'bottom',
-                  text1: "Something Wrong with Data Sync.",
-                  visibilityTime: 1500,
-                  });
-              }
-        }).catch(errorMessage => {
-          console.log(errorMessage);
+  SyncAllDataWithServer = async()=>{
+    var isOk = await syncBulkData();
+        if(isOk){
+          Toast.show({
+            type: "success",
+            position: 'bottom',
+            text1: "Data Syncying Successful.",
+            visibilityTime: 1500,
+            });
+        }else{
           Toast.show({
             type: "error",
             position: 'bottom',
-            text1: "Something Exceptionally wrong with data Sync.",
+            text1: "Something Wrong with Data Sync.",
             visibilityTime: 1500,
             });
-        });
+        }
   }
 
     componentDidMount(){
       console.log("component mounted...")
       Orientation.lockToPortrait()
       let comInfo: any = getAllDailyProductionPlanSummery();
-      /**
-       * {
-    "vCompanyId": "C0002",
-    "dLoginDateTime": "2021-04-11",
-    "vDeviceId": "C2G1L1",
-    "vDeviceSec": "C2G1L1",
-    "vShiftId": null,
-    "vUnitId": "U8",
-    "vUnitLineId": "UL57"
-}
-       * TODO: We need to check for any existing data for today to rehydrate local db from main server 
-       * if there is no data exixts in local db and the user is already logged in.
-       * 
-       * TODO: Might need store login session data in redis db / central db
-       * for avoiding data inconsistency across devices with multiple ogin with same id
-       */
       const reqObj = this.props.navigation.getParam('userData');
         console.log('reqObj', reqObj)
        // console.log('isTab', DeviceInfo.isTablet())

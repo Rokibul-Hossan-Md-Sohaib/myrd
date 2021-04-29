@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { View, Text, StatusBar, Pressable, Dimensions, StyleSheet, Modal, TouchableOpacity, Button } from 'react-native';
+import { View, Text, StatusBar, Pressable, Dimensions, StyleSheet, Modal, TouchableOpacity, Button, Animated, Easing } from 'react-native';
 import moment from 'moment'
 import Toast from 'react-native-toast-message';
 import {handleAndroidBackButton, removeAndroidBackButtonHandler} from '../utils/backHandler.config';
@@ -8,7 +8,8 @@ import {
   writeProductionToLocalDB, 
   writeReworkedToLocalDB, 
   writeRejectToLocalDB, 
-  writeDefectToLocalDB
+  writeDefectToLocalDB,
+  syncBulkData
 } from '../db/dbServices/__LDB_Count_Services'
 import {    
   getCurrentHourId,
@@ -78,7 +79,8 @@ type State = {
 
   currentHour: any,
   isConnected: boolean | null,
-  isApiOK: boolean | null
+  isApiOK: boolean | null,
+  isSynced: boolean | null
 };
 
 
@@ -124,11 +126,14 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       currentHour: null,
       isConnected: false,
       isApiOK: true,
+      isSynced: true,
     }
+    _rotateValue: Animated.Value;
 
 //moment(new Date()).format("hh:00A");
     constructor(props: Props) {
       super(props);
+      this._rotateValue = new Animated.Value(0);
       this.props.navigation.addListener(
         'didFocus',
         payload => {
@@ -138,8 +143,48 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
     }
 
     navigateBack = ()=>{
-      this.props.navigation.goBack();
-  }
+        this.props.navigation.goBack();
+    }
+
+    syncCurrentData = async () =>{
+        this.startSyncRotation();
+        var syncyed = await syncBulkData();
+        if(syncyed){
+          Toast.show({
+            type: "success",
+            position: 'bottom',
+            text1: "Data Syncying Successful.",
+            visibilityTime: 1500,
+            });
+            this.setState({isSynced: syncyed, isConnected: syncyed, isApiOK: syncyed},()=> this.stopSyncRotation());
+        }else{
+          Toast.show({
+            type: "error",
+            position: 'bottom',
+            text1: "Something Wrong with Data Sync.",
+            visibilityTime: 1500,
+            });
+            this.setState({isSynced: syncyed, isConnected: syncyed, isApiOK: syncyed},()=> this.stopSyncRotation());
+        }
+    }
+
+    stopSyncRotation(){
+      this._rotateValue.stopAnimation();
+    }
+
+    startSyncRotation(){
+      this._rotateValue.setValue(0);
+      Animated.timing(this._rotateValue, {
+        toValue: 1,
+        duration: 3000,
+        easing: Easing.linear,
+        useNativeDriver: true
+      }).start((o)=>{
+        if(o.finished){
+          this.startSyncRotation();
+        }
+      });
+    }
 
     countFtt(){
       /**Check if the API End is available now */
@@ -186,7 +231,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             
             /**Send Data to local persistance */
             var isOk = await writeProductionToLocalDB(currentCountObj);
-            this.setState({isApiOK: isOk});
+            this.setState({isApiOK: isOk, isSynced: isOk});
               // isOk.then((val)=>{
               //       this.setState({isApiOK: val});
               // }).catch(errorMessage => {
@@ -281,7 +326,8 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         var isOk = await writeDefectToLocalDB(currentDefectCountObj);
         //this.setState({isApiOK: isOk}, ()=> this.setModalVisible(constKVP.__MODAL_FOR_DEFECT));
         this.setState((prev)=>({
-          isApiOK: isOk, 
+          isApiOK: isOk,
+          isSynced: isOk,
           modalVisible: !prev.modalVisible, 
           modeCode: constKVP.__MODAL_FOR_DEFECT,
           modeColor: constKVP.__MODAL_DEFECT_BUTTON_COLOR
@@ -335,6 +381,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         var isOk = await writeRejectToLocalDB(currentRejectCountObj);
         this.setState((prev)=>({
           isApiOK: isOk, 
+          isSynced: isOk,
           modalVisible: !prev.modalVisible, 
           modeCode: constKVP.__MODAL_FOR_REJECT,
           modeColor: constKVP.__MODAL_REJECT_BUTTON_COLOR
@@ -382,7 +429,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         
         //console.log(currentReworkedCountObj);
         var isOk = await writeReworkedToLocalDB(currentReworkedCountObj);
-        this.setState({isApiOK: isOk});
+        this.setState({isApiOK: isOk, isSynced: isOk});
         
       });
     }
@@ -577,7 +624,11 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
 
 
   render() {
-    const {screenHeight, screenWidth} = this.state
+    const {screenHeight, screenWidth} = this.state;
+    const RotateData = this._rotateValue.interpolate({
+      inputRange: [0,1],
+      outputRange: ['0deg', '360deg']
+    });
     //style={[{flex: 1, margin: moderateScale(10), flexDirection:'column'}, styles.elementsContainer]}
     return (
       <View style={styles.container} >
@@ -591,7 +642,6 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                 <View style={{height: 25, width:25, backgroundColor: this.state.isConnected ? '#45c065' : '#ff5353', borderRadius: 25 }} />
                 <View style={{position:'absolute', height: 15, width:15, backgroundColor: this.state.isApiOK ? '#45c065' : '#fda912', borderRadius: 25 }} />
             </View>
-
 
           <View style={{flex: .8, flexDirection:'column', justifyContent:'space-around'}}>
             <View style={{flex:1, flexDirection:'row', justifyContent:'space-around', borderBottomColor:'green'}}>
@@ -608,7 +658,9 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
 
             <View style={{flex:.1, justifyContent:'space-evenly', flexDirection:'row', alignItems:'center'}}>
               <Text style={{fontSize: 16, fontWeight:'bold'}}>{ this.state.currentHour ?? "N/A"}</Text>
-              <Icon onPress={()=> console.log("Sync Now!")} name="sync" size={20} color={(this.state.isApiOK && this.state.isConnected)? '#45c065' : "#ff5353"} />
+              <Animated.View style={{transform:[{rotate: RotateData}]}}>
+                <Icon onPress={()=> this.syncCurrentData()} name="sync" size={20} color={this.state.isSynced ? '#45c065' : "#ff5353"} />
+              </Animated.View>
               {/* <Text style={{fontSize: 16, fontWeight:'bold'}}>Sync</Text> */}
             </View>
           </View>
