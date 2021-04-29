@@ -1,6 +1,6 @@
 /*Home Screen With buttons to navigate to diffrent options*/
 import React from 'react';
-import { View } from 'react-native';
+import { View, Image } from 'react-native';
 import Mybutton from './components/Mybutton';
 import moment from 'moment'
 import Toast from 'react-native-toast-message';
@@ -23,7 +23,8 @@ type Props = {
 
 type State = {
   loading: boolean;
-  today: string
+  today: string,
+  okToGo: boolean
 };
 
 export default class HomeScreen extends React.Component<Props, State> {
@@ -31,6 +32,7 @@ export default class HomeScreen extends React.Component<Props, State> {
     state: State = {
       loading: false,
       today: moment().format('YYYY-MM-DD'),
+      okToGo: false,
     }
 
   constructor(props: Props) {
@@ -84,7 +86,18 @@ export default class HomeScreen extends React.Component<Props, State> {
     }else{
       /**Route to Device Login */
       console.log('not logged in')
-      this.props.navigation.navigate('DeviceLogin')
+      if(this.state.okToGo){
+          this.props.navigation.navigate('DeviceLogin')
+      }else{
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: 'Error!X',
+          text2: "Something wrong happend!, Try again",
+          visibilityTime: 1000,
+          })
+      }
+
     }
   }
 
@@ -94,10 +107,10 @@ export default class HomeScreen extends React.Component<Props, State> {
     /**Clear Stale Local DB Data */  
     clearStaleLocalDb();
     //console.log('came here..')GetCompanyUnitLineData
-    get(__MASTER_DATA_PATH)
+    await get(__MASTER_DATA_PATH)
     .then((response: any) => {
 
-        this.setState({loading: false}, ()=>{
+        this.setState({loading: false, okToGo: true}, ()=>{
             var responseData = response.data;
 
         if(responseData){
@@ -126,7 +139,7 @@ export default class HomeScreen extends React.Component<Props, State> {
 
     })
     .catch(errorMessage => {   
-        this.setState({loading: false}, ()=>{
+        this.setState({loading: false, okToGo: false}, ()=>{
             Toast.show({
                 type: 'error',
                 text1: 'catch Error!',
@@ -153,10 +166,13 @@ export default class HomeScreen extends React.Component<Props, State> {
           flexDirection: 'column',
         }}>
         <ProgressDialog loading={this.state.loading} />
-        <View></View>
+        <View style={{flex:1, justifyContent:'center', alignItems:'center'}}>
+        <Image style={{ height: 150, width: 150}} source={require('../assets/images/scr_icon.png')}></Image>
+        </View>
         <View style={{position:'absolute', bottom: '10%', width: '100%'}}>
           <Mybutton
             title="Start"
+            //disabled = {!this.state.okToGo}
             customClick={() => this.checkLoggedInAndRouteToSetupData()}
           />
         </View>
