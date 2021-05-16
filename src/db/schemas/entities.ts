@@ -165,6 +165,7 @@ export interface QMS_ProductionCountHourly {
    readonly dEndTimeOfProduction: Date,
    readonly dShipmentDate: Date,
    readonly iProductionQty: Nullable<number>,
+   readonly iTotalPlanQty: Nullable<number>,
    readonly iTarget: Nullable<number>,
    readonly vProTypeId: Nullable<string>,
    readonly nHour: Nullable<number>,

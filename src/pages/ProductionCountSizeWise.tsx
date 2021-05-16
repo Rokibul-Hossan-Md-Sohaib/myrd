@@ -29,6 +29,7 @@ import Orientation from 'react-native-orientation';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProp } from 'react-navigation';
 import { __API_OK_PATH } from '../utils/constKVP';
+import { DailyProductionPlanSummery, QMS_ProductionCountHourly } from '../db/schemas/entities';
 let dateObj: Date = new Date();
 
 /**
@@ -207,7 +208,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             var {
               iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId, vBuyerId, vStyleId, vColorId, vSizeId,
               vBuyerName, vSizeName, vExpPoorderNo, vColorName, vStyleName, dShipmentDate,
-              dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,iProductionQty,
+              dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,iProductionQty,iTotalPlanQty,
               iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId
             } = this.state.currentCountObj;
 
@@ -219,7 +220,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
               currentCountObj: { 
                     iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId, 
                     vBuyerName, vSizeName, vExpPoorderNo, vColorName, vStyleName, dShipmentDate, vBuyerId, vStyleId, vColorId, vSizeId,
-                    dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,
+                    dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,iTotalPlanQty,
                     iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId, 
                     iProductionQty: iProductionQty + 1, dLastUpdated: dateObj 
                     },
@@ -249,7 +250,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             currentCountObj: { 
               iAutoId: 0, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId: thisHourID["vHourId"],
               vBuyerName, vSizeName, vExpPoorderNo, vColorName, vStyleName, dShipmentDate, vBuyerId, vStyleId, vColorId, vSizeId,
-              dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,
+              dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction, iTotalPlanQty,
               iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId, 
               iProductionQty: 1, dLastUpdated: dateObj 
               },
@@ -442,6 +443,10 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
     _handleConnectivityChange = (state: NetInfoState) => {
       this.setState({
         isConnected: state.isConnected,
+      },()=> {
+        if(state.isConnected){
+          this.syncCurrentData();
+        }
       });
     };
 
@@ -520,7 +525,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                       vSizeName: reqObj.vSizeName,
 
                       iProductionQty: 0,
-
+                      iTotalPlanQty: reqObj.iTotalPlanQty,
                       vHourId: currentHour["vHourId"],
                       dDateOfProduction: reqObj.dDate,
                       dStartTimeOfProduction: currentHour.dStartTimeOfProduction,
