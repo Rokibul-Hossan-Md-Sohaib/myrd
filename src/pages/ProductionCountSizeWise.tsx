@@ -723,53 +723,58 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                                 }} title={"Close (X)"}></Button>
                             </View>
                             :
-                                <View style={{flex:1, flexDirection:'row', justifyContent:'space-between', }}>
-                                  <View style={{flex:.49, flexDirection:'column', justifyContent:'center', alignItems:'center',  margin:10}}>
+                                <View style={{flex:1, flexDirection:'row', justifyContent:'flex-start', alignItems:'center' }}>
+                                  <View style={{flex:.45, flexDirection:'column', justifyContent:'center', alignItems:'center',  margin:10}}>
                                     {
                                       this.state.defectCategories.map((item, index) => {
-                                          return(<View style={{flex:1, padding:5, flexDirection:'row', width: screenWidth/2, justifyContent:'space-around'}} key={index}>
+                                          return(<View style={{flex:1, padding:2, flexDirection:'row', width: screenWidth/2, justifyContent:'space-around'}} key={index}>
                                             {
                                                   <TouchableOpacity key={index} 
                                                     style={{
                                                       padding:5, 
-                                                      borderRadius:25,
+                                                      width: "80%",
+                                                      borderRadius:7,
                                                       justifyContent:'center', 
                                                       alignItems:'center', 
                                                       borderWidth:1, 
-                                                      borderColor: item.vDefectCategoryId === this.state.selectedDefectCategory ? '#880e4f' : '#b58ba2'
+                                                      borderColor: item.vDefectCategoryId === this.state.selectedDefectCategory ? '#00897b' : '#80cbc4'
                                                     }} 
                                                     onPress={() => this.filterDefectesCategoryWise(item.vDefectCategoryId)}>
-                                                        <Text style={{fontWeight:'bold', color: item.vDefectCategoryId === this.state.selectedDefectCategory ? '#880e4f' : '#b58ba2' , fontSize: 12}}>{item.vDefectCategoryId === this.state.selectedDefectCategory ? (item.vDefectCategoryName+" ("+item.vHeadShortName+")   ✔") : (item.vDefectCategoryName+" ("+item.vHeadShortName+")")}</Text>
+                                                        <Text style={{fontWeight:'bold', color: item.vDefectCategoryId === this.state.selectedDefectCategory ? '#004d40' : '#5c6bc0' , fontSize: 12}}>{item.vDefectCategoryId === this.state.selectedDefectCategory ? (item.vDefectCategoryName+" ("+item.vHeadShortName+")   ✔") : (item.vDefectCategoryName+" ("+item.vHeadShortName+")")}</Text>
                                                   </TouchableOpacity>
                                             }
                                           </View>)
                                       })
                                     }
                                     </View>
-                                    <View style={{flex:.49, flexDirection:'column', justifyContent:'center', alignItems:'center',  margin:10}}>
+                                    <View style={{flex:.45, flexDirection:'column', justifyContent:'center', alignItems:'center',  margin:10}}>
                                       {
                                         this.state.filteredDefects.length > 0 ? 
                                             <ScrollView horizontal={false}>
                                                 <View style={{flex:1, alignItems: 'center', justifyContent:'center'}}>
                                                   {
                                                     this.state.filteredDefects.map((item, index) => {
-                                                        return(<View style={{flex:1,  padding:5, flexDirection:'row', justifyContent:'space-around'}} key={index}>
+                                                        return(<View style={{flex:1,  padding:2, flexDirection:'row', justifyContent:'space-around'}} key={index}>
                                                           {//selectedDefectHeadId
                                                                 <TouchableOpacity key={index} 
                                                                   style={{
                                                                     padding:5, 
-                                                                    borderRadius:25, 
-                                                                    borderWidth:1, 
+                                                                    width: "100%",
+                                                                    borderRadius:7, 
+                                                                    borderWidth:1,
+                                                                    alignItems:'center',
+                                                                    //backgroundColor:'green',
+                                                                    justifyContent:'center', 
                                                                     borderColor: item.vHeadId === this.state.selectedDefectHeadId ? "green":'#7fb37f'
                                                                     }} onPress={() => this.selectDefectHead(item.vHeadId)}>
                                                                       <Text 
                                                                         style={{
                                                                             fontWeight:'bold', 
                                                                             maxWidth: screenWidth/3, 
-                                                                            textAlignVertical:'center', 
+                                                                            textAlignVertical:'center',
                                                                             textAlign:'center', 
-                                                                            color:item.vHeadId === this.state.selectedDefectHeadId ? "green":'#7fb37f',
-                                                                            fontSize: 12
+                                                                            color:item.vHeadId === this.state.selectedDefectHeadId ? "#000":'grey',
+                                                                            fontSize: 14
                                                                             }}>
                                                                           {item.vHeadId === this.state.selectedDefectHeadId ? ("("+item.code+") -> "+item.vHeadName+"   ✔✔") : ("("+item.code+") -> "+item.vHeadName)}
                                                                         </Text>
@@ -785,7 +790,13 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                                       
                                     </View>
                                     <View style={{
-                                            flex:.02, 
+                                            //flex:.02, 
+                                            height: 50,
+                                            position:'absolute',
+                                            right:0,
+                                            bottom:0,
+                                            top:"40%",
+                                            width: 50,
                                             transform: [{ scale: this.state.shwoNextButton ? 1 : 0 }], 
                                             flexDirection:'column', 
                                             borderRadius:25, 
@@ -807,7 +818,8 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                                             /*this.setState({showStyleImage: true})*/
                                           }}
                                           >
-                                          <Text style={{textAlign:'center', fontWeight:'bold', color:'#fff', fontSize: 25, textTransform:'uppercase'}}>{">"}</Text>
+                                          <Icon name="long-arrow-alt-right" size={25} color={"#fff"} />
+                                          {/* <Text style={{textAlign:'center', textAlignVertical:'center', fontWeight:'bold', color:'#fff', fontSize: 26, textTransform:'uppercase'}}>{"+"}</Text> */}
                                         </TouchableOpacity>
                                     </View>
                               </View>   
