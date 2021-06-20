@@ -262,7 +262,7 @@ showDatePicker = () => {
         color: '#007FFF',
       };
     return (
-      <View style={{ backgroundColor: 'white', flex: 1 }}>
+      <View style={{ backgroundColor: '#151a30', flex: 1 }}>
         <ScrollView keyboardShouldPersistTaps="handled">
           <KeyboardAvoidingView
             behavior="padding"
@@ -271,7 +271,7 @@ showDatePicker = () => {
 
             <View style={{paddingVertical: 5}} />
 
-            <Text style={{paddingLeft: 25, fontWeight: '700'}}>Company</Text>
+            <Text style={{paddingLeft: 25, fontWeight: '700', color:'#fff'}}>Company</Text>
 
             <View style={{paddingVertical: 2}} />
             
@@ -314,7 +314,7 @@ showDatePicker = () => {
             
             { this.state.selectedCompany ?
               <View>
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Unit</Text>
+              <Text style={{paddingLeft: 25, fontWeight: '700', color:'#fff'}}>Unit</Text>
               <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
@@ -346,7 +346,7 @@ showDatePicker = () => {
 
             { this.state.selectedUnit ?
               <View>
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Line</Text>
+              <Text style={{paddingLeft: 25, fontWeight: '700', color:'#fff'}}>Line</Text>
               <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
@@ -377,7 +377,7 @@ showDatePicker = () => {
 
             { (this.state.shiftAvailavle && this.state.selectedLine) ?
               <View>
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Shift</Text>
+              <Text style={{paddingLeft: 25, fontWeight: '700',  color:'#fff'}}>Shift</Text>
               <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
@@ -404,16 +404,21 @@ showDatePicker = () => {
               <View style={{paddingVertical: 5}} />  
             </View> : <></>}
 
-            <Text style={{paddingLeft: 25, fontWeight: '700'}}>DeviceID</Text>
+            <Text style={{paddingLeft: 25, fontWeight: '700', color:'#fff'}}>DeviceID</Text>
             <Mytextinput
               placeholder="Device ID"
               editable={false}
+              style={{
+                backgroundColor: "#2d395c",
+                color: "#fff",
+                borderRadius: 7,
+              }}
               value={this.state.vDeviceId}
             />
 
             <View style={{display:this.state.displayProductionDateSelection ? "flex" : 'none'}}>
               <View style={{paddingVertical: 5}} />
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Production Date</Text>
+              <Text style={{paddingLeft: 25, fontWeight: '700', color:'#fff'}}>Production Date</Text>
               <DateTimePickerModal
                 isVisible={this.state.isDatePickerVisible}
                 mode="date"
@@ -425,17 +430,27 @@ showDatePicker = () => {
                 placeholder="Date"
                 value={this.state.today}
                 showSoftInputOnFocus={false}
+                style={{
+                  backgroundColor: "#2d395c",
+                  color: "#fff",
+                  borderRadius: 7,
+                }}
                 onFocus={()=> this.showDatePicker()}
               />
             </View>
 
             <View style={{paddingVertical: 5}} />
-            <Text style={{paddingLeft: 25, fontWeight: '700'}}>Password</Text>
+            <Text style={{paddingLeft: 25, fontWeight: '700', color:'#fff'}}>Password</Text>
             <Mytextinput
               refInner={this.passRef}
               secureTextEntry
               placeholder="Password"
               value={this.state.Password}
+              style={{
+                backgroundColor: "#2d395c",
+                color: "#fff",
+                borderRadius: 7,
+              }}
               onChangeText={(Password: string) => this.setState({ Password })}
             />
             
@@ -443,8 +458,11 @@ showDatePicker = () => {
             <Mybutton
               title="Get Plan Info"
               customClick={()=> this.userLoginAndGetData()}
+              style={{
+                backgroundColor: '#28a745',
+              }}
             />
-            <Pressable onLongPress={()=> this.showDateSelector()} style={{height: 25, width: 25, borderRadius:25, position:'absolute', top:2, right: 2, backgroundColor:'#fff'}}></Pressable>
+            <Pressable onLongPress={()=> this.showDateSelector()} style={{height: 25, width: 25, borderRadius:25, position:'absolute', top:2, right: 2, backgroundColor:'#151a30'}}></Pressable>
           </KeyboardAvoidingView>
         </ScrollView>
       </View>
@@ -466,10 +484,11 @@ const pickerSelectStyles = StyleSheet.create({
       fontSize: 16,
       paddingVertical: 12,
       paddingHorizontal: 10,
-      borderWidth: 1,
-      borderColor: 'gray',
-      borderRadius: 4,
-      color: 'black',
+      //borderWidth: 1,
+      //borderColor: 'gray',
+      backgroundColor: "#2d395c",
+      borderRadius: 7,
+      color: '#fff',
       paddingRight: 30, // to ensure the text is never behind the icon
     },
     inputAndroid: {
@@ -478,10 +497,11 @@ const pickerSelectStyles = StyleSheet.create({
       marginRight: 20,
       paddingHorizontal: 10,
       paddingVertical: 8,
-      borderWidth: 0.5,
-      borderColor: '#000',
-      borderRadius: 8,
-      color: 'black',
+      //borderWidth: 0.5,
+      //borderColor: '#000',
+      backgroundColor: "#2d395c",
+      borderRadius: 7,
+      color: '#fff',
       paddingRight: 30, // to ensure the text is never behind the icon
     },
   });

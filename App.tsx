@@ -22,7 +22,7 @@ const App = createStackNavigator({
     screen: HomeScreen,
     navigationOptions: {
       title: 'QMS Home',
-      headerStyle: { backgroundColor: '#3a59b7' },
+      headerStyle: { backgroundColor: '#222b45' },
       headerTintColor: '#ffffff',
       headerLeft: ()=> null
     },
@@ -31,7 +31,7 @@ const App = createStackNavigator({
     screen: DeviceLogin,
     navigationOptions: {
       title: 'QMS Login',
-      headerStyle: { backgroundColor: '#3a59b7' },
+      headerStyle: { backgroundColor: '#222b45' },
       headerTintColor: '#ffffff',
       headerLeft: ()=> null
     },
@@ -40,7 +40,7 @@ const App = createStackNavigator({
     screen: SetupData,
     navigationOptions: {
       title: 'QMS Data Setup',
-      headerStyle: { backgroundColor: '#3a59b7' },
+      headerStyle: { backgroundColor: '#222b45' },
       headerTintColor: '#ffffff',
       headerLeft: ()=> null
     },

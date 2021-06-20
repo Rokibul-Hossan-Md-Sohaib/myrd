@@ -162,7 +162,7 @@ export default class HomeScreen extends React.Component<Props, State> {
       <View
         style={{
           flex: 1,
-          backgroundColor: 'white',
+          backgroundColor: '#151a30',
           flexDirection: 'column',
         }}>
         <ProgressDialog loading={this.state.loading} />
@@ -174,6 +174,9 @@ export default class HomeScreen extends React.Component<Props, State> {
             title="Start"
             //disabled = {!this.state.okToGo}
             customClick={() => this.checkLoggedInAndRouteToSetupData()}
+            style={{
+              backgroundColor: '#28a745',
+            }}
           />
         </View>
       </View>

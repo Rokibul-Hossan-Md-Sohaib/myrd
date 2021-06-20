@@ -229,7 +229,7 @@ export default class SetupData extends React.Component<Props, State> {
         color: '#007FFF',
       };
     return (
-      <View style={{ backgroundColor: 'white', flex: 1 }}>
+      <View style={{ backgroundColor: '#151a30', flex: 1 }}>
         <ScrollView keyboardShouldPersistTaps="handled">
           <KeyboardAvoidingView
             behavior="padding"
@@ -238,7 +238,7 @@ export default class SetupData extends React.Component<Props, State> {
 
             <View style={{paddingVertical: 5}} />
 
-            <Text style={{paddingLeft: 25, fontWeight: '700'}}>Buyer</Text>
+            <Text style={{paddingLeft: 25, fontWeight: '700', color: '#fff'}}>Buyer</Text>
             <View style={{paddingVertical: 2}} />
             <RNPickerSelect
             placeholder={placeholder}
@@ -282,7 +282,7 @@ export default class SetupData extends React.Component<Props, State> {
             
             { this.state.selectedBuyer ?
               <View>
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Style</Text>
+              <Text style={{paddingLeft: 25, fontWeight: '700', color: '#fff'}}>Style</Text>
               <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
@@ -323,7 +323,7 @@ export default class SetupData extends React.Component<Props, State> {
 
             { this.state.selectedStyle ?
               <View>
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Export PO</Text>
+              <Text style={{paddingLeft: 25, fontWeight: '700', color: '#fff'}}>Export PO</Text>
               <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
@@ -367,7 +367,7 @@ export default class SetupData extends React.Component<Props, State> {
 
             { this.state.selectedExpPo ?
               <View>
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Color</Text>
+              <Text style={{paddingLeft: 25, fontWeight: '700', color: '#fff'}}>Color</Text>
               <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
@@ -408,7 +408,7 @@ export default class SetupData extends React.Component<Props, State> {
 
             { this.state.selectedColor ?
               <View>
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Size</Text>
+              <Text style={{paddingLeft: 25, fontWeight: '700', color: '#fff'}}>Size</Text>
               <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
@@ -455,18 +455,28 @@ export default class SetupData extends React.Component<Props, State> {
               <View style={{paddingVertical: 5}} />  
             </View> : <></>}
 
-            <Text style={{paddingLeft: 25, fontWeight: '700'}}>Shipment Date</Text>
+            <Text style={{paddingLeft: 25, fontWeight: '700', color: '#fff'}}>Shipment Date</Text>
             <Mytextinput
               placeholder="Shipment Date"
               editable={false}
               value={this.state.dShipmentDate}
+              style={{
+                backgroundColor: "#2d395c",
+                color: "#fff",
+                borderRadius: 7,
+              }}
               //onChangeText={user_name => this.setState({ user_name })}
             />
 
             <View style={{paddingVertical: 5}} />
-            <Text style={{paddingLeft: 25, fontWeight: '700'}}>Today</Text>
+            <Text style={{paddingLeft: 25, fontWeight: '700', color: '#fff'}}>Today</Text>
             <Mytextinput
               value={this.state.dToday}
+              style={{
+                backgroundColor: "#2d395c",
+                color: "#fff",
+                borderRadius: 7,
+              }}
             />
             
             <View style={{paddingVertical: 5}} />  
@@ -515,20 +525,22 @@ const pickerSelectStyles = StyleSheet.create({
       paddingHorizontal: 10,
       borderWidth: 1,
       borderColor: 'gray',
-      borderRadius: 4,
-      color: 'black',
+      backgroundColor: "#2d395c",
+      borderRadius: 7,
+      color: '#fff',
       paddingRight: 30, // to ensure the text is never behind the icon
     },
     inputAndroid: {
       fontSize: 16,
       marginLeft: 20,
+      backgroundColor: "#2d395c",
       marginRight: 20,
       paddingHorizontal: 10,
       paddingVertical: 8,
-      borderWidth: 0.5,
-      borderColor: '#000',
-      borderRadius: 8,
-      color: 'black',
+      //borderWidth: 0.5,
+      //borderColor: '#000',
+      borderRadius: 7,
+      color: '#fff',
       paddingRight: 30, // to ensure the text is never behind the icon
     },
   });

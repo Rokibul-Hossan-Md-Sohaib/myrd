@@ -17,7 +17,7 @@ const Mytextinput = (props: any) => {
         underlineColorAndroid="transparent"
         secureTextEntry={props.secureTextEntry}
         placeholder={props.placeholder}
-        placeholderTextColor="#007FFF"
+        placeholderTextColor="#fff"
         keyboardType={props.keyboardType}
         onChangeText={props.onChangeText}
         textAlign="center"

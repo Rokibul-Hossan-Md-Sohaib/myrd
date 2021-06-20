@@ -78,6 +78,9 @@ type State = {
   current_login:any,
   currentCountObj:any,
 
+  unitName: string,
+  lineName: string,
+  
   currentHour: any,
   isConnected: boolean | null,
   isApiOK: boolean | null,
@@ -123,6 +126,9 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       currentHourObj:{},
       current_login:{},
       currentCountObj:{},
+
+      unitName: '',
+      lineName: "",
 
       currentHour: null,
       isConnected: false,
@@ -245,6 +251,8 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         }else{
           //New Hour detected, So this will reset hourCounter but main counter will go on...
           // And will create a new db entry with NEW hour ID
+
+          console.log('New hour totalDayFttCount',this.state.totalDayFttCount);
           this.setState(() => ({
             fttCount: 1,
             currentCountObj: { 
@@ -267,7 +275,6 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
               });
 
               var {currentCountObj} = this.state;
-              
               /**Send Data to local persistance */
               var isOk = await writeProductionToLocalDB(currentCountObj);
               this.setState({isApiOK: isOk});
@@ -323,7 +330,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             dLastUpdated: dateObj
         };
 
-        /**Send Data to local persistance */
+        /**Send Data to local persistance ==> Not required to acknowledge here */
         var isOk = await writeDefectToLocalDB(currentDefectCountObj);
         //this.setState({isApiOK: isOk}, ()=> this.setModalVisible(constKVP.__MODAL_FOR_DEFECT));
         this.setState((prev)=>({
@@ -479,10 +486,20 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
 
       var currentCountObj: any = {};
       const reqObj: any = this.props.navigation.getParam('userData');
+      console.log(reqObj);
       var current_login: any = getCurrentLoggedInUserForToday(this.state.today);
       let allDefects: any = getAllDefects();
       var defectCategories = getUniqueAttributes(allDefects, "vDefectCategoryId", "vDefectCategoryName", "vHeadShortName");
       var currentHour = getCurrentHourId();
+      let lineName: string = reqObj["vLineId"];
+      let unitName: string = reqObj["vUnitName"]; 
+      unitName = unitName.split('-')[1];
+      /***
+       * 
+       * this.state.currentProdObj["vUnitName"].split("-")[1]+'/'+this.state.currentProdObj["vLineId"]}/
+       * 
+       */
+      //lineName: string,
 
       if(currentHour === undefined){
             Toast.show({
@@ -550,6 +567,9 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             current_login, 
             currentCountObj, 
             fttCount: currentCountObj.iProductionQty, //current hour wise counter
+
+            unitName,
+            lineName,
             
             defectCount: totalDayDefectCount,
             rejectCount: totalDayRejectCount,
@@ -641,28 +661,27 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       <StatusBar hidden={true}/>
         <View style={screenHeight > screenWidth ? styles.ContainerPortrait : styles.ContainerLandscape} onLayout={this._onLayout.bind(this)}>
           
-          <View style={{flex:.65, flexDirection:'row', justifyContent:'space-evenly', borderWidth: 1, borderColor: 'green'}}>
-            <View style={{flex:.1, justifyContent:'center', alignItems:'center'}}>
-                {/* <Text>green</Text> */}
+          <View style={{flex:.65, flexDirection:'row', backgroundColor: '#222b45', justifyContent:'space-evenly', borderWidth: .3, borderColor: '#343a40'}}>
+            <View style={{flex:.08, justifyContent:'center', alignItems:'center'}}>
                 <View style={{height: 25, width:25, backgroundColor: this.state.isConnected ? '#45c065' : '#ff5353', borderRadius: 25 }} />
                 <View style={{position:'absolute', height: 15, width:15, backgroundColor: this.state.isApiOK ? '#45c065' : '#fda912', borderRadius: 25 }} />
             </View>
 
-          <View style={{flex: .8, flexDirection:'column', justifyContent:'space-around'}}>
-            <View style={{flex:1, flexDirection:'row', justifyContent:'space-around', borderBottomColor:'green'}}>
-                <Text numberOfLines={1} style={{flex:1, fontSize: moderateScale(11), fontWeight:'bold', textAlign:'center'}}>Buyer: {this.state.currentProdObj.vBuyerName}</Text>
-                <Text numberOfLines={1} style={{flex:1, fontSize: moderateScale(11), fontWeight:'bold', textAlign:'center'}}>Style: {this.state.currentProdObj.vStyleName}</Text>
-                <Text numberOfLines={1} style={{flex:1, fontSize: moderateScale(11), fontWeight:'bold', textAlign:'center'}}>ExPo: {this.state.currentProdObj.vExpPoorderNo}</Text>
+          <View style={{flex: .8, flexDirection:'column', justifyContent:'space-evenly'}}>
+            <View style={{flex:1, flexDirection:'row', justifyContent:'space-evenly', borderBottomColor:'#6c757d'}}>
+                <Text numberOfLines={1} style={styles.titleTxtStyle}>Buyer: {this.state.currentProdObj.vBuyerName}</Text>
+                <Text numberOfLines={1} style={styles.titleTxtStyle}>Style: {this.state.currentProdObj.vStyleName}</Text>
+                <Text numberOfLines={1} style={styles.titleTxtStyle}>ExPo: {this.state.currentProdObj.vExpPoorderNo}</Text>
             </View>
-            <View style={{flex:1, flexDirection:'row', justifyContent:'space-around'}}>
-                <Text numberOfLines={1} style={{flex:1, fontSize: moderateScale(11), fontWeight:'bold', textAlign:'center'}}>Color: {this.state.currentProdObj.vColorName}</Text>
-                <Text numberOfLines={1} style={{flex:1, fontSize: moderateScale(11), fontWeight:'bold', textAlign:'center'}}>Size: {this.state.currentProdObj.vSizeName}</Text>
-                <Text numberOfLines={1} style={{flex:1, fontSize: moderateScale(11), fontWeight:'bold', textAlign:'center'}}>Shipment: {moment(this.state.currentProdObj.dShipmentDate).format('DD-MM-YYYY')}</Text>
+            <View style={{flex:1, flexDirection:'row', justifyContent:'space-evenly'}}>
+                <Text numberOfLines={1} style={styles.titleTxtStyle}>Color: {this.state.currentProdObj.vColorName}</Text>
+                <Text numberOfLines={1} style={styles.titleTxtStyle}>Size: {this.state.currentProdObj.vSizeName}</Text>
+                <Text numberOfLines={1} style={styles.titleTxtStyle}>Shipment: {moment(this.state.currentProdObj.dShipmentDate).format('DD-MM-YYYY')}</Text>
             </View>
           </View>
 
-            <View style={{flex:.1, justifyContent:'space-evenly', flexDirection:'row', alignItems:'center'}}>
-              <Text style={{fontSize: 16, fontWeight:'bold'}}>{ this.state.currentHour ?? "N/A"}</Text>
+            <View style={{flex:.15, justifyContent:'space-evenly', flexDirection:'row', alignItems:'center'}}>
+              <Text style={{fontSize: 16, fontWeight:'bold', color:'#fff'}}>{this.state.unitName +"/"+this.state.lineName }/{this.state.currentHour ?? "N/A" }</Text>
               <Animated.View style={{transform:[{rotate: RotateData}]}}>
                 <Icon onPress={()=> this.syncCurrentData()} name="sync" size={20} color={this.state.isSynced ? '#45c065' : "#ff5353"} />
               </Animated.View>
@@ -670,17 +689,17 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             </View>
           </View>
 
-          {/* <View style={{flex: 6, flexDirection: 'column'}}>
+          <View style={{flex: 6, flexDirection: 'column', padding: 10}}>
 
-          </View> */}
+          
           <View style={{flex: 3, marginBottom:moderateScale(10), flexDirection:'row'}}>
 
-            <Pressable onPress={()=>this.countFtt()} style={{...styles.CountTileStyle, backgroundColor: '#45c065'}}>
+            <Pressable onPress={()=>this.countFtt()} style={{...styles.CountTileStyle, backgroundColor: '#45c065', borderRadius: 7}}>
               <Text style={{fontSize: moderateScale(25), fontWeight:'bold'}}>ACCEPT</Text>
               <Text style={{fontSize: moderateScale(25), fontWeight:'bold', color: '#fff'}}>{this.state.totalDayFttCount}</Text>
             </Pressable >
             
-            <Pressable onPress={()=>this.setModalVisible(constKVP.__MODAL_FOR_DEFECT)} style={{...styles.CountTileStyle, marginLeft:moderateScale(10),  backgroundColor: '#fda912'}}>
+            <Pressable onPress={()=>this.setModalVisible(constKVP.__MODAL_FOR_DEFECT)} style={{...styles.CountTileStyle, marginLeft:moderateScale(10),  backgroundColor: '#fda912', borderRadius: 7}}>
                 <Text style={{fontSize: moderateScale(25), fontWeight:'bold'}}>DEFECT</Text>
                 <Text style={{fontSize: moderateScale(25), fontWeight:'bold', color: '#fff'}}>{this.state.totalDayDefectCount}</Text>
             </Pressable>
@@ -689,18 +708,18 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
 
           <View style={{flex: 3, flexDirection:'row'}}>
             
-            <Pressable onPress={()=>this.setModalVisible(constKVP.__MODAL_FOR_REJECT)} style={{...styles.CountTileStyle, backgroundColor: '#ff5353'}}>
+            <Pressable onPress={()=>this.setModalVisible(constKVP.__MODAL_FOR_REJECT)} style={{...styles.CountTileStyle, backgroundColor: '#ff5353', borderRadius: 7}}>
             <Text style={{fontSize: moderateScale(25), fontWeight:'bold'}}>REJECT</Text>
             <Text style={{fontSize: moderateScale(25), fontWeight:'bold', color: '#fff'}}>{this.state.totalDayRejectCount}</Text>
             </Pressable>
 
-            <Pressable onPress={()=>this.countreworked()} style={{...styles.CountTileStyle, marginLeft:moderateScale(10),   backgroundColor: '#3d9efd'}}>
+            <Pressable onPress={()=>this.countreworked()} style={{...styles.CountTileStyle, marginLeft:moderateScale(10),   backgroundColor: '#3d9efd', borderRadius: 7}}>
             <Text style={{fontSize: moderateScale(25), fontWeight:'bold'}}>REWORKED</Text>
             <Text style={{fontSize: moderateScale(25), fontWeight:'bold', color: '#fff'}}>{this.state.totalDayReworkedCount}</Text>
             </Pressable>
 
           </View>
-
+          </View>
         </View>
         
         <View>
@@ -710,7 +729,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                   visible={this.state.modalVisible}
                   onRequestClose={() => this.setModalVisible(-1) }>
                   <View style={{height: this.state.screenHeight, width: this.state.screenWidth, backgroundColor:'rgba(0,0,0,0.7)'}}>
-                    <View style={{ flex:1, flexDirection:'column', justifyContent:'space-between', borderColor:'green', borderWidth:1, borderRadius:10, marginVertical: this.state.screenHeight/8, backgroundColor:'#fff',  margin:10, padding:10}}>
+                    <View style={{ flex:1, flexDirection:'column', justifyContent:'space-between', borderColor:'green', borderWidth:1, borderRadius:10, marginVertical: this.state.screenHeight/8, backgroundColor:'#222b45',  margin:10, padding:10}}>
                         <View style={{flex:1, flexDirection:'row', justifyContent:'space-between',  margin:10}}>
                           {
                             this.state.showStyleImage ? 
@@ -736,11 +755,12 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                                                       borderRadius:7,
                                                       justifyContent:'center', 
                                                       alignItems:'center', 
-                                                      borderWidth:1, 
-                                                      borderColor: item.vDefectCategoryId === this.state.selectedDefectCategory ? '#00897b' : '#80cbc4'
+                                                      backgroundColor: item.vDefectCategoryId === this.state.selectedDefectCategory ? "#303d61" : "#222b45",
+                                                      borderWidth: item.vDefectCategoryId === this.state.selectedDefectCategory ? 1.5 : 1, 
+                                                      borderColor: item.vDefectCategoryId === this.state.selectedDefectCategory ? '#00d68f' : '#FFF'
                                                     }} 
                                                     onPress={() => this.filterDefectesCategoryWise(item.vDefectCategoryId)}>
-                                                        <Text style={{fontWeight:'bold', color: item.vDefectCategoryId === this.state.selectedDefectCategory ? '#004d40' : '#5c6bc0' , fontSize: 12}}>{item.vDefectCategoryId === this.state.selectedDefectCategory ? (item.vDefectCategoryName+" ("+item.vHeadShortName+")   ✔") : (item.vDefectCategoryName+" ("+item.vHeadShortName+")")}</Text>
+                                                        <Text style={{fontWeight:'bold', color: item.vDefectCategoryId === this.state.selectedDefectCategory ? '#00d68f' : '#FFF' , fontSize: 14}}>{item.vDefectCategoryId === this.state.selectedDefectCategory ? (item.vDefectCategoryName+" ("+item.vHeadShortName+")   ✔") : (item.vDefectCategoryName+" ("+item.vHeadShortName+")")}</Text>
                                                   </TouchableOpacity>
                                             }
                                           </View>)
@@ -761,11 +781,11 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                                                                     padding:5, 
                                                                     width: "100%",
                                                                     borderRadius:7, 
-                                                                    borderWidth:1,
                                                                     alignItems:'center',
-                                                                    //backgroundColor:'green',
+                                                                    borderWidth:  item.vHeadId === this.state.selectedDefectHeadId ? 1.5 : 1,
                                                                     justifyContent:'center', 
-                                                                    borderColor: item.vHeadId === this.state.selectedDefectHeadId ? "green":'#7fb37f'
+                                                                    backgroundColor:  item.vHeadId === this.state.selectedDefectHeadId ? "#303d61" : "#222b45",
+                                                                    borderColor: item.vHeadId === this.state.selectedDefectHeadId ? this.state.modeColor :'#20c997'
                                                                     }} onPress={() => this.selectDefectHead(item.vHeadId)}>
                                                                       <Text 
                                                                         style={{
@@ -773,7 +793,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                                                                             maxWidth: screenWidth/3, 
                                                                             textAlignVertical:'center',
                                                                             textAlign:'center', 
-                                                                            color:item.vHeadId === this.state.selectedDefectHeadId ? "#000":'grey',
+                                                                            color:item.vHeadId === this.state.selectedDefectHeadId ?  this.state.modeColor :'#20c997',
                                                                             fontSize: 14
                                                                             }}>
                                                                           {item.vHeadId === this.state.selectedDefectHeadId ? ("("+item.code+") -> "+item.vHeadName+"   ✔✔") : ("("+item.code+") -> "+item.vHeadName)}
@@ -826,7 +846,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                           } 
                         </View>
                         <View style={{flex:1, position:'absolute', right: 0, top: 0, marginTop: -10}}>
-                          <TouchableOpacity style={{width:30, height:30,marginTop:10, borderTopRightRadius:7, borderBottomLeftRadius:7, backgroundColor:'green', flex:1, justifyContent:'center'}} onPress={() => this.setModalVisible(-1)}>
+                          <TouchableOpacity style={{width:30, height:30,marginTop:10, borderTopRightRadius:7, borderBottomLeftRadius:7, backgroundColor:'#20c997', flex:1, justifyContent:'center'}} onPress={() => this.setModalVisible(-1)}>
                               <Text style={{textAlign:'center', fontWeight:'bold', color:'#fff', fontSize: 15, textTransform:'uppercase'}}>X</Text>
                           </TouchableOpacity>
                         </View>
@@ -842,6 +862,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
 const styles = StyleSheet.create({
     container: {
       //marginTop: 48,
+      backgroundColor: "#151a30",
       flex: 1
     },
     headerStyle: {
@@ -888,6 +909,13 @@ const styles = StyleSheet.create({
       borderWidth:0.3,
       borderRadius:10,
       borderColor:'green'
+    },
+    titleTxtStyle:{
+      flex:1, 
+      fontSize: moderateScale(11), 
+      fontWeight:'bold', 
+      textAlign:'center',
+      color: '#fff'
     }
   
   });
