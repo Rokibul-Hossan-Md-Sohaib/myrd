@@ -199,7 +199,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       //vHourId: this.getCurrentHourId(),
       //get Previous hour check if new hour equels to state hour
       var thisHourID: any = getCurrentHourId();
-      //console.log('Now',thisHourID)
+      ////console.log('Now',thisHourID)
 
       if(thisHourID === undefined){
         Toast.show({
@@ -209,12 +209,15 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
           text2: "This is not the production Hour!, Try After sometimes.",
           visibilityTime: 1500,
           })
+          setTimeout(() => {
+            this.props.navigation.goBack();
+        }, 2000);
       }else{
 
             var {
               iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId, vBuyerId, vStyleId, vColorId, vSizeId,
               vBuyerName, vSizeName, vExpPoorderNo, vColorName, vStyleName, dShipmentDate,
-              dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,iProductionQty,iTotalPlanQty,
+              dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,iProductionQty,iTotalPlanQty, fSmv, iHel, iMo, iPlanHour, nForecast,
               iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId
             } = this.state.currentCountObj;
 
@@ -227,13 +230,13 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                     iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId, 
                     vBuyerName, vSizeName, vExpPoorderNo, vColorName, vStyleName, dShipmentDate, vBuyerId, vStyleId, vColorId, vSizeId,
                     dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,iTotalPlanQty,
-                    iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId, 
+                    iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId,  fSmv, iHel, iMo, iPlanHour, nForecast,
                     iProductionQty: iProductionQty + 1, dLastUpdated: dateObj 
                     },
               totalDayFttCount: this.state.totalDayFttCount + 1, //independent of hour
               currentHour: thisHourID["vHourId"]
             }),async ()=>{
-              //console.log('Production count write to db....', this.state.currentCountObj)
+              ////console.log('Production count write to db....', this.state.currentCountObj)
             var {currentCountObj} = this.state;
             
             /**Send Data to local persistance */
@@ -242,7 +245,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
               // isOk.then((val)=>{
               //       this.setState({isApiOK: val});
               // }).catch(errorMessage => {
-              //   console.log(errorMessage);
+              ////   console.log(errorMessage);
               //   this.setState({isApiOK: false});
               // });
 
@@ -252,20 +255,20 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
           //New Hour detected, So this will reset hourCounter but main counter will go on...
           // And will create a new db entry with NEW hour ID
 
-          console.log('New hour totalDayFttCount',this.state.totalDayFttCount);
+          //console.log('New hour totalDayFttCount',this.state.totalDayFttCount);
           this.setState(() => ({
             fttCount: 1,
             currentCountObj: { 
               iAutoId: 0, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId: thisHourID["vHourId"],
               vBuyerName, vSizeName, vExpPoorderNo, vColorName, vStyleName, dShipmentDate, vBuyerId, vStyleId, vColorId, vSizeId,
               dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction, iTotalPlanQty,
-              iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId, 
+              iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId, fSmv, iHel, iMo, iPlanHour, nForecast,
               iProductionQty: 1, dLastUpdated: dateObj 
               },
             totalDayFttCount: this.state.totalDayFttCount + 1,
             currentHour: thisHourID["vHourId"]
           }),async ()=>{
-            //console.log('Production count write to db....', this.state.currentCountObj.iProductionQty)
+            ////console.log('Production count write to db....', this.state.currentCountObj.iProductionQty)
             Toast.show({
               type: "info",
               position: 'bottom',
@@ -281,7 +284,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
               // isOk.then((val)=>{
               //       this.setState({isApiOK: val});
               // }).catch(errorMessage => {
-              //   console.log(errorMessage);
+              ////   console.log(errorMessage);
               //   this.setState({isApiOK: false});
               // });
           });
@@ -353,7 +356,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         rejectCount: prevState.rejectCount + 1,
         totalDayRejectCount: prevState.totalDayRejectCount+1
       }), async ()=>{
-          //console.log('count defect')
+          ////console.log('count defect')
          var currentRejectCountObj =
           {
             iAutoId: 0,
@@ -385,7 +388,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             dLastUpdated: dateObj
         };
 
-        //console.log(currentRejectCountObj);
+        ////console.log(currentRejectCountObj);
         var isOk = await writeRejectToLocalDB(currentRejectCountObj);
         this.setState((prev)=>({
           isApiOK: isOk, 
@@ -408,7 +411,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         reworkedCount: prevState.reworkedCount + 1,
         totalDayReworkedCount: prevState.totalDayReworkedCount+1
       }), async ()=>{
-          //console.log('count defect')
+          ////console.log('count defect')
          var currentReworkedCountObj =
           {
             iAutoId: 0,
@@ -435,7 +438,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             dLastUpdated: dateObj
         };
         
-        //console.log(currentReworkedCountObj);
+        ////console.log(currentReworkedCountObj);
         var isOk = await writeReworkedToLocalDB(currentReworkedCountObj);
         this.setState({isApiOK: isOk, isSynced: isOk});
         
@@ -460,17 +463,17 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
     componentWillUnmount(){
       this._subscription && this._subscription();
       removeAndroidBackButtonHandler();
-      console.log('unmounted production count');
+      //console.log('unmounted production count');
     }
 
     // checkApiAvailability= async()=>{
     //   await get(__API_OK_PATH)
     //   .then((response: any) => {
-    //     console.log(response);
-    //     this.setState({isApiOK: true},()=> console.log('api ok', response.data));
+    ////     console.log(response);
+    ////     this.setState({isApiOK: true},()=> console.log('api ok', response.data));
     //   })
     //   .catch(errorMessage => {
-    //     this.setState({isApiOK: false},()=> console.log('api ok false', errorMessage));
+    ////     this.setState({isApiOK: false},()=> console.log('api ok false', errorMessage));
     //   });
     // }
 
@@ -486,7 +489,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
 
       var currentCountObj: any = {};
       const reqObj: any = this.props.navigation.getParam('userData');
-      console.log(reqObj);
+      //console.log('reqObj',reqObj);
       var current_login: any = getCurrentLoggedInUserForToday(this.state.today);
       let allDefects: any = getAllDefects();
       var defectCategories = getUniqueAttributes(allDefects, "vDefectCategoryId", "vDefectCategoryName", "vHeadShortName");
@@ -506,9 +509,12 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
               type: "error",
               position: 'bottom',
               text1: "Alert!",
-              text2: "This Hour is not available for Production Entry!, Try Again after sometimes.",
+              text2: "This Hour is not available for Production Entry!, Try Again after this hour.",
               visibilityTime: 1500,
               });
+          setTimeout(() => {
+              this.props.navigation.goBack();
+          }, 2000);
       }else{
           let existingData: any = getCurrentHourExistingData(reqObj, currentHour, current_login)
           let totalDayFttCount = getTodaysTotalFttCount(reqObj);
@@ -517,7 +523,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
           let totalDayReworkedCount = getTodaysTotalReworkCount(reqObj);
           
               if(existingData === undefined){
-                console.log('Not Found Any Data Count');
+                //console.log('Not Found Any Data Count');
                 currentCountObj =
                     {
                       iAutoId: 0,
@@ -541,6 +547,12 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                       vSizeId:  reqObj.vSizeId,
                       vSizeName: reqObj.vSizeName,
 
+                      fSmv: reqObj.fSmv, 
+                      iHel: reqObj.iHel, 
+                      iMo: reqObj.iMo, 
+                      iPlanHour: reqObj.iPlanHour, 
+                      nForecast: reqObj.nForecast,
+
                       iProductionQty: 0,
                       iTotalPlanQty: reqObj.iTotalPlanQty,
                       vHourId: currentHour["vHourId"],
@@ -556,9 +568,10 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                       vShiftId: reqObj.vShiftId
                   };
               }else{
-                console.log('Found Existing Data Count:', existingData.iProductionQty)
+                //console.log('Found Existing Data Count:', existingData.iProductionQty)
                 currentCountObj = existingData;
               }
+          //console.log('countObj',currentCountObj);
             
           this.setState({
             currentProdObj: reqObj,allDefects,defectCategories,
@@ -581,13 +594,13 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
             totalDayReworkedCount
             //TODO: totalDayFttCount will be total of all hours ftt summation.
           },async ()=>{
-            console.log('write initial production cout object to local db');
+            //console.log('write initial production cout object to local db');
             var isOk = await writeProductionToLocalDB(this.state.currentCountObj);
             this.setState({isApiOK: isOk});
             // isOk.then((val)=>{
             //       this.setState({isApiOK: val});
             // }).catch(errorMessage => {
-            //   console.log(errorMessage);
+            ////   console.log(errorMessage);
             //   this.setState({isApiOK: false});
             // });
           });
@@ -611,12 +624,12 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
         selectedDefectHeadId: selectedDefectObj.vHeadId, 
         shwoNextButton:true
       },()=>{
-        console.log("in state",this.state.selectedDefectObj.vHeadName)
+        //console.log("in state",this.state.selectedDefectObj.vHeadName)
       });
     }
 
     _onLayout(e: any) {
-      console.log("Screen Orientation Changed...")
+      //console.log("Screen Orientation Changed...")
       this.setState({
         screenWidth: Dimensions.get('window').width,
         screenHeight: Dimensions.get('window').height

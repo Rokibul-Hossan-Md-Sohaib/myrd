@@ -13,37 +13,44 @@ import { LoggedIn_Session, QMS_ProductionCountHourly, vwDefects, vwTimeInfo } fr
 const dateObj: Date = new Date();
 
 const  getCurrentHourId = (): vwTimeInfo => {
-    let currentHour: vwTimeInfo;
+    let currentHour: any;
     let timeNow: string = '1900-01-01T'+new Date().getHours()+':00:00';
     //console.log('timeNow',timeNow)
     let hourObj: any = Realm.objects<vwTimeInfo>(HourInfoSchema.name)
     .filtered('dStartTimeOfProduction = $0', timeNow);
 
+    console.log('filtered hour',hourObj);
     hourObj = convertToArray(hourObj)
+    console.log('arr hour',hourObj);
 
     if(hourObj.length > 0){        
       //Current Hour info available
       currentHour = hourObj[0];//["vHourId"];
-    }else{
-      //Current Hour info not available
-      // So set current to 1 hour back
-      timeNow = '1900-01-01T'+(dateObj.getHours()-1)+':00:00';
-      hourObj = Realm.objects<vwTimeInfo>(HourInfoSchema.name)
-        .filtered('dStartTimeOfProduction = $0', timeNow);
-      hourObj = convertToArray(hourObj)
-
-        if(hourObj.length > 0){       
-          currentHour = hourObj[0];
-        }else{
-          //Current Hour not found in 1 hour back
-          // So set current to 2 hours back
-          timeNow = '1900-01-01T'+(dateObj.getHours()-2)+':00:00';
-          hourObj = Realm.objects<vwTimeInfo>(HourInfoSchema.name)
-            .filtered('dStartTimeOfProduction = $0', timeNow);
-          hourObj = convertToArray(hourObj)
-            currentHour = hourObj[0];
-        }
-    }
+     }else{
+       currentHour = undefined;
+     }
+    //else{
+    //   //Current Hour info not available
+    //   // So set current to 1 hour back
+    //   // timeNow = '1900-01-01T'+(dateObj.getHours()-1)+':00:00';
+    //   // hourObj = Realm.objects<vwTimeInfo>(HourInfoSchema.name)
+    //   //   .filtered('dStartTimeOfProduction = $0', timeNow);
+    //   // hourObj = convertToArray(hourObj)
+    //   // console.log('in else')
+    //   //   if(hourObj.length > 0){       
+    //   //     currentHour = hourObj[0];
+    //   //   }else{
+    //   //     console.log('in else else')
+    //   //     //Current Hour not found in 1 hour back
+    //   //     // So set current to 2 hours back
+    //   //     timeNow = '1900-01-01T'+(dateObj.getHours()-2)+':00:00';
+    //   //     hourObj = Realm.objects<vwTimeInfo>(HourInfoSchema.name)
+    //   //       .filtered('dStartTimeOfProduction = $0', timeNow);
+    //   //     hourObj = convertToArray(hourObj)
+    //   //       currentHour = hourObj[0];
+    //   //   }
+    //   currentHour = [];
+    // }
 
     return currentHour;
   }

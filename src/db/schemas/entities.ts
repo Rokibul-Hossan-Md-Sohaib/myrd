@@ -159,6 +159,12 @@ export interface QMS_ProductionCountHourly {
    readonly vSizeId: Nullable<string>,
    readonly vSizeName: Nullable<string>,
 
+   readonly fSMV: Nullable<number>,
+   readonly iHel: Nullable<number>,
+   readonly iMO: Nullable<number>,
+   readonly iPlanHour: Nullable<number>,
+   readonly nForecast: Nullable<number>,
+
    readonly vHourId: Nullable<string>,
    readonly dDateOfProduction: Date,
    readonly dStartTimeOfProduction: Date,
