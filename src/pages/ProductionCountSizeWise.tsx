@@ -29,7 +29,6 @@ import Orientation from 'react-native-orientation';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProp } from 'react-navigation';
 import { __API_OK_PATH } from '../utils/constKVP';
-import { DailyProductionPlanSummery, QMS_ProductionCountHourly } from '../db/schemas/entities';
 let dateObj: Date = new Date();
 
 /**
@@ -407,6 +406,23 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       /**Check if the API End is available now */
       //this.checkApiAvailability();
 
+      // var thisHourID: any = getCurrentHourId();
+
+      // if(thisHourID === undefined){
+      //   Toast.show({
+      //     type: "error",
+      //     position: 'top',
+      //     text1: "Alert!",
+      //     text2: "This is not the production Hour!, Try After sometimes.",
+      //     visibilityTime: 1500,
+      //     })
+      //     setTimeout(() => {
+      //       this.props.navigation.goBack();
+      //   }, 2000);
+      // }else{
+
+      // }
+
       this.setState((prevState, props) => ({
         reworkedCount: prevState.reworkedCount + 1,
         totalDayReworkedCount: prevState.totalDayReworkedCount+1
@@ -492,19 +508,18 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       //console.log('reqObj',reqObj);
       var current_login: any = getCurrentLoggedInUserForToday(this.state.today);
       let allDefects: any = getAllDefects();
-      var defectCategories = getUniqueAttributes(allDefects, "vDefectCategoryId", "vDefectCategoryName", "vHeadShortName");
+      var defectCategories = getUniqueAttributes(allDefects, "vDefectCategoryId", "vDefectCategoryName", "vCategoryShortName");
       var currentHour = getCurrentHourId();
+
+      //get the Line name like 'L1' or 'L2' etc 
       let lineName: string = reqObj["vLineId"];
+
+      //get the unit name only like 'G1' from unit name like "Unit-G1"
       let unitName: string = reqObj["vUnitName"]; 
-      unitName = unitName.split('-')[1];
-      /***
-       * 
-       * this.state.currentProdObj["vUnitName"].split("-")[1]+'/'+this.state.currentProdObj["vLineId"]}/
-       * 
-       */
-      //lineName: string,
+      unitName = unitName.split('-')[1]; 
 
       if(currentHour === undefined){
+        /**No specified hour found for production count... */
             Toast.show({
               type: "error",
               position: 'bottom',
@@ -524,6 +539,9 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
           
               if(existingData === undefined){
                 //console.log('Not Found Any Data Count');
+                /** no existing count data found so initiating brand new production count object 
+                 * for the current hour with zero production count
+                */
                 currentCountObj =
                     {
                       iAutoId: 0,
@@ -569,6 +587,8 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                   };
               }else{
                 //console.log('Found Existing Data Count:', existingData.iProductionQty)
+                /**We found an existing entry for current hour, 
+                 * and will be using this as hourly data object */
                 currentCountObj = existingData;
               }
           //console.log('countObj',currentCountObj);
@@ -722,7 +742,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
           <View style={{flex: 3, flexDirection:'row'}}>
             
             <Pressable onPress={()=>this.setModalVisible(constKVP.__MODAL_FOR_REJECT)} style={{...styles.CountTileStyle, backgroundColor: '#ff5353', borderRadius: 7}}>
-            <Text style={{fontSize: moderateScale(25), fontWeight:'bold'}}>REJECT</Text>
+            <Text style={{fontSize: moderateScale(25), fontWeight:'bold'}}>DAMAGE</Text>
             <Text style={{fontSize: moderateScale(25), fontWeight:'bold', color: '#fff'}}>{this.state.totalDayRejectCount}</Text>
             </Pressable>
 
@@ -759,6 +779,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                                   <View style={{flex:.45, flexDirection:'column', justifyContent:'center', alignItems:'center',  margin:10}}>
                                     {
                                       this.state.defectCategories.map((item, index) => {
+                                        console.log(item);
                                           return(<View style={{flex:1, padding:2, flexDirection:'row', width: screenWidth/2, justifyContent:'space-around'}} key={index}>
                                             {
                                                   <TouchableOpacity key={index} 
@@ -773,7 +794,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                                                       borderColor: item.vDefectCategoryId === this.state.selectedDefectCategory ? '#00d68f' : '#FFF'
                                                     }} 
                                                     onPress={() => this.filterDefectesCategoryWise(item.vDefectCategoryId)}>
-                                                        <Text style={{fontWeight:'bold', color: item.vDefectCategoryId === this.state.selectedDefectCategory ? '#00d68f' : '#FFF' , fontSize: 14}}>{item.vDefectCategoryId === this.state.selectedDefectCategory ? (item.vDefectCategoryName+" ("+item.vHeadShortName+")   ✔") : (item.vDefectCategoryName+" ("+item.vHeadShortName+")")}</Text>
+                                                        <Text style={{fontWeight:'bold', color: item.vDefectCategoryId === this.state.selectedDefectCategory ? '#00d68f' : '#FFF' , fontSize: 14}}>{item.vDefectCategoryId === this.state.selectedDefectCategory ? (item.vDefectCategoryName+" ("+item.vCategoryShortName+")   ✔") : (item.vDefectCategoryName+" ("+item.vCategoryShortName+")")}</Text>
                                                   </TouchableOpacity>
                                             }
                                           </View>)

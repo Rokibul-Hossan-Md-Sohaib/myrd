@@ -96,7 +96,7 @@ export default class SetupData extends React.Component<Props, State> {
     this.props.navigation.addListener(
       'didFocus',
       payload => {
-        Orientation.lockToPortrait();
+        Orientation.lockToLandscapeLeft();
         handleAndroidBackButton(this.navigateBack);
       });
   }
@@ -175,7 +175,7 @@ export default class SetupData extends React.Component<Props, State> {
 
     componentDidMount(){
       console.log("component mounted...")
-      Orientation.lockToPortrait()
+      Orientation.lockToLandscapeLeft();
       let comInfo: any = getAllDailyProductionPlanSummery();
       const reqObj = this.props.navigation.getParam('userData');
         console.log('reqObj', reqObj)

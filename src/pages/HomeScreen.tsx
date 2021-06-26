@@ -40,12 +40,12 @@ export default class HomeScreen extends React.Component<Props, State> {
     this.props.navigation.addListener(
       'didFocus',
       payload => {
-        Orientation.lockToPortrait();
+        Orientation.lockToLandscapeLeft();
       });
   }
 
   componentDidMount(){
-    Orientation.lockToPortrait()
+    Orientation.lockToLandscapeLeft();
     
     /***
      * //#region TODO:

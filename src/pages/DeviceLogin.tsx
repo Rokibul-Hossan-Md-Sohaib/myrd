@@ -94,7 +94,7 @@ export default class DeviceLogin extends React.Component<Props, State> {
     this.props.navigation.addListener(
       'didFocus',
       payload => {
-        Orientation.lockToPortrait();
+        Orientation.lockToLandscapeLeft();
         handleAndroidBackButton(this.navigateBack);
       });
   }
@@ -109,7 +109,7 @@ export default class DeviceLogin extends React.Component<Props, State> {
     }
 
     componentDidMount(){
-      Orientation.lockToPortrait()
+      Orientation.lockToLandscapeLeft();
       let comInfo:any = getQmsDeviceSecurityData();
 
       this.setState({AllDeviceInfo: comInfo}, ()=>{
