@@ -1,6 +1,6 @@
 /*Screen to register the user*/
 import React from 'react';
-import { View, ScrollView, KeyboardAvoidingView, StyleSheet, Text, Pressable } from 'react-native';
+import { View, ScrollView, KeyboardAvoidingView, StyleSheet, Text, Pressable, StatusBar } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Mytextinput from './components/Mytextinput';
@@ -263,6 +263,7 @@ showDatePicker = () => {
       };
     return (
       <View style={{ backgroundColor: '#151a30', flex: 1 }}>
+        <StatusBar hidden />
         <ScrollView keyboardShouldPersistTaps="handled">
           <KeyboardAvoidingView
             behavior="padding"

@@ -1,6 +1,6 @@
 /*Home Screen With buttons to navigate to diffrent options*/
 import React from 'react';
-import { View, Image } from 'react-native';
+import { View, Image, StatusBar } from 'react-native';
 import Mybutton from './components/Mybutton';
 import moment from 'moment'
 import Toast from 'react-native-toast-message';
@@ -165,6 +165,7 @@ export default class HomeScreen extends React.Component<Props, State> {
           backgroundColor: '#151a30',
           flexDirection: 'column',
         }}>
+        <StatusBar hidden />
         <ProgressDialog loading={this.state.loading} />
         <View style={{flex:1, justifyContent:'center', alignItems:'center'}}>
         <Image style={{ height: 150, width: 150}} source={require('../assets/images/scr_icon.png')}></Image>

@@ -1,6 +1,6 @@
 /*Screen to register the user*/
 import React from 'react';
-import { View, ScrollView, KeyboardAvoidingView, Alert, StyleSheet, Text, BackHandler } from 'react-native';
+import { View, ScrollView, KeyboardAvoidingView, Alert, StyleSheet, Text, BackHandler, StatusBar } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import Mytextinput from './components/Mytextinput';
 import moment from 'moment'
@@ -230,6 +230,7 @@ export default class SetupData extends React.Component<Props, State> {
       };
     return (
       <View style={{ backgroundColor: '#151a30', flex: 1 }}>
+        <StatusBar hidden />
         <ScrollView keyboardShouldPersistTaps="handled">
           <KeyboardAvoidingView
             behavior="padding"
