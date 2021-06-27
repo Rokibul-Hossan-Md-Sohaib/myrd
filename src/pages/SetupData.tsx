@@ -452,10 +452,10 @@ export default class SetupData extends React.Component<Props, State> {
               //     this.inputRefs.favSport1 = el;
               // }}
               />            
-              <View style={{paddingVertical: 5}} />  
+              {/* <View style={{paddingVertical: 5}} />   */}
             </View> : <></>}
 
-            <Text style={{paddingLeft: 25, fontWeight: '700', color: '#fff'}}>Shipment Date</Text>
+            {/* <Text style={{paddingLeft: 25, fontWeight: '700', color: '#fff'}}>Shipment Date</Text>
             <Mytextinput
               placeholder="Shipment Date"
               editable={false}
@@ -464,11 +464,13 @@ export default class SetupData extends React.Component<Props, State> {
                 backgroundColor: "#2d395c",
                 color: "#fff",
                 borderRadius: 7,
+                
               }}
+              
               //onChangeText={user_name => this.setState({ user_name })}
-            />
+            /> */}
 
-            <View style={{paddingVertical: 5}} />
+            {/* <View style={{paddingVertical: 5}} />
             <Text style={{paddingLeft: 25, fontWeight: '700', color: '#fff'}}>Today</Text>
             <Mytextinput
               value={this.state.dToday}
@@ -477,31 +479,43 @@ export default class SetupData extends React.Component<Props, State> {
                 color: "#fff",
                 borderRadius: 7,
               }}
-            />
+            /> */}
             
             <View style={{paddingVertical: 5}} />  
-            <Mybutton
-              title="Set Up"
-              customClick={()=> this.setupDataForProduction()}
-            />
+            <View style={{
+              display:'flex', 
+              flexDirection:'row', 
+              justifyContent:'center',
+              alignItems: 'center'
+              }}>
+                
 
-            <View style={{paddingVertical: 5}} />  
-            {/* <Mybutton
-              title="With Multiple Sizes"
-              disabled={this.state.disableMultipleSizeButton}
-             customClick={()=>  this.gotoMultipleSizeCountScreen()}
-               /**Sync Old data before data cleaning 
-            /> */}
-            <Mybutton
-              title="Sync Data"
-              //disabled={this.state.showLogoutButton}
-             customClick={()=> this.SyncAllDataWithServer()}
-            />
-            <Mybutton
-              title="Logout"
-              //disabled={this.state.showLogoutButton}
-             customClick={()=>   this.syncAndLogout()}
-            />
+                {/* <View style={{paddingVertical: 5}} />   */}
+                {/* <Mybutton
+                  title="With Multiple Sizes"
+                  disabled={this.state.disableMultipleSizeButton}
+                customClick={()=>  this.gotoMultipleSizeCountScreen()}
+                  /**Sync Old data before data cleaning 
+                /> */}
+                <Mybutton
+                  title="Logout"
+                  style={{backgroundColor:"#ff5353", width: 100}}
+                  //disabled={this.state.showLogoutButton}
+                customClick={()=>   this.syncAndLogout()}
+                />
+                <Mybutton
+                  style={{backgroundColor: "#3d9efd", width: 100}}
+                  title="Sync Data"
+                  //disabled={this.state.showLogoutButton}
+                customClick={()=> this.SyncAllDataWithServer()}
+                />
+                
+                <Mybutton
+                  style={{backgroundColor:"#2aad48", width: 100}}
+                  title="Set Up"
+                  customClick={()=> this.setupDataForProduction()}
+                />
+            </View>
           </KeyboardAvoidingView>
         </ScrollView>
       </View>
@@ -513,7 +527,7 @@ const style = StyleSheet.create({
     pickerStyle:{
         borderColor: 'red',
         borderWidth: 5,
-        paddingLeft: 70
+        paddingLeft: 70,
     }
 })
 

@@ -460,6 +460,8 @@ showDatePicker = () => {
               customClick={()=> this.userLoginAndGetData()}
               style={{
                 backgroundColor: '#28a745',
+                width: "50%",
+                alignSelf: "center"
               }}
             />
             <Pressable onLongPress={()=> this.showDateSelector()} style={{height: 25, width: 25, borderRadius:25, position:'absolute', top:2, right: 2, backgroundColor:'#151a30'}}></Pressable>

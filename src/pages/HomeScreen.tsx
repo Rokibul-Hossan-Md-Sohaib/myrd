@@ -92,8 +92,8 @@ export default class HomeScreen extends React.Component<Props, State> {
         Toast.show({
           type: 'error',
           position: 'bottom',
-          text1: 'Error!X',
-          text2: "Something wrong happend!, Try again",
+          text1: 'Error!',
+          text2: "Something wrong happend!, Exit the app and try again",
           visibilityTime: 1000,
           })
       }
@@ -176,6 +176,8 @@ export default class HomeScreen extends React.Component<Props, State> {
             customClick={() => this.checkLoggedInAndRouteToSetupData()}
             style={{
               backgroundColor: '#28a745',
+              width: "50%",
+              alignSelf: "center"
             }}
           />
         </View>

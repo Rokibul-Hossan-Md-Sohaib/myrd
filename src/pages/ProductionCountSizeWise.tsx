@@ -461,8 +461,23 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       });
     }
 
-    filterDefectesCategoryWise(categoryId: string){
-      var filteredDefects = this.state.allDefects.filter(x=> x.vDefectCategoryId === categoryId);
+    filterDefectesCategoryWise(categoryId: string, catShortName: string){
+      //.sort((a, b) => (a.CALDATE < b.CALDATE ? -1 : 1))
+      let r: string;
+      
+      let filteredDefects: any;
+      if(catShortName === "CMN"){
+        filteredDefects = this.state.allDefects
+          .filter(x=> x.vHeadName.includes("_"))
+          .sort((a,b)=> parseInt(a.code.match(/\d+/)[0]) - parseInt(b.code.match(/\d+/)[0]))
+  
+      }else{
+        filteredDefects = this.state.allDefects
+                                .filter(x=> x.vDefectCategoryId === categoryId)
+                                .sort((a,b)=> parseInt(a.code.match(/\d+/)[0]) - parseInt(b.code.match(/\d+/)[0]))
+      }
+
+      console.log(filteredDefects);
       this.setState({selectedDefectCategory: categoryId, filteredDefects, shwoNextButton:false});
     }
 
@@ -509,6 +524,8 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       var current_login: any = getCurrentLoggedInUserForToday(this.state.today);
       let allDefects: any = getAllDefects();
       var defectCategories = getUniqueAttributes(allDefects, "vDefectCategoryId", "vDefectCategoryName", "vCategoryShortName");
+      defectCategories.unshift({"vCategoryShortName": "CMN", "vDefectCategoryId": "CMN", "vDefectCategoryName": "COMMON"})
+      //console.log(defectCategories);
       var currentHour = getCurrentHourId();
 
       //get the Line name like 'L1' or 'L2' etc 
@@ -639,7 +656,9 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       if(selectedDefectObj === null){
         return;
       }
+
       this.setState({
+        //selectedDefectCategory: selectedDefectObj,
         selectedDefectObj, 
         selectedDefectHeadId: selectedDefectObj.vHeadId, 
         shwoNextButton:true
@@ -779,7 +798,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                                   <View style={{flex:.45, flexDirection:'column', justifyContent:'center', alignItems:'center',  margin:10}}>
                                     {
                                       this.state.defectCategories.map((item, index) => {
-                                        console.log(item);
+                                        //console.log(item);
                                           return(<View style={{flex:1, padding:2, flexDirection:'row', width: screenWidth/2, justifyContent:'space-around'}} key={index}>
                                             {
                                                   <TouchableOpacity key={index} 
@@ -793,7 +812,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                                                       borderWidth: item.vDefectCategoryId === this.state.selectedDefectCategory ? 1.5 : 1, 
                                                       borderColor: item.vDefectCategoryId === this.state.selectedDefectCategory ? '#00d68f' : '#FFF'
                                                     }} 
-                                                    onPress={() => this.filterDefectesCategoryWise(item.vDefectCategoryId)}>
+                                                    onPress={() => this.filterDefectesCategoryWise(item.vDefectCategoryId, item.vCategoryShortName)}>
                                                         <Text style={{fontWeight:'bold', color: item.vDefectCategoryId === this.state.selectedDefectCategory ? '#00d68f' : '#FFF' , fontSize: 14}}>{item.vDefectCategoryId === this.state.selectedDefectCategory ? (item.vDefectCategoryName+" ("+item.vCategoryShortName+")   ✔") : (item.vDefectCategoryName+" ("+item.vCategoryShortName+")")}</Text>
                                                   </TouchableOpacity>
                                             }
@@ -819,7 +838,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                                                                     borderWidth:  item.vHeadId === this.state.selectedDefectHeadId ? 1.5 : 1,
                                                                     justifyContent:'center', 
                                                                     backgroundColor:  item.vHeadId === this.state.selectedDefectHeadId ? "#303d61" : "#222b45",
-                                                                    borderColor: item.vHeadId === this.state.selectedDefectHeadId ? this.state.modeColor :'#20c997'
+                                                                    borderColor: item.vHeadId === this.state.selectedDefectHeadId ? this.state.modeColor :'#fff'
                                                                     }} onPress={() => this.selectDefectHead(item.vHeadId)}>
                                                                       <Text 
                                                                         style={{
@@ -827,7 +846,7 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
                                                                             maxWidth: screenWidth/3, 
                                                                             textAlignVertical:'center',
                                                                             textAlign:'center', 
-                                                                            color:item.vHeadId === this.state.selectedDefectHeadId ?  this.state.modeColor :'#20c997',
+                                                                            color:item.vHeadId === this.state.selectedDefectHeadId ?  this.state.modeColor :'#fff',
                                                                             fontSize: 14
                                                                             }}>
                                                                           {item.vHeadId === this.state.selectedDefectHeadId ? ("("+item.code+") -> "+item.vHeadName+"   ✔✔") : ("("+item.code+") -> "+item.vHeadName)}
