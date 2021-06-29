@@ -17,7 +17,7 @@ const  getCurrentHourId = (): vwTimeInfo => {
     let timeNow: string = '1900-01-01T'+new Date().getHours()+':00:00';
     //console.log('timeNow',timeNow)
     let hourObj: any = Realm.objects<vwTimeInfo>(HourInfoSchema.name)
-    .filtered('dStartTimeOfProduction = $0', timeNow);
+    .filtered('dStartTimeOfProduction <= $0 && dEndTimeOfProduction >= $0', timeNow);
 
     console.log('filtered hour',hourObj);
     hourObj = convertToArray(hourObj)
