@@ -462,8 +462,6 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
     }
 
     filterDefectesCategoryWise(categoryId: string, catShortName: string){
-      //.sort((a, b) => (a.CALDATE < b.CALDATE ? -1 : 1))
-      let r: string;
       
       let filteredDefects: any;
       if(catShortName === "CMN"){
@@ -526,6 +524,12 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
       var defectCategories = getUniqueAttributes(allDefects, "vDefectCategoryId", "vDefectCategoryName", "vCategoryShortName");
       defectCategories.unshift({"vCategoryShortName": "CMN", "vDefectCategoryId": "CMN", "vDefectCategoryName": "COMMON"})
       //console.log(defectCategories);
+      
+      /**Get all the common defects initially... */
+      let filteredDefects = allDefects
+          .filter((x: any)=> x.vHeadName.includes("_"))
+          .sort((a: any,b: any)=> parseInt(a.code.match(/\d+/)[0]) - parseInt(b.code.match(/\d+/)[0]));
+
       var currentHour = getCurrentHourId();
 
       //get the Line name like 'L1' or 'L2' etc 
@@ -547,7 +551,8 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
           setTimeout(() => {
               this.props.navigation.goBack();
           }, 2000);
-      }else{
+      }else
+      {
           let existingData: any = getCurrentHourExistingData(reqObj, currentHour, current_login)
           let totalDayFttCount = getTodaysTotalFttCount(reqObj);
           let totalDayDefectCount = getTodaysTotalDefectCount(reqObj);
@@ -611,7 +616,11 @@ class ProductionCountSizeWise extends React.Component<Props, State> {
           //console.log('countObj',currentCountObj);
             
           this.setState({
-            currentProdObj: reqObj,allDefects,defectCategories,
+            currentProdObj: reqObj,
+            allDefects,
+            defectCategories,
+            selectedDefectCategory: "CMN",
+            filteredDefects,
             currentHour: currentHour["vHourId"], 
             currentHourObj: currentHour, 
             current_login, 
