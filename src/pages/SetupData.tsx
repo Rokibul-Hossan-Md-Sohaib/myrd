@@ -198,8 +198,9 @@ export default class SetupData extends React.Component<Props, State> {
     }
  
   gotoMultipleSizeCountScreen(){
-    if(this.state.colorFilteredSizes.length > 0){
-      this.props.navigation.navigate('MultipleSizeCount', {userData: this.state.colorFilteredSizes});
+    var {finalProductionObject, colorFilteredSizes} = this.state;
+    if(this.state.colorFilteredSizes.length > 0 && finalProductionObject){
+      this.props.navigation.navigate('MultipleSizeCount', {userData: finalProductionObject, colorSizes: colorFilteredSizes});//{userData: this.state.colorFilteredSizes});
     }else{
       Alert.alert("total sizes",this.state.colorFilteredSizes.length.toString());
     }
@@ -216,7 +217,7 @@ export default class SetupData extends React.Component<Props, State> {
         type: 'error',
         position: 'top',
         text1: 'Error!',
-        text2: "Something Went Wrong!",
+        text2: "Something Went Wrong, Select all Production related info first!",
         visibilityTime: 1500,
         })
     }
@@ -492,12 +493,12 @@ export default class SetupData extends React.Component<Props, State> {
                 
 
                 {/* <View style={{paddingVertical: 5}} />   */}
-                {/* <Mybutton
-                  title="With Multiple Sizes"
+                <Mybutton
+                  title="Multiple Sizes"
                   disabled={this.state.disableMultipleSizeButton}
                 customClick={()=>  this.gotoMultipleSizeCountScreen()}
-                  /**Sync Old data before data cleaning 
-                /> */}
+                />
+
                 <Mybutton
                   title="Logout"
                   style={{backgroundColor:"#ff5353", width: 100}}

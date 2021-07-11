@@ -34,7 +34,7 @@ const writeProductionToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
             Realm.create(ProductionCountSchema.name, dataToWrite);
           }else{
             existingData.iProductionQty =  dataToWrite.iProductionQty;
-            existingData.dLastUpdated =  dateObj;
+            existingData.dLastUpdated =  new Date();
           }
       });
 
@@ -73,7 +73,7 @@ const writeReworkedToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
          Realm.create(ReworkedCountSchema.name, dataToWrite);
        }else{
          existingData.iReworkedCount =  dataToWrite.iReworkedCount;
-         existingData.dLastUpdated   =  dateObj;
+         existingData.dLastUpdated   =  new Date();
        }                            
          
    });
@@ -116,7 +116,7 @@ const writeRejectToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
          Realm.create(RejectCountSchema.name, dataToWrite);
        }else{
          existingData.iRejectCount +=  1;
-         existingData.dLastUpdated   =  dateObj;
+         existingData.dLastUpdated   =  new Date();
 
          dataToWrite.iRejectCount = existingData.iRejectCount;
          dataToWrite.dLastUpdated = existingData.dLastUpdated;
@@ -163,7 +163,7 @@ const writeDefectToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
          Realm.create(DefectCountSchema.name, dataToWrite);
        }else{
          existingData.iDefectCount +=  1;
-         existingData.dLastUpdated   =  dateObj;
+         existingData.dLastUpdated   =  new Date();
 
          dataToWrite.iDefectCount = existingData.iDefectCount;
          dataToWrite.dLastUpdated = existingData.dLastUpdated;
@@ -199,21 +199,28 @@ const syncBulkData = async (): Promise<boolean> =>{
 
     reworkData = Realm.objects(ReworkedCountSchema.name);
     reworkData = convertToArray(reworkData);
-    
-    await syncDataRequest(prodData, defectData, rejectData, reworkData)
-    .then((response: any) =>{
-        if(Array.isArray(response) && response.length == 4){
-          isSuccessful = true;
-          console.log('\nsync response:',"\n"+response[0].data, "\n"+response[1].data, "\n"+response[2].data, "\n"+response[3].data);
-        }else{
+    console.log(prodData.length, defectData.length, rejectData.length, reworkData.length);
+
+    if(prodData.length == 0 && defectData.length == 0 && rejectData.length == 0 && reworkData.length == 0){
+        console.log('No Data syncying required for as no previous data available')
+        /**No Data syncying required for as no previous data available...**/
+        isSuccessful = true;
+    }else{
+      await syncDataRequest(prodData, defectData, rejectData, reworkData)
+      .then((response: any) =>{
+          if(Array.isArray(response) && response.length == 4){
+            isSuccessful = true;
+            console.log('\nsync response:',"\n"+response[0].data, "\n"+response[1].data, "\n"+response[2].data, "\n"+response[3].data);
+          }else{
+            isSuccessful = false;
+          }
+         // console.log('bulksync came here...')
+      })
+      .catch(errorMessage => {
           isSuccessful = false;
-        }
-    })
-    .catch(errorMessage => {
-        isSuccessful = false;
-        console.log('err prod count :',errorMessage)
-    });
-  
+          console.log('err prod count :',errorMessage)
+      });
+    }
     return Promise.resolve(isSuccessful);
 }
 

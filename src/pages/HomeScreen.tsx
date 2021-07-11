@@ -103,9 +103,12 @@ export default class HomeScreen extends React.Component<Props, State> {
 
   getInitialData = async () => {
     /**Sync Old data before data cleaning */
-    await syncBulkData();
-    /**Clear Stale Local DB Data */  
-    clearStaleLocalDb();
+    let isSucceed = await syncBulkData();
+    
+    if(isSucceed){
+      /**Clear Stale Local DB Data */  
+        clearStaleLocalDb();
+ 
     //console.log('came here..')GetCompanyUnitLineData
     await get(__MASTER_DATA_PATH)
     .then((response: any) => {
@@ -147,7 +150,19 @@ export default class HomeScreen extends React.Component<Props, State> {
                 })
         }); 
     });
+
+  }else{
+    this.setState({loading: false}, ()=> {
+      Toast.show({
+        type: 'error',
+        text1: 'catch Error!',
+        text2: "not succeed"
+        })
+      
+    })
   }
+
+}
   // https://docs.mongodb.com/realm-legacy/docs/javascript/latest/api/tutorial-query-language.html
   //adb root  adb pull /data/data/com.rnrelmdbsync/files/QmsDb.realm QmsDb.realm
   //adb pull /data/data/com.rnrelmdbsync/files/QmsDb.realm C:\Users\absjabed\Desktop\realmdb\QmsDb.realm
