@@ -133,8 +133,8 @@ export default class HomeScreen extends React.Component<Props, State> {
             Toast.show({
                 type: 'error',
                 position: 'bottom',
-                text1: 'Error!X',
-                text2: "Something wrong happend!",
+                text1: 'Error!',
+                text2: "Error with server response",
                 visibilityTime: 1000,
                 })
         }
@@ -145,7 +145,7 @@ export default class HomeScreen extends React.Component<Props, State> {
         this.setState({loading: false, okToGo: false}, ()=>{
             Toast.show({
                 type: 'error',
-                text1: 'catch Error!',
+                text1: 'Error with internet connection!',
                 text2: errorMessage
                 })
         }); 
@@ -155,8 +155,8 @@ export default class HomeScreen extends React.Component<Props, State> {
     this.setState({loading: false}, ()=> {
       Toast.show({
         type: 'error',
-        text1: 'catch Error!',
-        text2: "not succeed"
+        text1: 'Sync Error!',
+        text2: "Old Data sync failed..."
         })
       
     })

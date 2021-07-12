@@ -230,7 +230,7 @@ export default class DeviceLogin extends React.Component<Props, State> {
             Toast.show({
                 type: 'error',
                 position: 'bottom',
-                text1: 'Error!',
+                text1: 'Error with internet!',
                 text2: errorMessage
                 })
         }); 

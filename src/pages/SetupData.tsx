@@ -202,7 +202,13 @@ export default class SetupData extends React.Component<Props, State> {
     if(this.state.colorFilteredSizes.length > 0 && finalProductionObject){
       this.props.navigation.navigate('MultipleSizeCount', {userData: finalProductionObject, colorSizes: colorFilteredSizes});//{userData: this.state.colorFilteredSizes});
     }else{
-      Alert.alert("total sizes",this.state.colorFilteredSizes.length.toString());
+      Toast.show({
+        type: 'error',
+        position: 'top',
+        text1: 'Error!',
+        text2: "Something Went Wrong, Select all Production related info first!",
+        visibilityTime: 1500,
+        })
     }
   }
 
@@ -493,11 +499,11 @@ export default class SetupData extends React.Component<Props, State> {
                 
 
                 {/* <View style={{paddingVertical: 5}} />   */}
-                <Mybutton
+                {/* <Mybutton
                   title="Multiple Sizes"
                   disabled={this.state.disableMultipleSizeButton}
                 customClick={()=>  this.gotoMultipleSizeCountScreen()}
-                />
+                /> */}
 
                 <Mybutton
                   title="Logout"
@@ -515,7 +521,7 @@ export default class SetupData extends React.Component<Props, State> {
                 <Mybutton
                   style={{backgroundColor:"#2aad48", width: 100}}
                   title="Set Up"
-                  customClick={()=> this.setupDataForProduction()}
+                  customClick={()=> this.gotoMultipleSizeCountScreen()}
                 />
             </View>
           </KeyboardAvoidingView>

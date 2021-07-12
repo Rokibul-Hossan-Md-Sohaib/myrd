@@ -69,6 +69,7 @@ type State = {
   defectCategories:any[],
   filteredDefects:any[],
   allSizes: any[],
+  selectedSizeId: any,
   selectedDefectObj:any,
   selectedDefectCategory: any,
   selectedDefectHeadId: any,
@@ -119,6 +120,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
       defectCategories:[],
       allSizes:[],
       filteredDefects:[],
+      selectedSizeId: null,
       selectedDefectObj:null,
       selectedDefectCategory: null,
       selectedDefectHeadId: null,
@@ -497,6 +499,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
       //console.log('unmounted production count');
     }
 
+
     // checkApiAvailability= async()=>{
     //   await get(__API_OK_PATH)
     //   .then((response: any) => {
@@ -537,6 +540,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
 
       //get the Line name like 'L1' or 'L2' etc 
       let lineName: string = reqObj["vLineId"];
+      let selectedSizeId: string = reqObj["vSizeId"];
 
       //get the unit name only like 'G1' from unit name like "Unit-G1"
       let unitName: string = reqObj["vUnitName"]; 
@@ -554,8 +558,8 @@ class MultipleSizeCount extends React.Component<Props, State> {
           setTimeout(() => {
               this.props.navigation.goBack();
           }, 2000);
-      }else
-      {
+      }
+      else{
           let existingData: any = getCurrentHourExistingData(reqObj, currentHour, current_login)
           let totalDayFttCount = getTodaysTotalFttCount(reqObj);
           let totalDayDefectCount = getTodaysTotalDefectCount(reqObj);
@@ -626,6 +630,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
             selectedDefectCategory: "CMN",
             filteredDefects,
             currentHour: currentHour["vHourId"], 
+            selectedSizeId,
             currentHourObj: currentHour, 
             current_login, 
             currentCountObj, 
@@ -666,6 +671,117 @@ class MultipleSizeCount extends React.Component<Props, State> {
     }
 
 
+
+    loadSizeWiseData(reqObj: any){
+      
+      var current_login: any = this.state.current_login;
+      var currentCountObj: any = {};
+      var currentHour = getCurrentHourId();
+
+      let selectedSizeId: string = reqObj["vSizeId"];
+
+      if(currentHour === undefined){
+        /**No specified hour found for production count... */
+            Toast.show({
+              type: "error",
+              position: 'bottom',
+              text1: "Alert!",
+              text2: "This Hour is not available for Production Entry!, Try Again after this hour.",
+              visibilityTime: 1500,
+              });
+          setTimeout(() => {
+              this.props.navigation.goBack();
+          }, 2000);
+      }
+      else{
+          let existingData: any = getCurrentHourExistingData(reqObj, currentHour, current_login)
+          let totalDayFttCount = getTodaysTotalFttCount(reqObj);
+          let totalDayDefectCount = getTodaysTotalDefectCount(reqObj);
+          let totalDayRejectCount = getTodaysTotalRejectCount(reqObj);
+          let totalDayReworkedCount = getTodaysTotalReworkCount(reqObj);
+          
+              if(existingData === undefined){
+                //console.log('Not Found Any Data Count');
+                /** no existing count data found so initiating brand new production count object 
+                 * for the current hour with zero production count
+                */
+                currentCountObj =
+                    {
+                      iAutoId: 0,
+                      vDeviceId: current_login.vDeviceId,
+                      dEntryDate: dateObj,
+                      dLastUpdated: dateObj,
+                      vProductionPlanId: reqObj.vProductionPlanId,
+                      vUnitLineId: current_login.vUnitLineId,
+
+                      vBuyerId:  reqObj.vBuyerId,
+                      vBuyerName: reqObj.vBuyerName,
+                
+                      vStyleId:  reqObj.vStyleId,
+                      vStyleName: reqObj.vStyleName,
+                
+                      vExpPoorderNo:  reqObj.vExpPoorderNo,
+                
+                      vColorId:  reqObj.vColorId,
+                      vColorName: reqObj.vColorName,
+                
+                      vSizeId:  reqObj.vSizeId,
+                      vSizeName: reqObj.vSizeName,
+
+                      fSmv: reqObj.fSmv, 
+                      iHel: reqObj.iHel, 
+                      iMo: reqObj.iMo, 
+                      iPlanHour: reqObj.iPlanHour, 
+                      nForecast: reqObj.nForecast,
+
+                      iProductionQty: 0,
+                      iTotalPlanQty: reqObj.iTotalPlanQty,
+                      vHourId: currentHour["vHourId"],
+                      dDateOfProduction: reqObj.dDate,
+                      dStartTimeOfProduction: currentHour.dStartTimeOfProduction,
+                      dEndTimeOfProduction: currentHour.dEndTimeOfProduction,
+                      dShipmentDate: reqObj.dShipmentDate,
+                      iTarget: reqObj.iTarget,
+                      vProTypeId: 'PT1',
+                      nHour: currentHour.nHour,
+                      iManPower: reqObj.iManpower,
+                      vPreparedBy: current_login.vDeviceId,
+                      vShiftId: reqObj.vShiftId
+                  };
+              }else{
+                //console.log('Found Existing Data Count:', existingData.iProductionQty)
+                /**We found an existing entry for current hour, 
+                 * and will be using this as hourly data object */
+                currentCountObj = existingData;
+              }
+            
+          this.setState({
+            currentProdObj: reqObj,
+            currentHour: currentHour["vHourId"], 
+            selectedSizeId,
+            currentHourObj: currentHour, 
+            currentCountObj, 
+            fttCount: currentCountObj.iProductionQty, //current hour wise counter
+            
+            defectCount: totalDayDefectCount,
+            rejectCount: totalDayRejectCount,
+            reworkedCount: totalDayReworkedCount,
+
+            totalDayFttCount,
+            totalDayDefectCount ,
+            totalDayRejectCount,
+            totalDayReworkedCount
+            //TODO: totalDayFttCount will be total of all hours ftt summation.
+          },async ()=>{
+            //console.log('write initial production cout object to local db');
+            var isOk = await writeProductionToLocalDB(this.state.currentCountObj);
+            this.setState({isApiOK: isOk});
+
+          });
+          //TODO: dDateOfProduction= dateObj;  should be the today's date, the day production count took place so that if device shutsdown we can retrive earlier production count data of today
+        }
+    }
+
     selectDefectHead(defectHeadCode: string){
       var selectedDefectObj = this.state.filteredDefects.filter(x=> x.vHeadId === defectHeadCode)[0];
       if(selectedDefectObj === null){
@@ -690,6 +806,11 @@ class MultipleSizeCount extends React.Component<Props, State> {
       })
   
     }
+
+    onSizeChanged(reqObj: any){
+        this.loadSizeWiseData(reqObj);
+    }
+
 
     setModalVisible(modeCode: number) {
       if(modeCode === constKVP.__MODAL_FOR_DEFECT){
@@ -756,11 +877,11 @@ class MultipleSizeCount extends React.Component<Props, State> {
             </View>
           </View>
           
-          <View style={{flex:1, margin: 5,  borderRadius:7, flexDirection: 'row'}}>
-            <View style={{flex: .165}}>
+          <View style={{flex:1, margin: 5, justifyContent:'center', alignItems:'center', borderRadius:7, flexDirection: 'row'}}>
+            <View style={{flex: .12}}>
               {/* <Text style={{color: "#fff"}}>Left</Text> */}
             </View>
-            <View style={{flex: .7, flexDirection: 'row', 
+            <View style={{flex: .73, flexDirection: 'row', 
                   justifyContent:'center', 
                   alignItems:'center'}}>
             <ScrollView 
@@ -776,26 +897,26 @@ class MultipleSizeCount extends React.Component<Props, State> {
               showsHorizontalScrollIndicator={false}
               >
               {
-                  this.state.allSizes.map((x, i)=> 
+                  this.state.allSizes.map((sizeWiseItem, i)=> 
                   (
-                    <Pressable key={i}>
+                    <Pressable onPress={()=> this.onSizeChanged(sizeWiseItem)} key={i}>
                       <Text
                       numberOfLines={1}
                       style={{
                             textAlign:'center',
                             textAlignVertical:'center',
                             fontWeight:'bold', 
-                            backgroundColor:'#26304d',
+                            backgroundColor: this.state.selectedSizeId === sizeWiseItem.vSizeId ? "#9FE6A0" : '#2d395c',
+                            color: this.state.selectedSizeId === sizeWiseItem.vSizeId ? "#000" :'#fff',
                             borderWidth: .7,
-                            borderColor: '#3d9efd',
+                            borderColor: '#77b5f2',
                             fontSize:18,
-                            color: '#fff',
                             padding: 15,
                             borderRadius: 7,
                             width: 105,
                             margin: 5
                           }}>
-                          {x.vSizeName}
+                          {sizeWiseItem.vSizeName}
                       </Text>
                     </Pressable>
                   ))
@@ -828,7 +949,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
 
           </ScrollView>
             </View>
-          <View style={{flex: .165}}>
+          <View style={{flex: .12}}>
               {/* <Text style={{color: "#fff"}}>Right</Text> */}
             </View>
           </View>
