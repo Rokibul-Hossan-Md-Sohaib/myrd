@@ -1,6 +1,6 @@
 /*Screen to register the user*/
 import React from 'react';
-import { View, ScrollView, KeyboardAvoidingView, Alert, StyleSheet, Text, Pressable } from 'react-native';
+import { View, ScrollView, KeyboardAvoidingView, StyleSheet, Text, Pressable, StatusBar } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Mytextinput from './components/Mytextinput';
@@ -9,14 +9,53 @@ import Toast from 'react-native-toast-message';
 import Mybutton from './components/Mybutton';
 import {post} from '../utils/apiUtils'
 import ProgressDialog from '../utils/loader'
+import {setupPickerData} from '../utils/utilityFunctions'
+import {handleAndroidBackButton, removeAndroidBackButtonHandler} from '../utils/backHandler.config';
 import Orientation from 'react-native-orientation';
-import {QmsSecurityProductionDeviceInfo, DailyPlanSchema, CurrentLoggedInUserSchema, HourInfoSchema} from '../db/schemas/dbSchema'
-import Realm from 'realm';
-let realm;
+import {getQmsDeviceSecurityData, rehydrateExistingdata, writeToLocalDb} from '../db/dbServices/__Device_Login_DBF'
+//import Realm from 'realm';
+import { NavigationScreenProp } from 'react-navigation';
+import { __REHYDRATING_DATA_PATH } from '../utils/constKVP';
+//let realm: Realm;
 
-export default class DeviceLogin extends React.Component {
+type Props = {
+  navigation: NavigationScreenProp<any,any>
+};
 
-    state = {
+type State = {
+  loading: boolean,
+  displayProductionDateSelection: boolean,
+  vDeviceId: string,
+  vCompanyId: string,
+  vCompanyName: string,
+  vShortCode: string,
+  vUnitId: string,
+  vUnitName: string,
+  vLineId: string,
+  vUnitLineId: string,
+  loginDisabled: true,
+  vShiftId: string,
+  Password: string,
+  AllDeviceInfo: any,
+  filteredDeviceInfo: any[],
+  shiftAvailavle: boolean,
+  comNames: any[],
+  unitNames: any[],
+  lineNames:any[],
+  shifts: any[],
+  reqObj: any[],
+  today: string,
+  isDatePickerVisible: boolean,
+  selectedCompany: any,
+  selectedUnit: any,
+  selectedLine: any,
+  selectedShift: any,
+  deviceId: any
+}
+
+export default class DeviceLogin extends React.Component<Props, State> {
+
+    state: State = {
         loading: false,
         displayProductionDateSelection: false,
         vDeviceId: '',
@@ -44,29 +83,38 @@ export default class DeviceLogin extends React.Component {
         selectedUnit: undefined,
         selectedLine: undefined,
         selectedShift: undefined,
-        deviceId: undefined,
+        deviceId: undefined
     };
+    passRef: React.RefObject<any>;
+    secondTextInputRef: any;
 
-    constructor(props) {
+    constructor(props: Props) {
     super(props);
-    this.passRef= React.createRef();
+    this.passRef = React.createRef();
     this.props.navigation.addListener(
       'didFocus',
       payload => {
-        Orientation.lockToPortrait()
-      });      
-    realm = new Realm({ path: 'QmsDb.realm' });
-
-    // this.inputRefs = {
-    //     favSport1: null,
-    //   };
+        Orientation.lockToLandscapeLeft();
+        handleAndroidBackButton(this.navigateBack);
+      });
   }
 
+  
+  navigateBack = ()=>{
+    this.props.navigation.navigate("HomeScreen");
+}
+
+    componentWillUnmount(){
+      removeAndroidBackButtonHandler();
+    }
+
     componentDidMount(){
-      Orientation.lockToPortrait()
-      const comInfo = realm.objects(QmsSecurityProductionDeviceInfo.name);
+      Orientation.lockToLandscapeLeft();
+      let comInfo:any = getQmsDeviceSecurityData();
+
       this.setState({AllDeviceInfo: comInfo}, ()=>{
-        const comNames = this.setupPickerData(this.state.AllDeviceInfo, 'vCompanyName', 'vCompanyId');
+        const comNames = setupPickerData(this.state.AllDeviceInfo, 'vCompanyName', 'vCompanyId', '', '');
+
         this.setState({
           comNames,
          // loading: false
@@ -75,8 +123,8 @@ export default class DeviceLogin extends React.Component {
       
     }
 
-    setUnitData(comid){
-      const unitNames = this.setupPickerData(this.state.filteredDeviceInfo, 'vUnitName', 'vUnitId', comid, 'vCompanyId');
+    setUnitData(comid: string){
+      const unitNames = setupPickerData(this.state.filteredDeviceInfo, 'vUnitName', 'vUnitId', comid, 'vCompanyId');
       this.setState({unitNames}, 
         // ()=> console.log('units nos', unitNames.length)
         );
@@ -87,43 +135,20 @@ export default class DeviceLogin extends React.Component {
       //   return { value: item["vUnitId"], label: item["vUnitName"] }}); 
     }
 
-    setLineData(unitId){
-      const lineNames = this.setupPickerData(this.state.filteredDeviceInfo, 'vLineId', 'vUnitLineId', unitId, 'vUnitId');
+    setLineData(unitId: string): void{
+      const lineNames = setupPickerData(this.state.filteredDeviceInfo, 'vLineId', 'vUnitLineId', unitId, 'vUnitId');
         this.setState({lineNames}, 
           // ()=> console.log('lineName nos', lineNames.length)
           );
     }
 
-    setShiftData(){
-      const shifts = this.setupPickerData(this.state.filteredDeviceInfo, 'vShiftId', 'vShiftId');
+    setShiftData(): void{
+      const shifts = setupPickerData(this.state.filteredDeviceInfo, 'vShiftId', 'vShiftId', '', '');
         this.setState({shifts}, 
           //()=> console.log('shifts nos', shifts.length)
           );
     }
 
-  setupPickerData(dataArr, labelName, valueName, filterTxt, filterColumn){
-
-    var depid = [];
-
-    if(filterTxt && filterColumn){
-      depid = dataArr.filter(x => x[filterColumn] === filterTxt).map((obj,idx) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
-      //console.log(depid);
-    }else{
-      depid = dataArr.map((obj,idx) => ({[valueName]: obj[valueName], [labelName]: obj[labelName]}));
-    }
-      //Filter Company string then map for Unit -> Line etc
-    var DepResult = [], mapx = new Map();
-        for (const item of depid) {
-            if(!mapx.has(item[valueName])){
-                mapx.set(item[valueName], true);    // set any value to Map mapx.has(depid[0]['vCompanyId']);
-                DepResult.push({
-                    value : item[valueName],
-                    label : item[labelName]
-                });
-            }
-        }
-    return DepResult;
-  }
   getDeviceId(){
     var finalObj = [];
 
@@ -135,7 +160,7 @@ export default class DeviceLogin extends React.Component {
    // console.log('DeviceId', finalObj);
     if(finalObj != undefined){
       var vDeviceId = finalObj.vDeviceId;
-      this.setState({vDeviceId,  deviceId: vDeviceId, Password: vDeviceId}, 
+      this.setState({vDeviceId, deviceId: vDeviceId, Password: vDeviceId}, 
 //        ()=> console.log('DeviceID',this.state.vDeviceId)
         )
     }
@@ -148,31 +173,32 @@ export default class DeviceLogin extends React.Component {
 
   userLoginAndGetData(){
     var {vCompanyId, vUnitId, vUnitLineId, Password, vShiftId, vDeviceId} = this.state;
-    var reqObj = {
-      "deviceId": vDeviceId,
-      "devicePwd": Password,
-      "companyId": vCompanyId,
-      "unitId": vUnitId,
-      "unitLineId": vUnitLineId,
-      "shiftId": vShiftId,
-      "dateTime": this.state.today//moment().format('YYYY-MM-DD') //"2020-11-04"//moment().format('YYYY-MM-DD')
+    var reqObj: any = {
+      "vDeviceId": vDeviceId,
+      "vDeviceSec": Password,
+      "vCompanyId": vCompanyId,
+      "vUnitId": vUnitId,
+      "vUnitLineId": vUnitLineId,
+      "vShiftId": vShiftId,
+      "dLoginDateTime": this.state.today//moment().format('YYYY-MM-DD') //"2020-11-04"//moment().format('YYYY-MM-DD')
   }
 
   this.setState({loading: true, reqObj}, ()=>{
-    post('/GetProductionPlanUnitLineData', reqObj)
-    .then(response => {
+    post(__REHYDRATING_DATA_PATH, reqObj)
+    .then((response: any) => {
         this.setState({loading: false}, ()=>{
-            var responseData = response.data.compUnitPlanData;
+            var responseData = response.data;//.compUnitPlanData;
+            var rehydrateData = responseData.existingAvailableData;
             //console.log(responseData); timeHourData
-            //.compUnitPlanData.msg
+            //.compUnitPlanData.msg GetProductionPlanUnitLineData
         if(responseData.auth){
-
-          var timeHour = response.data.timeHourData
+          var timeHour = responseData.timeInfos;
           
           var toastFlavour = responseData.dailyProdPlanData.length > 0 ? "success" : "info";
           var toastTitleTxt = responseData.dailyProdPlanData.length > 0 ? "Successed!" : "Info!";
 
-          this.writeToLocalDb(responseData.dailyProdPlanData, timeHour, reqObj);
+          writeToLocalDb(responseData.dailyProdPlanData, timeHour, reqObj);
+          rehydrateExistingdata(rehydrateData[0].productionData, rehydrateData[1].defectData, rehydrateData[2].rejectData, rehydrateData[3].reworkedData);
           
           Toast.show({
             type: toastFlavour,
@@ -193,7 +219,7 @@ export default class DeviceLogin extends React.Component {
                 position: 'bottom',
                 text1: 'Error!',
                 text2: responseData.msg,
-                visibilityTime: 1500,
+                visibilityTime: 2000,
                 })
         }
         });
@@ -204,68 +230,15 @@ export default class DeviceLogin extends React.Component {
             Toast.show({
                 type: 'error',
                 position: 'bottom',
-                text1: 'Error!',
+                text1: 'Error with internet!',
                 text2: errorMessage
                 })
         }); 
     });
   })
 
-    /**
-     * 
-     * {
-        "deviceId": "C6I1L1",
-        "devicePwd": "C6I1L1",
-        "unitId": "U24",
-        "unitLineId": "UL208",
-        "shiftId": "SH1",
-        "dateTime": "2020-11-04"
-      }
-     * 
-     */
     //console.log(reqObj);
   }
-
-
-  
-  writeToLocalDb = (dataToWrite, timeHour, current_login) =>{
-    console.log('write to DB')
-    //Clear any existing data in local db
-    this.clearLocalDb();
-      //write plan data to local db
-      //DailyPlanSchema.name
-        realm.write(() => {
-            dataToWrite.forEach(obj => {
-              realm.create(DailyPlanSchema.name, obj);
-          });
-
-         timeHour.forEach(obj => {
-              realm.create(HourInfoSchema.name, obj);
-          });
-
-          realm.create(CurrentLoggedInUserSchema.name, current_login)
-
-        });
-  }
-
-  clearLocalDb = () => {
-    console.log('clear DB')
-     realm.write(() => {
-    // Delete multiple books by passing in a `Results`, `List`,
-    // or JavaScript `Array`
-
-    let allcCurrentLoginData = realm.objects(CurrentLoggedInUserSchema.name);
-     realm.delete(allcCurrentLoginData);
-
-    let allTimeData = realm.objects(HourInfoSchema.name);
-     realm.delete(allTimeData);
-
-     let allPlanData = realm.objects(DailyPlanSchema.name);
-     realm.delete(allPlanData); // Deletes all plans
-  });
-   
-}
-
 
 showDatePicker = () => {
   this.setState({isDatePickerVisible: true});
@@ -275,55 +248,12 @@ showDatePicker = () => {
   this.setState({isDatePickerVisible: false});
 };
 
- handleConfirm(date) {
+ handleConfirm(date: Date) {
   console.log("A date has been picked: ", moment(date).format('YYYY-MM-DD'));
   this.setState({today: moment(date).format('YYYY-MM-DD')})
   this.hideDatePicker();
   this.passRef.current.focus();
 };
-
-//   register_user = () => {
-//     var that = this;
-//     const { user_name } = this.state;
-//     const { user_contact } = this.state;
-//     const { user_address } = this.state;
-//     if (user_name) {
-//       if (user_contact) {
-//         if (user_address) {
-//           realm.write(() => {
-//             var ID =
-//               realm.objects('user_details').sorted('user_id', true).length > 0
-//                 ? realm.objects('user_details').sorted('user_id', true)[0]
-//                     .user_id + 1
-//                 : 1;
-//             realm.create('user_details', {
-//               user_id: ID,
-//               user_name: that.state.user_name,
-//               user_contact: that.state.user_contact,
-//               user_address: that.state.user_address,
-//             });
-//             Alert.alert(
-//               'Success',
-//               'You are registered successfully',
-//               [
-//                 {
-//                   text: 'Ok',
-//                   onPress: () => that.props.navigation.navigate('HomeScreen'),
-//                 },
-//               ],
-//               { cancelable: false }
-//             );
-//           });
-//         } else {
-//           alert('Please fill Address');
-//         }
-//       } else {
-//         alert('Please fill Contact Number');
-//       }
-//     } else {
-//       alert('Please fill Name');
-//     }
-//   };
 
   render() {
     const placeholder = {
@@ -332,23 +262,26 @@ showDatePicker = () => {
         color: '#007FFF',
       };
     return (
-      <View style={{ backgroundColor: 'white', flex: 1 }}>
+      <View style={{ backgroundColor: '#151a30', flex: 1 }}>
+        <StatusBar hidden />
         <ScrollView keyboardShouldPersistTaps="handled">
           <KeyboardAvoidingView
             behavior="padding"
             style={{ flex: 1, justifyContent: 'space-between' }}>
             <ProgressDialog loading={this.state.loading} />
 
-            <View paddingVertical={5} />
+            <View style={{paddingVertical: 5}} />
 
-            <Text style={{paddingLeft: 25, fontWeight: '700'}}>Company</Text>
-            <View paddingVertical={2} />
+            <Text style={{paddingLeft: 25, fontWeight: '700', color:'#fff'}}>Company</Text>
+
+            <View style={{paddingVertical: 2}} />
+            
             <RNPickerSelect
             placeholder={placeholder}
             items={this.state.comNames}
             onValueChange={value => {
               //console.log('pickerValue: ',value)
-              var filteredComData = this.state.AllDeviceInfo.filter(x => x.vCompanyId === value); 
+              var filteredComData = this.state.AllDeviceInfo.filter((x: any) => x.vCompanyId === value); 
               //console.log('170', filteredComData);
               var shiftAvailavle =  filteredComData.length == 0 ? false : filteredComData[0].vShiftId != null; 
               //vShiftId
@@ -378,12 +311,12 @@ showDatePicker = () => {
             // }}
             />
 
-            <View paddingVertical={5} />
+            <View style={{paddingVertical: 5}} />
             
             { this.state.selectedCompany ?
               <View>
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Unit</Text>
-              <View paddingVertical={2} />
+              <Text style={{paddingLeft: 25, fontWeight: '700', color:'#fff'}}>Unit</Text>
+              <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
               items={this.state.unitNames}
@@ -409,13 +342,13 @@ showDatePicker = () => {
               // }}
               />
               
-            <View paddingVertical={5} />              
+            <View style={{paddingVertical: 5}} />              
             </View> : <></>}
 
             { this.state.selectedUnit ?
               <View>
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Line</Text>
-              <View paddingVertical={2} />
+              <Text style={{paddingLeft: 25, fontWeight: '700', color:'#fff'}}>Line</Text>
+              <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
               items={this.state.lineNames}
@@ -439,14 +372,14 @@ showDatePicker = () => {
               //     this.inputRefs.favSport1 = el;
               // }}
               />            
-              <View paddingVertical={5} />
+              <View style={{paddingVertical: 5}} />
             </View> : <></>}
   
 
             { (this.state.shiftAvailavle && this.state.selectedLine) ?
               <View>
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Shift</Text>
-              <View paddingVertical={2} />
+              <Text style={{paddingLeft: 25, fontWeight: '700',  color:'#fff'}}>Shift</Text>
+              <View style={{paddingVertical: 2}} />
               <RNPickerSelect
               placeholder={placeholder}
               items={this.state.shifts}
@@ -469,19 +402,24 @@ showDatePicker = () => {
               //     this.inputRefs.favSport1 = el;
               // }}
               />            
-              <View paddingVertical={5} />  
+              <View style={{paddingVertical: 5}} />  
             </View> : <></>}
 
-            <Text style={{paddingLeft: 25, fontWeight: '700'}}>DeviceID</Text>
+            <Text style={{paddingLeft: 25, fontWeight: '700', color:'#fff'}}>DeviceID</Text>
             <Mytextinput
               placeholder="Device ID"
               editable={false}
+              style={{
+                backgroundColor: "#2d395c",
+                color: "#fff",
+                borderRadius: 7,
+              }}
               value={this.state.vDeviceId}
             />
 
             <View style={{display:this.state.displayProductionDateSelection ? "flex" : 'none'}}>
-              <View paddingVertical={5} />
-              <Text style={{paddingLeft: 25, fontWeight: '700'}}>Production Date</Text>
+              <View style={{paddingVertical: 5}} />
+              <Text style={{paddingLeft: 25, fontWeight: '700', color:'#fff'}}>Production Date</Text>
               <DateTimePickerModal
                 isVisible={this.state.isDatePickerVisible}
                 mode="date"
@@ -493,26 +431,41 @@ showDatePicker = () => {
                 placeholder="Date"
                 value={this.state.today}
                 showSoftInputOnFocus={false}
+                style={{
+                  backgroundColor: "#2d395c",
+                  color: "#fff",
+                  borderRadius: 7,
+                }}
                 onFocus={()=> this.showDatePicker()}
               />
             </View>
 
-            <View paddingVertical={5} />
-            <Text style={{paddingLeft: 25, fontWeight: '700'}}>Password</Text>
+            <View style={{paddingVertical: 5}} />
+            <Text style={{paddingLeft: 25, fontWeight: '700', color:'#fff'}}>Password</Text>
             <Mytextinput
               refInner={this.passRef}
               secureTextEntry
               placeholder="Password"
               value={this.state.Password}
-              onChangeText={Password => this.setState({ Password })}
+              style={{
+                backgroundColor: "#2d395c",
+                color: "#fff",
+                borderRadius: 7,
+              }}
+              onChangeText={(Password: string) => this.setState({ Password })}
             />
             
-            <View paddingVertical={5} />  
+            <View style={{paddingVertical: 5}} />  
             <Mybutton
               title="Get Plan Info"
               customClick={()=> this.userLoginAndGetData()}
+              style={{
+                backgroundColor: '#28a745',
+                width: "50%",
+                alignSelf: "center"
+              }}
             />
-            <Pressable onLongPress={()=> this.showDateSelector()} style={{height: 25, width: 25, borderRadius:25, position:'absolute', top:2, right: 2, backgroundColor:'#fff'}}></Pressable>
+            <Pressable onLongPress={()=> this.showDateSelector()} style={{height: 25, width: 25, borderRadius:25, position:'absolute', top:2, right: 2, backgroundColor:'#151a30'}}></Pressable>
           </KeyboardAvoidingView>
         </ScrollView>
       </View>
@@ -534,10 +487,11 @@ const pickerSelectStyles = StyleSheet.create({
       fontSize: 16,
       paddingVertical: 12,
       paddingHorizontal: 10,
-      borderWidth: 1,
-      borderColor: 'gray',
-      borderRadius: 4,
-      color: 'black',
+      //borderWidth: 1,
+      //borderColor: 'gray',
+      backgroundColor: "#2d395c",
+      borderRadius: 7,
+      color: '#fff',
       paddingRight: 30, // to ensure the text is never behind the icon
     },
     inputAndroid: {
@@ -546,10 +500,11 @@ const pickerSelectStyles = StyleSheet.create({
       marginRight: 20,
       paddingHorizontal: 10,
       paddingVertical: 8,
-      borderWidth: 0.5,
-      borderColor: '#000',
-      borderRadius: 8,
-      color: 'black',
+      //borderWidth: 0.5,
+      //borderColor: '#000',
+      backgroundColor: "#2d395c",
+      borderRadius: 7,
+      color: '#fff',
       paddingRight: 30, // to ensure the text is never behind the icon
     },
   });

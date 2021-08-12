@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { StyleSheet, View, Modal, ActivityIndicator } from 'react-native';
-const ProgressDialog = props => {
+
+
+const ProgressDialog = (props: any) => {
   const {
     loading,
     ...attributes

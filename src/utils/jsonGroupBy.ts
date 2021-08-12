@@ -1,7 +1,7 @@
 import moment from 'moment'
-const groupByJsonKey = (jsn, key) => {
+const groupByJsonKey = (jsn: any, key: any) => {
 
-    return jsn.reduce(function(newArray, item) {
+    return jsn.reduce(function(newArray: any, item: any) {
   
       //matching the provided key and pushing matched data rows to newArray, and value of provided key converted to uppercase
   
@@ -14,7 +14,7 @@ const groupByJsonKey = (jsn, key) => {
   };
 
 
-const jsonGroupByFunc = (json, key)=>{
+const jsonGroupByFunc = (json: any, key: any)=>{
 
     const groupedByKey = groupByJsonKey(json, key)
     const groupKeys = Object.keys(groupedByKey)

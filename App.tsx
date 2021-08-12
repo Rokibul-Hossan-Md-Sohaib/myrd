@@ -7,11 +7,11 @@ import { createStackNavigator} from 'react-navigation-stack';
 import Toast from 'react-native-toast-message';
 //Import external files
 import HomeScreen from './src/pages/HomeScreen';
-import RegisterUser from './src/pages/RegisterUser';
-import UpdateUser from './src/pages/UpdateUser';
-import ViewUser from './src/pages/ViewUser';
-import ViewAllUser from './src/pages/ViewAllUser';
-import DeleteUser from './src/pages/DeleteUser';
+// import RegisterUser from './src/pages/RegisterUser';
+// import UpdateUser from './src/pages/UpdateUser';
+// import ViewUser from './src/pages/ViewUser';
+// import ViewAllUser from './src/pages/ViewAllUser';
+// import DeleteUser from './src/pages/DeleteUser';
 import DeviceLogin from './src/pages/DeviceLogin'
 import SetupData from './src/pages/SetupData'
 import ProductionCountSizeWise from './src/pages/ProductionCountSizeWise'
@@ -22,24 +22,27 @@ const App = createStackNavigator({
     screen: HomeScreen,
     navigationOptions: {
       title: 'QMS Home',
-      headerStyle: { backgroundColor: '#3a59b7' },
+      headerStyle: { backgroundColor: '#222b45' },
       headerTintColor: '#ffffff',
+      headerLeft: ()=> null
     },
   },
   DeviceLogin: {
     screen: DeviceLogin,
     navigationOptions: {
       title: 'QMS Login',
-      headerStyle: { backgroundColor: '#3a59b7' },
+      headerStyle: { backgroundColor: '#222b45' },
       headerTintColor: '#ffffff',
+      headerLeft: ()=> null
     },
   },
   SetupData: {
     screen: SetupData,
     navigationOptions: {
       title: 'QMS Data Setup',
-      headerStyle: { backgroundColor: '#3a59b7' },
+      headerStyle: { backgroundColor: '#222b45' },
       headerTintColor: '#ffffff',
+      headerLeft: ()=> null
     },
   },
   ProductionCountSizeWise: {
@@ -60,46 +63,46 @@ const App = createStackNavigator({
       headerTintColor: '#ffffff',
     }
   },
-  View: {
-    screen: ViewUser,
-    navigationOptions: {
-      title: 'View User',
-      headerStyle: { backgroundColor: '#3a59b7' },
-      headerTintColor: '#ffffff',
-    },
-  },
-  ViewAll: {
-    screen: ViewAllUser,
-    navigationOptions: {
-      title: 'View All User',
-      headerStyle: { backgroundColor: '#3a59b7' },
-      headerTintColor: '#ffffff',
-    },
-  },
-  Update: {
-    screen: UpdateUser,
-    navigationOptions: {
-      title: 'Update User',
-      headerStyle: { backgroundColor: '#3a59b7' },
-      headerTintColor: '#ffffff',
-    },
-  },
-  Register: {
-    screen: RegisterUser,
-    navigationOptions: {
-      title: 'Register User',
-      headerStyle: { backgroundColor: '#3a59b7' },
-      headerTintColor: '#ffffff',
-    },
-  },
-  Delete: {
-    screen: DeleteUser,
-    navigationOptions: {
-      title: 'Delete User',
-      headerStyle: { backgroundColor: '#3a59b7' },
-      headerTintColor: '#ffffff',
-    },
-  },
+  // View: {
+  //   screen: ViewUser,
+  //   navigationOptions: {
+  //     title: 'View User',
+  //     headerStyle: { backgroundColor: '#3a59b7' },
+  //     headerTintColor: '#ffffff',
+  //   },
+  // },
+  // ViewAll: {
+  //   screen: ViewAllUser,
+  //   navigationOptions: {
+  //     title: 'View All User',
+  //     headerStyle: { backgroundColor: '#3a59b7' },
+  //     headerTintColor: '#ffffff',
+  //   },
+  // },
+  // Update: {
+  //   screen: UpdateUser,
+  //   navigationOptions: {
+  //     title: 'Update User',
+  //     headerStyle: { backgroundColor: '#3a59b7' },
+  //     headerTintColor: '#ffffff',
+  //   },
+  // },
+  // Register: {
+  //   screen: RegisterUser,
+  //   navigationOptions: {
+  //     title: 'Register User',
+  //     headerStyle: { backgroundColor: '#3a59b7' },
+  //     headerTintColor: '#ffffff',
+  //   },
+  // },
+  // Delete: {
+  //   screen: DeleteUser,
+  //   navigationOptions: {
+  //     title: 'Delete User',
+  //     headerStyle: { backgroundColor: '#3a59b7' },
+  //     headerTintColor: '#ffffff',
+  //   },
+  // },
 });
 
 const AppContainer =  createAppContainer(App);
