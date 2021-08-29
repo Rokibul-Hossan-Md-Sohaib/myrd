@@ -29,7 +29,7 @@ import Orientation from 'react-native-orientation';
 import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProp } from 'react-navigation';
 import { __API_OK_PATH } from '../utils/constKVP';
-let dateObj: Date = new Date();
+import { QMS_DefectCountDaily, QMS_ProductionCountHourly, QMS_RejectCountDaily, QMS_ReworkedCountDaily } from '../db/schemas/entities';
 
 /**
  * /DataTracking/SyncBulkProductionData
@@ -75,9 +75,8 @@ type State = {
   selectedDefectHeadId: any,
 
   currentProdObj:any,
-  currentHourObj:any,
   current_login:any,
-  currentCountObj:any,
+  currentProdCountObj:any,
 
   unitName: string,
   lineName: string,
@@ -126,9 +125,8 @@ class MultipleSizeCount extends React.Component<Props, State> {
       selectedDefectHeadId: null,
 
       currentProdObj:{},
-      currentHourObj:{},
       current_login:{},
-      currentCountObj:{},
+      currentProdCountObj:{},
 
       unitName: '',
       lineName: "",
@@ -217,33 +215,38 @@ class MultipleSizeCount extends React.Component<Props, State> {
         }, 2000);
       }else{
 
-            var {
-              iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId, vBuyerId, vStyleId, vColorId, vSizeId,
-              vBuyerName, vSizeName, vExpPoorderNo, vColorName, vStyleName, dShipmentDate,
-              dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,iProductionQty,iTotalPlanQty, fSmv, iHel, iMo, iPlanHour, nForecast,
-              iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId
-            } = this.state.currentCountObj;
+            // var {
+            //   iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId, vBuyerId, vStyleId, vColorId, vSizeId,
+            //   vBuyerName, vSizeName, vExpPoorderNo, vColorName, vStyleName, dShipmentDate,
+            //   dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,iProductionQty,iTotalPlanQty, fSmv, iHel, iMo, iPlanHour, nForecast,
+            //   iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId
+            // } = this.state.currentProdCountObj;
 
-          if(thisHourID["vHourId"] === this.state.currentCountObj.vHourId){    
+            /**TODO: Do we need different defect, reject, reworked object to track hourly count? or can it be done with the hourly production count object alone?
+             * Is it required to have initial entry for production in componentDidMount function?
+             * 
+             * Optimize Hourly count object and track hourly other data correctly...
+             * **/
+
+          if(thisHourID["vHourId"] === this.state.currentProdCountObj.vHourId){    
+
+            console.log('PQ', this.state.currentProdObj.iProductionQty);
             
             //This is running hour...
-            this.setState(() => ({
+            this.setState((prevState, props) => ({
               fttCount: this.state.fttCount + 1, //hour based counter
-              currentCountObj: { 
-                    iAutoId, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId, 
-                    vBuyerName, vSizeName, vExpPoorderNo, vColorName, vStyleName, dShipmentDate, vBuyerId, vStyleId, vColorId, vSizeId,
-                    dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction,iTotalPlanQty,
-                    iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId,  fSmv, iHel, iMo, iPlanHour, nForecast,
-                    iProductionQty: iProductionQty + 1, dLastUpdated: dateObj 
+              currentProdCountObj: { 
+                    ...prevState.currentProdCountObj,
+                    iProductionQty: prevState.currentProdCountObj.iProductionQty + 1, 
+                    dLastUpdated: new Date() 
                     },
-              totalDayFttCount: this.state.totalDayFttCount + 1, //independent of hour
-              currentHour: thisHourID["vHourId"]
+              totalDayFttCount: this.state.totalDayFttCount + 1, //independent of hour but dependent on size
             }),async ()=>{
-              ////console.log('Production count write to db....', this.state.currentCountObj)
-            var {currentCountObj} = this.state;
+              ////console.log('Production count write to db....', this.state.currentProdCountObj)
+            var {currentProdCountObj} = this.state;
             
             /**Send Data to local persistance */
-            var isOk = await writeProductionToLocalDB(currentCountObj);
+            var isOk = await writeProductionToLocalDB(currentProdCountObj);
             this.setState({isApiOK: isOk, isSynced: isOk});
               // isOk.then((val)=>{
               //       this.setState({isApiOK: val});
@@ -257,21 +260,22 @@ class MultipleSizeCount extends React.Component<Props, State> {
         }else{
           //New Hour detected, So this will reset hourCounter but main counter will go on...
           // And will create a new db entry with NEW hour ID
-
+          
           //console.log('New hour totalDayFttCount',this.state.totalDayFttCount);
-          this.setState(() => ({
+          this.setState((prevState, props) => ({
             fttCount: 1,
-            currentCountObj: { 
-              iAutoId: 0, vDeviceId, dEntryDate, vProductionPlanId, vUnitLineId, vHourId: thisHourID["vHourId"],
-              vBuyerName, vSizeName, vExpPoorderNo, vColorName, vStyleName, dShipmentDate, vBuyerId, vStyleId, vColorId, vSizeId,
-              dDateOfProduction, dStartTimeOfProduction, dEndTimeOfProduction, iTotalPlanQty,
-              iTarget, vProTypeId, nHour, iManPower, vPreparedBy, vShiftId, fSmv, iHel, iMo, iPlanHour, nForecast,
-              iProductionQty: 1, dLastUpdated: dateObj 
+            currentProdCountObj: { 
+              ...prevState.currentProdCountObj,
+              iAutoId: 0, 
+              vHourId: thisHourID["vHourId"],
+              iProductionQty: 1, 
+              dLastUpdated: new Date() 
               },
             totalDayFttCount: this.state.totalDayFttCount + 1,
             currentHour: thisHourID["vHourId"]
           }),async ()=>{
-            ////console.log('Production count write to db....', this.state.currentCountObj.iProductionQty)
+            ////console.log('Production count write to db....', this.state.currentProdCountObj.iProductionQty)
+            console.log('PQ NWHR', this.state.currentProdObj.iProductionQty);
             Toast.show({
               type: "info",
               position: 'bottom',
@@ -280,9 +284,9 @@ class MultipleSizeCount extends React.Component<Props, State> {
               visibilityTime: 1500,
               });
 
-              var {currentCountObj} = this.state;
+              var {currentProdCountObj} = this.state;
               /**Send Data to local persistance */
-              var isOk = await writeProductionToLocalDB(currentCountObj);
+              var isOk = await writeProductionToLocalDB(currentProdCountObj);
               this.setState({isApiOK: isOk});
               // isOk.then((val)=>{
               //       this.setState({isApiOK: val});
@@ -300,73 +304,111 @@ class MultipleSizeCount extends React.Component<Props, State> {
       /**Check if the API End is available now */
       //this.checkApiAvailability();
 
-      this.setState((prevState, props) => ({
-        defectCount: prevState.defectCount + 1,
-        totalDayDefectCount: prevState.totalDayDefectCount+1
-      }), async ()=>{
-        
-        var currentDefectCountObj =
-          {
-            iAutoId: 0,
-            vDeviceId: this.state.current_login.vDeviceId,
-            dDateOfProduction: this.state.current_login.dLoginDateTime,                      
-            vProductionPlanId: this.state.currentProdObj.vProductionPlanId,
-            vUnitLineId: this.state.current_login.vUnitLineId,
+      var thisHourID: any = getCurrentHourId();
+      ////console.log('Now',thisHourID)  currentHour: thisHourID["vHourId"]
 
-            vBuyerId: this.state.currentProdObj.vBuyerId,
-            vBuyerName: this.state.currentProdObj.vBuyerName,
+      if(thisHourID === undefined){
+        Toast.show({
+          type: "error",
+          position: 'top',
+          text1: "Alert!",
+          text2: "This is not the production Hour!, Try After sometimes.",
+          visibilityTime: 1500,
+          })
+          setTimeout(() => {
+            this.props.navigation.goBack();
+        }, 2000);
+      }else{
+            
+            this.setState((prevState, props) => ({
+              defectCount: prevState.defectCount + 1,
+              totalDayDefectCount: prevState.totalDayDefectCount+1,
+              currentHour: thisHourID["vHourId"]
+            }), async ()=>{
+              
+              var currentDefectCountObj: QMS_DefectCountDaily =
+                {
+                  iAutoId: 0,
+                  vDeviceId: this.state.current_login.vDeviceId,
+                  dDateOfProduction: this.state.current_login.dLoginDateTime,                      
+                  vProductionPlanId: this.state.currentProdObj.vProductionPlanId,
+                  vUnitLineId: this.state.current_login.vUnitLineId,
+                  vHourId: thisHourID["vHourId"],
+                  
+                  vBuyerId: this.state.currentProdObj.vBuyerId,
+                  vBuyerName: this.state.currentProdObj.vBuyerName,
 
-            vStyleId:  this.state.currentProdObj.vStyleId,
-            vStyleName: this.state.currentProdObj.vStyleName,
-      
-            vExpPoorderNo:  this.state.currentProdObj.vExpPoorderNo,
-      
-            vColorId:  this.state.currentProdObj.vColorId,
-            vColorName: this.state.currentProdObj.vColorName,
-      
-            vSizeId:  this.state.currentProdObj.vSizeId,
-            vSizeName: this.state.currentProdObj.vSizeName,
+                  vStyleId:  this.state.currentProdObj.vStyleId,
+                  vStyleName: this.state.currentProdObj.vStyleName,
+            
+                  vExpPoorderNo:  this.state.currentProdObj.vExpPoorderNo,
+            
+                  vColorId:  this.state.currentProdObj.vColorId,
+                  vColorName: this.state.currentProdObj.vColorName,
+            
+                  vSizeId:  this.state.currentProdObj.vSizeId,
+                  vSizeName: this.state.currentProdObj.vSizeName,
 
-            vDefectCategoryId: this.state.selectedDefectObj.vDefectCategoryId,
-            vDefectCategoryName: this.state.selectedDefectObj.vDefectCategoryName,
-            vDefectHeadId: this.state.selectedDefectObj.vHeadId,
-            vDefectHeadName: this.state.selectedDefectObj.vHeadName,
-            vDefectCode: this.state.selectedDefectObj.code,
-            iDefectCount: 1,
-            dLastUpdated: dateObj
-        };
+                  vDefectCategoryId: this.state.selectedDefectObj.vDefectCategoryId,
+                  vDefectCategoryName: this.state.selectedDefectObj.vDefectCategoryName,
+                  vDefectHeadId: this.state.selectedDefectObj.vHeadId,
+                  vDefectHeadName: this.state.selectedDefectObj.vHeadName,
+                  vDefectCode: this.state.selectedDefectObj.code,
+                  iDefectCount: this.state.incrementBy,
+                  dLastUpdated: new Date()
+              };
 
-        /**Send Data to local persistance ==> Not required to acknowledge here */
-        var isOk = await writeDefectToLocalDB(currentDefectCountObj);
-        //this.setState({isApiOK: isOk}, ()=> this.setModalVisible(constKVP.__MODAL_FOR_DEFECT));
-        this.setState((prev)=>({
-          isApiOK: isOk,
-          isSynced: isOk,
-          modalVisible: !prev.modalVisible, 
-          modeCode: constKVP.__MODAL_FOR_DEFECT,
-          modeColor: constKVP.__MODAL_DEFECT_BUTTON_COLOR
-        }));
-        /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
-        /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
-      });
+                /**Send Data to local persistance ==> Not required to acknowledge here */
+                var isOk = await writeDefectToLocalDB(currentDefectCountObj);
+                //this.setState({isApiOK: isOk}, ()=> this.setModalVisible(constKVP.__MODAL_FOR_DEFECT));
+                this.setState((prev)=>({
+                  isApiOK: isOk,
+                  isSynced: isOk,
+                  modalVisible: !prev.modalVisible, 
+                  modeCode: constKVP.__MODAL_FOR_DEFECT,
+                  modeColor: constKVP.__MODAL_DEFECT_BUTTON_COLOR
+                }));
+                /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
+                /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
+              });
+       
+      }
     }
     
     countreject(){
       /**Check if the API End is available now */
       //this.checkApiAvailability();
 
+      var thisHourID: any = getCurrentHourId();
+      ////console.log('Now',thisHourID)  currentHour: thisHourID["vHourId"]
+
+      if(thisHourID === undefined){
+        Toast.show({
+          type: "error",
+          position: 'top',
+          text1: "Alert!",
+          text2: "This is not the production Hour!, Try After sometimes.",
+          visibilityTime: 1500,
+          })
+          setTimeout(() => {
+            this.props.navigation.goBack();
+        }, 2000);
+      }else{
+
       this.setState((prevState, props) => ({
         rejectCount: prevState.rejectCount + 1,
-        totalDayRejectCount: prevState.totalDayRejectCount+1
+        totalDayRejectCount: prevState.totalDayRejectCount+1,
+        currentHour: thisHourID["vHourId"]
       }), async ()=>{
           ////console.log('count defect')
-         var currentRejectCountObj =
+         var currentRejectCountObj: QMS_RejectCountDaily =
           {
             iAutoId: 0,
             vDeviceId: this.state.current_login.vDeviceId,
             dDateOfProduction: this.state.current_login.dLoginDateTime,                      
             vProductionPlanId: this.state.currentProdObj.vProductionPlanId,
             vUnitLineId: this.state.current_login.vUnitLineId,
+            vHourId: thisHourID["vHourId"],
 
             vBuyerId: this.state.currentProdObj.vBuyerId,
             vBuyerName: this.state.currentProdObj.vBuyerName,
@@ -387,8 +429,8 @@ class MultipleSizeCount extends React.Component<Props, State> {
             vDefectHeadId: this.state.selectedDefectObj.vHeadId,
             vDefectHeadName: this.state.selectedDefectObj.vHeadName,
             vDefectCode: this.state.selectedDefectObj.code,
-            iRejectCount: 1,
-            dLastUpdated: dateObj
+            iRejectCount: this.state.incrementBy,
+            dLastUpdated: new Date()
         };
 
         ////console.log(currentRejectCountObj);
@@ -400,45 +442,50 @@ class MultipleSizeCount extends React.Component<Props, State> {
           modeCode: constKVP.__MODAL_FOR_REJECT,
           modeColor: constKVP.__MODAL_REJECT_BUTTON_COLOR
         }));
+        
         /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
         /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
       });
-
     }
+  }
 
     countreworked(){
       /**Check if the API End is available now */
       //this.checkApiAvailability();
 
-      // var thisHourID: any = getCurrentHourId();
+      var thisHourID: any = getCurrentHourId();
+      ////console.log('Now',thisHourID)  currentHour: thisHourID["vHourId"]
 
-      // if(thisHourID === undefined){
-      //   Toast.show({
-      //     type: "error",
-      //     position: 'top',
-      //     text1: "Alert!",
-      //     text2: "This is not the production Hour!, Try After sometimes.",
-      //     visibilityTime: 1500,
-      //     })
-      //     setTimeout(() => {
-      //       this.props.navigation.goBack();
-      //   }, 2000);
-      // }else{
+      if(thisHourID === undefined){
+        Toast.show({
+          type: "error",
+          position: 'top',
+          text1: "Alert!",
+          text2: "This is not the production Hour!, Try After sometimes.",
+          visibilityTime: 1500,
+          })
+          setTimeout(() => {
+            this.props.navigation.goBack();
+        }, 2000);
+      }else{
 
-      // }
+
+      }
 
       this.setState((prevState, props) => ({
         reworkedCount: prevState.reworkedCount + 1,
-        totalDayReworkedCount: prevState.totalDayReworkedCount+1
+        totalDayReworkedCount: prevState.totalDayReworkedCount+1,
+        currentHour: thisHourID["vHourId"]
       }), async ()=>{
           ////console.log('count defect')
-         var currentReworkedCountObj =
+         var currentReworkedCountObj: QMS_ReworkedCountDaily =
           {
             iAutoId: 0,
             vDeviceId: this.state.current_login.vDeviceId,
             dDateOfProduction: this.state.current_login.dLoginDateTime,                      
             vProductionPlanId: this.state.currentProdObj.vProductionPlanId,
             vUnitLineId: this.state.current_login.vUnitLineId,
+            vHourId: thisHourID["vHourId"],
 
             vBuyerId: this.state.currentProdObj.vBuyerId,
             vBuyerName: this.state.currentProdObj.vBuyerName,
@@ -454,8 +501,8 @@ class MultipleSizeCount extends React.Component<Props, State> {
             vSizeId:  this.state.currentProdObj.vSizeId,
             vSizeName: this.state.currentProdObj.vSizeName,
 
-            iReworkedCount: this.state.reworkedCount,
-            dLastUpdated: dateObj
+            iReworkedCount: this.state.incrementBy,
+            dLastUpdated: new Date()
         };
         
         ////console.log(currentReworkedCountObj);
@@ -516,18 +563,26 @@ class MultipleSizeCount extends React.Component<Props, State> {
       Orientation.lockToLandscapeLeft();
       /**Check if the API End is available now */
       //await this.checkApiAvailability();
+      /***TODO: Will have to check local db if there is anydata available for -> today -> This hour -> this device -> unitlineId -> production PlanID wise
+       * if exists set current production count object to existing production count object
+       * other wise create new object and insert into localdb and set state object to that new production object...
+       */
 
       this._subscription = NetInfo.addEventListener(
         this._handleConnectivityChange
       );
 
-      var currentCountObj: any = {};
+      var currentProdCountObj: any = {};
+      
+      /**Get Data params from navigation props**/
       const reqObj: any = this.props.navigation.getParam('userData');
       const colorSizes: any = this.props.navigation.getParam('colorSizes');
+      
       //console.log('reqObj',reqObj);
       var current_login: any = getCurrentLoggedInUserForToday(this.state.today);
       let allDefects: any = getAllDefects();
       var defectCategories = getUniqueAttributes(allDefects, "vDefectCategoryId", "vDefectCategoryName", "vCategoryShortName");
+      /**Addig another extra defect category manually**/
       defectCategories.unshift({"vCategoryShortName": "CMN", "vDefectCategoryId": "CMN", "vDefectCategoryName": "COMMON"});
       //console.log(defectCategories);
       
@@ -536,6 +591,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
           .filter((x: any)=> x.vHeadName.includes("_"))
           .sort((a: any,b: any)=> parseInt(a.code.match(/\d+/)[0]) - parseInt(b.code.match(/\d+/)[0]));
 
+      /**Get current hour**/
       var currentHour = getCurrentHourId();
 
       //get the Line name like 'L1' or 'L2' etc 
@@ -571,12 +627,12 @@ class MultipleSizeCount extends React.Component<Props, State> {
                 /** no existing count data found so initiating brand new production count object 
                  * for the current hour with zero production count
                 */
-                currentCountObj =
+                currentProdCountObj =
                     {
                       iAutoId: 0,
                       vDeviceId: current_login.vDeviceId,
-                      dEntryDate: dateObj,
-                      dLastUpdated: dateObj,
+                      dEntryDate: new Date(),
+                      dLastUpdated: new Date(),
                       vProductionPlanId: reqObj.vProductionPlanId,
                       vUnitLineId: current_login.vUnitLineId,
 
@@ -618,9 +674,9 @@ class MultipleSizeCount extends React.Component<Props, State> {
                 //console.log('Found Existing Data Count:', existingData.iProductionQty)
                 /**We found an existing entry for current hour, 
                  * and will be using this as hourly data object */
-                currentCountObj = existingData;
+                currentProdCountObj = existingData;
               }
-          //console.log('countObj',currentCountObj);
+          //console.log('countObj',currentProdCountObj);
             
           this.setState({
             currentProdObj: reqObj,
@@ -631,10 +687,9 @@ class MultipleSizeCount extends React.Component<Props, State> {
             filteredDefects,
             currentHour: currentHour["vHourId"], 
             selectedSizeId,
-            currentHourObj: currentHour, 
             current_login, 
-            currentCountObj, 
-            fttCount: currentCountObj.iProductionQty, //current hour wise counter
+            currentProdCountObj, 
+            fttCount: currentProdCountObj.iProductionQty, //current hour wise counter
 
             unitName,
             lineName,
@@ -648,34 +703,27 @@ class MultipleSizeCount extends React.Component<Props, State> {
             totalDayRejectCount,
             totalDayReworkedCount
             //TODO: totalDayFttCount will be total of all hours ftt summation.
-          },async ()=>{
-            //console.log('write initial production cout object to local db');
-            var isOk = await writeProductionToLocalDB(this.state.currentCountObj);
-            console.log(this.state.allSizes);
-            this.setState({isApiOK: isOk});
+          }
+          /**We dont't waht any default or zero (0) entry while component just mounted**/
+          // ,async ()=>{
 
-            // isOk.then((val)=>{
-            //       this.setState({isApiOK: val});
-            // }).catch(errorMessage => {
-            ////   console.log(errorMessage);
-            //   this.setState({isApiOK: false});
-            // });
-          });
-          //TODO: dDateOfProduction= dateObj;  should be the today's date, the day production count took place so that if device shutsdown we can retrive earlier production count data of today
+          //   //'write initial production cout object to local db'
+          //   var isOk = await writeProductionToLocalDB(this.state.currentProdCountObj);
+          //   console.log(this.state.allSizes);
+          //   this.setState({isApiOK: isOk});
+          // }
+          );
+          //TODO: dDateOfProduction= new Date();  should be the today's date, the day production count took place so that if device shutsdown we can retrive earlier production count data of today
         }
-      /***TODO: Will have to check local db if there is anydata available for -> today -> This hour -> this device -> unitlineId -> production PlanID wise
-       * if exists set current production count object to existing production count object
-       * other wise create new object and insert into localdb and set state object to that new production object...
-       */
-
     }
 
 
 
     loadSizeWiseData(reqObj: any){
       
+      /** This function fetches size wise hourly data and set it in UI **/
       var current_login: any = this.state.current_login;
-      var currentCountObj: any = {};
+      var currentProdCountObj: any = {};
       var currentHour = getCurrentHourId();
 
       let selectedSizeId: string = reqObj["vSizeId"];
@@ -705,12 +753,12 @@ class MultipleSizeCount extends React.Component<Props, State> {
                 /** no existing count data found so initiating brand new production count object 
                  * for the current hour with zero production count
                 */
-                currentCountObj =
+                currentProdCountObj =
                     {
                       iAutoId: 0,
                       vDeviceId: current_login.vDeviceId,
-                      dEntryDate: dateObj,
-                      dLastUpdated: dateObj,
+                      dEntryDate: new Date(),
+                      dLastUpdated: new Date(),
                       vProductionPlanId: reqObj.vProductionPlanId,
                       vUnitLineId: current_login.vUnitLineId,
 
@@ -752,16 +800,15 @@ class MultipleSizeCount extends React.Component<Props, State> {
                 //console.log('Found Existing Data Count:', existingData.iProductionQty)
                 /**We found an existing entry for current hour, 
                  * and will be using this as hourly data object */
-                currentCountObj = existingData;
+                currentProdCountObj = existingData;
               }
             
           this.setState({
             currentProdObj: reqObj,
             currentHour: currentHour["vHourId"], 
             selectedSizeId,
-            currentHourObj: currentHour, 
-            currentCountObj, 
-            fttCount: currentCountObj.iProductionQty, //current hour wise counter
+            currentProdCountObj, 
+            fttCount: currentProdCountObj.iProductionQty, //current hour wise counter
             
             defectCount: totalDayDefectCount,
             rejectCount: totalDayRejectCount,
@@ -772,13 +819,13 @@ class MultipleSizeCount extends React.Component<Props, State> {
             totalDayRejectCount,
             totalDayReworkedCount
             //TODO: totalDayFttCount will be total of all hours ftt summation.
-          },async ()=>{
-            //console.log('write initial production cout object to local db');
-            var isOk = await writeProductionToLocalDB(this.state.currentCountObj);
-            this.setState({isApiOK: isOk});
-
-          });
-          //TODO: dDateOfProduction= dateObj;  should be the today's date, the day production count took place so that if device shutsdown we can retrive earlier production count data of today
+          }
+          // ,async ()=>{
+          //   //console.log('write initial production cout object to local db');
+          //   var isOk = await writeProductionToLocalDB(this.state.currentProdCountObj);
+          //   this.setState({isApiOK: isOk});
+          // }
+          );
         }
     }
 
@@ -799,7 +846,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
     }
 
     _onLayout(e: any) {
-      //console.log("Screen Orientation Changed...")
+      //Called when Screen Orientation Changed...
       this.setState({
         screenWidth: Dimensions.get('window').width,
         screenHeight: Dimensions.get('window').height
@@ -808,10 +855,12 @@ class MultipleSizeCount extends React.Component<Props, State> {
     }
 
     onSizeChanged(reqObj: any){
-        this.loadSizeWiseData(reqObj);
+      /**Size wise plan summery object selected**/  
+      this.loadSizeWiseData(reqObj);
     }
 
 
+    /** Set Dynamic Modal visibility **/
     setModalVisible(modeCode: number) {
       if(modeCode === constKVP.__MODAL_FOR_DEFECT){
         let modeColor: string = "#fda912";
@@ -838,7 +887,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
 
   render() {
     const {screenHeight, screenWidth} = this.state;
-    const RotateData = this._rotateValue.interpolate({
+    const RotationValue = this._rotateValue.interpolate({
       inputRange: [0,1],
       outputRange: ['0deg', '360deg']
     });
@@ -870,7 +919,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
 
             <View style={{flex:.15, justifyContent:'space-evenly', flexDirection:'row', alignItems:'center'}}>
               <Text style={{fontSize: 16, fontWeight:'bold', color:'#fff'}}>{this.state.unitName +"/"+this.state.lineName }/{this.state.currentHour ?? "N/A" }</Text>
-              <Animated.View style={{transform:[{rotate: RotateData}]}}>
+              <Animated.View style={{transform:[{rotate: RotationValue}]}}>
                 <Icon onPress={()=> this.syncCurrentData()} name="sync" size={20} color={this.state.isSynced ? '#45c065' : "#ff5353"} />
               </Animated.View>
               {/* <Text style={{fontSize: 16, fontWeight:'bold'}}>Sync</Text> */}

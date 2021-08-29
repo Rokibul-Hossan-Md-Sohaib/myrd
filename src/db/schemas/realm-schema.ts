@@ -128,6 +128,7 @@ export const DefectCountSchema: Schema<QMS_DefectCountDaily> = {
     dDateOfProduction: 'date',
     vProductionPlanId: 'string?',
     vUnitLineId: 'string?',
+    vHourId: 'string?',
 
     vBuyerId:  'string?',
     vBuyerName: 'string?',
@@ -209,6 +210,7 @@ export const RejectCountSchema: Schema<QMS_RejectCountDaily> = {
     dDateOfProduction: 'date',
     vProductionPlanId: 'string?',
     vUnitLineId: 'string?',
+    vHourId: 'string?',
 
     vBuyerId:  'string?',
     vBuyerName: 'string?',
@@ -243,6 +245,7 @@ export const ReworkedCountSchema: Schema<QMS_ReworkedCountDaily> = {
     dDateOfProduction: 'date',
     vProductionPlanId: 'string?',
     vUnitLineId: 'string?',
+    vHourId: 'string?',
 
     vBuyerId:  'string?',
     vBuyerName: 'string?',

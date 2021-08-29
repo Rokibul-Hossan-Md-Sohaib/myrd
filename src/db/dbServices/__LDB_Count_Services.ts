@@ -12,6 +12,8 @@ import { __TRACK_DFCT_DATA, __TRACK_PROD_DATA, __TRACK_REJT_DATA, __TRACK_REWD_D
 const dateObj: Date = new Date();
 
 const writeProductionToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
+
+    console.log('production Obj',dataToWrite);
       var isApiOK: boolean = false;
       Realm.write(() => { //write single data
         //Realm.create(ProductionCountSchema.name, updatedData);
@@ -53,30 +55,34 @@ const writeProductionToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
 
 const writeReworkedToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
     var isApiOK: boolean = false;
-    Realm.write(() => { //write single data
-     //Realm.create(ProductionCountSchema.name, updatedData);
-     let existingData: any = Realm.objects<QMS_ReworkedCountDaily>(ReworkedCountSchema.name)
-                         .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId = $2 && vDeviceId=$3 && vStyleId=$4 && vSizeId=$5 && vExpPoorderNo=$6 && vColorId=$7 && vBuyerId=$8', 
-                         dataToWrite.dDateOfProduction, 
-                         dataToWrite.vProductionPlanId, 
-                         dataToWrite.vUnitLineId, 
-                         dataToWrite.vDeviceId,
-                         dataToWrite.vStyleId,
-                         dataToWrite.vSizeId,
-                         dataToWrite.vExpPoorderNo,
-                         dataToWrite.vColorId,
-                         dataToWrite.vBuyerId
-                         )[0];
+    Realm.write(() => {
+    //Realm.create(ProductionCountSchema.name, updatedData);
+    let existingData: any = Realm.objects<QMS_ReworkedCountDaily>(ReworkedCountSchema.name)
+      .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId = $2 && vDeviceId=$3 && vStyleId=$4 && vSizeId=$5 && vExpPoorderNo=$6 && vColorId=$7 && vBuyerId=$8 && vHourId = $9',
+        dataToWrite.dDateOfProduction,
+        dataToWrite.vProductionPlanId,
+        dataToWrite.vUnitLineId,
+        dataToWrite.vDeviceId,
+        dataToWrite.vStyleId,
+        dataToWrite.vSizeId,
+        dataToWrite.vExpPoorderNo,
+        dataToWrite.vColorId,
+        dataToWrite.vBuyerId,
+        dataToWrite.vHourId
+      )[0];
 
-       if(existingData === undefined){
-         //as no previous data exists, we will create new data row...
-         Realm.create(ReworkedCountSchema.name, dataToWrite);
-       }else{
-         existingData.iReworkedCount =  dataToWrite.iReworkedCount;
-         existingData.dLastUpdated   =  new Date();
-       }                            
-         
-   });
+    if (existingData === undefined) {
+      //as no previous data exists, we will create new data row...
+      Realm.create(ReworkedCountSchema.name, dataToWrite);
+    } else {
+      existingData.iReworkedCount += dataToWrite.iReworkedCount;
+      existingData.dLastUpdated = new Date();
+
+      dataToWrite.iReworkedCount = existingData.iReworkedCount;
+      dataToWrite.dLastUpdated = existingData.dLastUpdated;
+    }
+
+  });
    
       /**Send Data to Server for persistance */
      await post(__TRACK_REWD_DATA, dataToWrite)
@@ -98,7 +104,7 @@ const writeRejectToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
     Realm.write(() => { //write single data
      //Realm.create(ProductionCountSchema.name, updatedData);
      let existingData: any = Realm.objects<QMS_RejectCountDaily>(RejectCountSchema.name)
-     .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId = $2 && vDeviceId=$3 && vDefectCode=$4 && vStyleId=$5 && vSizeId=$6 && vExpPoorderNo=$7 && vColorId=$8 && vBuyerId=$9', 
+     .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId = $2 && vDeviceId=$3 && vDefectCode=$4 && vStyleId=$5 && vSizeId=$6 && vExpPoorderNo=$7 && vColorId=$8 && vBuyerId=$9 && vHourId = $10', 
                    dataToWrite.dDateOfProduction, 
                    dataToWrite.vProductionPlanId, 
                    dataToWrite.vUnitLineId, 
@@ -108,7 +114,8 @@ const writeRejectToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
                    dataToWrite.vSizeId,
                    dataToWrite.vExpPoorderNo,
                    dataToWrite.vColorId,
-                   dataToWrite.vBuyerId
+                   dataToWrite.vBuyerId,
+                   dataToWrite.vHourId
                    )[0];
              
        if(existingData === undefined){
@@ -145,7 +152,7 @@ const writeDefectToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
     Realm.write(() => { //write single data
 
      let existingData: any = Realm.objects<QMS_DefectCountDaily>(DefectCountSchema.name)
-                         .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId = $2 && vDeviceId=$3 && vDefectCode=$4 && vStyleId=$5 && vSizeId=$6 && vExpPoorderNo=$7 && vColorId=$8 && vBuyerId=$9', 
+                         .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vUnitLineId = $2 && vDeviceId=$3 && vDefectCode=$4 && vStyleId=$5 && vSizeId=$6 && vExpPoorderNo=$7 && vColorId=$8 && vBuyerId=$9 && vHourId = $10', 
                          dataToWrite.dDateOfProduction, 
                          dataToWrite.vProductionPlanId, 
                          dataToWrite.vUnitLineId, 
@@ -155,18 +162,21 @@ const writeDefectToLocalDB = async (dataToWrite: any): Promise<boolean> =>{
                          dataToWrite.vSizeId,
                          dataToWrite.vExpPoorderNo,
                          dataToWrite.vColorId,
-                         dataToWrite.vBuyerId
+                         dataToWrite.vBuyerId,
+                         dataToWrite.vHourId
                          )[0];
 
        if(existingData === undefined){
          //as no previous data exists, we will create new data row...
          Realm.create(DefectCountSchema.name, dataToWrite);
        }else{
+         /**Increment local db existing defect counter by 1**/
          existingData.iDefectCount +=  1;
          existingData.dLastUpdated   =  new Date();
 
+         /**Get updated defect counter from local db existing data**/
          dataToWrite.iDefectCount = existingData.iDefectCount;
-         dataToWrite.dLastUpdated = existingData.dLastUpdated;
+         dataToWrite.dLastUpdated = new Date();
        }                            
          
    });

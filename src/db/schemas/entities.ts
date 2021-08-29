@@ -118,6 +118,7 @@ export interface QMS_DefectCountDaily {
     readonly vDeviceId: Nullable<string>,
     readonly dDateOfProduction: Date,
     readonly vProductionPlanId: Nullable<string>,
+    readonly vHourId: Nullable<string>,
     readonly vUnitLineId: Nullable<string>,
     readonly vBuyerId: Nullable<string>,
     readonly vBuyerName: Nullable<string>,
@@ -159,9 +160,9 @@ export interface QMS_ProductionCountHourly {
    readonly vSizeId: Nullable<string>,
    readonly vSizeName: Nullable<string>,
 
-   readonly fSMV: Nullable<number>,
+   readonly fSmv: Nullable<number>,
    readonly iHel: Nullable<number>,
-   readonly iMO: Nullable<number>,
+   readonly iMo: Nullable<number>,
    readonly iPlanHour: Nullable<number>,
    readonly nForecast: Nullable<number>,
 
@@ -186,7 +187,7 @@ export interface QMS_RejectCountDaily {
    readonly dDateOfProduction: Date,
    readonly vProductionPlanId: Nullable<string>,
    readonly vUnitLineId: Nullable<string>,
-
+   readonly vHourId: Nullable<string>,
    readonly vBuyerId: Nullable<string>,
    readonly vBuyerName: Nullable<string>,
 
@@ -200,7 +201,6 @@ export interface QMS_RejectCountDaily {
 
    readonly vSizeId: Nullable<string>,
    readonly vSizeName: Nullable<string>,
-
 
    readonly vDefectCategoryId: Nullable<string>,
    readonly vDefectCategoryName: Nullable<string>,
@@ -217,6 +217,7 @@ export interface QMS_ReworkedCountDaily {
   readonly dDateOfProduction: Date,
   readonly vProductionPlanId: Nullable<string>,
   readonly vUnitLineId: Nullable<string>,
+  readonly vHourId: Nullable<string>,
 
   readonly vBuyerId: Nullable<string>,
   readonly vBuyerName: Nullable<string>,
