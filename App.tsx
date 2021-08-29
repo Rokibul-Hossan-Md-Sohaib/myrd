@@ -1,6 +1,6 @@
 /*Example of RealM Database in React Native*/
 import React from 'react';
-
+import codePush from 'react-native-code-push';
 //Import react-navigation
 import { createAppContainer } from 'react-navigation';
 import { createStackNavigator} from 'react-navigation-stack';
@@ -112,4 +112,4 @@ const ToastContainer = () => <>
                               <Toast ref={(ref) => Toast.setRef(ref)} />
                             </>
 
-export default ToastContainer;
+export default codePush(ToastContainer);
