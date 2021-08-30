@@ -54,7 +54,6 @@ export default class HomeScreen extends React.Component<Props, State> {
      * # Remove other data from any other day (✔)
      * # Day Close option for production and then sync immediately
      * # If there is already login data for today fetch those data, otherwsie logout (✔)
-     * # Data summery minimal json for sync,
      * # Sync flag for current data if synced successfully...
      * 
      * 

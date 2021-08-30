@@ -5,3 +5,5 @@
 ├────────────┼───────────────────────────────────────┤
 │ Production │ spORK0TNdkvirewApdZ-uSFh_lMU9Q86OsIJQ │
 └────────────┴───────────────────────────────────────┘
+
+appcenter codepush release-react -a KDS-Group/QTS-app -d Staging

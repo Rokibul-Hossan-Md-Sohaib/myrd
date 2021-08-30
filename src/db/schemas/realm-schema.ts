@@ -181,10 +181,10 @@ export const ProductionCountSchema: Schema<QMS_ProductionCountHourly> = {
     vSizeName: 'string?',
     iTotalPlanQty: 'int?',
 
-    fSMV: 'double?',
+    fSmv: 'double?',
     iPlanHour: 'double?',
     nForecast: 'double?',
-    iMO: 'int?',
+    iMo: 'int?',
     iHel: 'int?',
 
     vHourId: 'string?',

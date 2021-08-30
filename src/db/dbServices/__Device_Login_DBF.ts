@@ -20,6 +20,7 @@ import moment from 'moment'
 import {convertToArray} from '../../utils/utilityFunctions'
 import { RealmQuery } from "../lib/realm-helper.types";
 
+
 export function getQmsDeviceSecurityData(): any{
 
     let comInfo: RealmQuery = Realm.objects<QMS_SecurityProductionDeviceInfo>(QmsSecurityProductionDeviceInfo.name);
@@ -27,6 +28,12 @@ export function getQmsDeviceSecurityData(): any{
     return comInfo;
 }
 
+/**
+ * 
+ * @param dataToWrite -> production plan data to be written to local DB
+ * @param timeHour -> unitwise hour info
+ * @param current_login -> current logged in user info
+ */
 export function writeToLocalDb(dataToWrite: any[], timeHour: any[], current_login: any){
     console.log('write to DB')
     //Clear any existing data in local db
@@ -46,6 +53,7 @@ export function writeToLocalDb(dataToWrite: any[], timeHour: any[], current_logi
 
         });
   }
+
 
 export function rehydrateExistingdata(productionData: any[], defectData: any[], rejectData: any[], reworkedData:any[]){
   Realm.write(() => {

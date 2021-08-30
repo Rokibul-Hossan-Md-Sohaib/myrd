@@ -1,3 +1,9 @@
+/**
+ * Convert Realm Object Array to JSON Array
+ * 
+ * @param realmObjectsArray 
+ * @returns 
+ */
 const convertToArray = (realmObjectsArray: any) =>
 {
   let copyOfJsonArray = Array.from(realmObjectsArray);

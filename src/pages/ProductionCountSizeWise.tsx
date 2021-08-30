@@ -1,3 +1,8 @@
+/**
+ * 
+ * This Component is Deprecated after introduction of @MultipleSizeCount component
+ * 
+ */
 import React, { Component } from 'react'
 import { View, Text, StatusBar, Pressable, Dimensions, StyleSheet, Modal, TouchableOpacity, Button, Animated, Easing } from 'react-native';
 import moment from 'moment'

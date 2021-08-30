@@ -1,8 +1,6 @@
-/*Screen to register the user*/
 import React from 'react';
 import { View, ScrollView, KeyboardAvoidingView, Alert, StyleSheet, Text, BackHandler, StatusBar } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
-import Mytextinput from './components/Mytextinput';
 import moment from 'moment'
 import Toast from 'react-native-toast-message';
 import Mybutton from './components/Mybutton';

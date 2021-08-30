@@ -124,8 +124,13 @@ class MultipleSizeCount extends React.Component<Props, State> {
       selectedDefectCategory: null,
       selectedDefectHeadId: null,
 
+      /***This is the current state production object based on size */
       currentProdObj:{},
+
+      /**This is current login object */
       current_login:{},
+      
+      /***This is the current state production object which's count being updated eachtime */
       currentProdCountObj:{},
 
       unitName: '',
@@ -136,9 +141,11 @@ class MultipleSizeCount extends React.Component<Props, State> {
       isApiOK: true,
       isSynced: true,
     }
+
+    /**Roration sync animation value*/
     _rotateValue: Animated.Value;
 
-//moment(new Date()).format("hh:00A");
+    //moment(new Date()).format("hh:00A");
     constructor(props: Props) {
       super(props);
       this._rotateValue = new Animated.Value(0);
@@ -176,6 +183,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
         }
     }
 
+    //#region Rotation Animation
     stopSyncRotation(){
       this._rotateValue.stopAnimation();
     }
@@ -193,14 +201,13 @@ class MultipleSizeCount extends React.Component<Props, State> {
         }
       });
     }
-
+    //#endregion Rotation Animation
+    
+    /***This function counts Accepted Garments (FTT) */
     countFtt(){
-      /**Check if the API End is available now */
-      //this.checkApiAvailability();
-      //vHourId: this.getCurrentHourId(),
-      //get Previous hour check if new hour equels to state hour
+    
+      /****Get current hour ID */
       var thisHourID: any = getCurrentHourId();
-      ////console.log('Now',thisHourID)
 
       if(thisHourID === undefined){
         Toast.show({
@@ -230,7 +237,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
 
           if(thisHourID["vHourId"] === this.state.currentProdCountObj.vHourId){    
 
-            console.log('PQ', this.state.currentProdObj.iProductionQty);
+            //console.log('PQ', this.state.currentProdObj.iProductionQty);
             
             //This is running hour...
             this.setState((prevState, props) => ({
@@ -300,10 +307,10 @@ class MultipleSizeCount extends React.Component<Props, State> {
 
     }
 
+     /***This function counts Garments Defects */
     countDefect(){
-      /**Check if the API End is available now */
-      //this.checkApiAvailability();
-
+     
+      /****Get current hour ID */
       var thisHourID: any = getCurrentHourId();
       ////console.log('Now',thisHourID)  currentHour: thisHourID["vHourId"]
 
@@ -375,10 +382,10 @@ class MultipleSizeCount extends React.Component<Props, State> {
       }
     }
     
+    /***This function counts Garments Rejects */
     countreject(){
-      /**Check if the API End is available now */
-      //this.checkApiAvailability();
-
+     
+      /****Get current hour ID */
       var thisHourID: any = getCurrentHourId();
       ////console.log('Now',thisHourID)  currentHour: thisHourID["vHourId"]
 
@@ -449,10 +456,10 @@ class MultipleSizeCount extends React.Component<Props, State> {
     }
   }
 
+    /***This function counts Reworked Garments */
     countreworked(){
-      /**Check if the API End is available now */
-      //this.checkApiAvailability();
 
+      /****Get current hour ID */
       var thisHourID: any = getCurrentHourId();
       ////console.log('Now',thisHourID)  currentHour: thisHourID["vHourId"]
 
@@ -512,6 +519,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
       });
     }
 
+    
     filterDefectesCategoryWise(categoryId: string, catShortName: string){
       
       let filteredDefects: any;
