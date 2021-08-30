@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { __SYNC_BULK_DFCT, __SYNC_BULK_PROD, __SYNC_BULK_REJT, __SYNC_BULK_REWD } from './constKVP';
 import handleError from './handleError';
-export const SERVER_DOMAIN = 'http://192.168.111.212:84';//'http://192.168.111.212:84';//'http://eots.kdsgroup.net:81/QmsApi';
+export const SERVER_DOMAIN = 'http://eots.kdsgroup.net:81/QmsApi';//'http://192.168.111.212:84';//'http://eots.kdsgroup.net:81/QmsApi';
 
 const getHeaders: any = () => {
   return {

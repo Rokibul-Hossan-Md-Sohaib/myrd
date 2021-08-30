@@ -9,7 +9,12 @@ import SetupData from './src/pages/SetupData'
 import ProductionCountSizeWise from './src/pages/ProductionCountSizeWise'
 import MultipleSizeCount from './src/pages/MultipleSizeCount'
 
-let codePushOptions = { checkFrequency: codePush.CheckFrequency.ON_APP_RESUME };
+let codePushOptions = { 
+  checkFrequency: codePush.CheckFrequency.ON_APP_RESUME, 
+  installMode: codePush.InstallMode.IMMEDIATE, 
+  updateDialog: true,
+  allowRestart: true 
+}; 
 
 const App = createStackNavigator({
   HomeScreen: {
