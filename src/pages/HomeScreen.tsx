@@ -1,6 +1,7 @@
 /*Home Screen With buttons to navigate to diffrent options*/
 import React from 'react';
-import { View, Image, StatusBar } from 'react-native';
+import { View, Image, StatusBar, Alert, Linking, BackHandler } from 'react-native';
+import DeviceInfo from 'react-native-device-info'
 import Mybutton from './components/Mybutton';
 import moment from 'moment'
 import Toast from 'react-native-toast-message';
@@ -24,7 +25,8 @@ type Props = {
 type State = {
   loading: boolean;
   today: string,
-  okToGo: boolean
+  okToGo: boolean,
+  currentVersion: number
 };
 
 export default class HomeScreen extends React.Component<Props, State> {
@@ -33,6 +35,7 @@ export default class HomeScreen extends React.Component<Props, State> {
       loading: false,
       today: moment().format('YYYY-MM-DD'),
       okToGo: false,
+      currentVersion: parseFloat(DeviceInfo.getVersion())
     }
 
   constructor(props: Props) {
@@ -55,8 +58,6 @@ export default class HomeScreen extends React.Component<Props, State> {
      * # Day Close option for production and then sync immediately
      * # If there is already login data for today fetch those data, otherwsie logout (✔)
      * # Sync flag for current data if synced successfully...
-     * 
-     * 
      * 
      */
 
@@ -119,15 +120,31 @@ export default class HomeScreen extends React.Component<Props, State> {
           
           var deviceSecInfo = responseData.compUnitData;
           var defectRaw = responseData.defectRawData;
+          var latestVersion = responseData.versionData;
+
+          if(this.state.currentVersion < latestVersion.currentVersion){
+              Alert.alert(
+                "✨ New Update Available!",
+                "Please, update the app to continue working.\nYou won't be able to use the app if the app isn't updated.",
+                [
+                  { text: "Update", onPress: () => {
+                      Linking.openURL(latestVersion.appUrl ?? "https://www.google.com/").catch(err => console.error("Couldn't load page", err));
+                    } 
+                  },
+                ],
+                { cancelable: false }
+              );
+          }else{
             Toast.show({
-                type: 'success',
-                position: 'bottom',
-                text1: 'Successed!',
-                text2: 'It\'s ok! 👋',
-                visibilityTime: 1000,
-                })
-              // try { Write Data if data dosen't exixts
-              setDeviceAndDefectMasterDataLocalDB(deviceSecInfo, defectRaw);
+              type: 'success',
+              position: 'bottom',
+              text1: 'Successed!',
+              text2: 'It\'s ok! 👋',
+              visibilityTime: 1000,
+              })
+            // try { Write Data if data dosen't exixts
+            setDeviceAndDefectMasterDataLocalDB(deviceSecInfo, defectRaw);
+          }
         }else{
             Toast.show({
                 type: 'error',
