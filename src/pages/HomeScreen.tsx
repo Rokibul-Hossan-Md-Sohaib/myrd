@@ -120,9 +120,9 @@ export default class HomeScreen extends React.Component<Props, State> {
           
           var deviceSecInfo = responseData.compUnitData;
           var defectRaw = responseData.defectRawData;
-          var latestVersion = responseData.versionData;
+          var latestVersion = responseData.versionData ?? null;
 
-          if(this.state.currentVersion < latestVersion.currentVersion){
+          if(latestVersion && this.state.currentVersion < latestVersion.currentVersion){
               Alert.alert(
                 "✨ New Update Available!",
                 "Please, update the app to continue working.\nYou won't be able to use the app if the app isn't updated.",

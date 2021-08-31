@@ -7,3 +7,6 @@
 └────────────┴───────────────────────────────────────┘
 
 appcenter codepush release-react -a KDS-Group/QTS-app -d Staging
+
+PS C:\Program Files\Java\jre1.8.0_191\bin> 
+.\keytool -genkey -v -keystore qtsapp.keystore -storepass kds@123 -alias qtsappkey -keypass kds@123 -keyalg RSA -keysize 2048 -validity 10000
