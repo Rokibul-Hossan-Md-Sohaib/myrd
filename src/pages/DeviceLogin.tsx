@@ -2,6 +2,7 @@
 import React from 'react';
 import { View, ScrollView, KeyboardAvoidingView, StyleSheet, Text, Pressable, StatusBar } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
+import DeviceInfo from 'react-native-device-info';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Mytextinput from './components/Mytextinput';
 import moment from 'moment'
@@ -173,12 +174,16 @@ export default class DeviceLogin extends React.Component<Props, State> {
 
   userLoginAndGetData(){
     var {vCompanyId, vUnitId, vUnitLineId, Password, vShiftId, vDeviceId} = this.state;
+
+    var macAddress = DeviceInfo.getMacAddressSync();
+    
     var reqObj: any = {
       "vDeviceId": vDeviceId,
       "vDeviceSec": Password,
       "vCompanyId": vCompanyId,
       "vUnitId": vUnitId,
       "vUnitLineId": vUnitLineId,
+      "vMacAddress": macAddress,
       "vShiftId": vShiftId,
       "dLoginDateTime": this.state.today//moment().format('YYYY-MM-DD') //"2020-11-04"//moment().format('YYYY-MM-DD')
   }
