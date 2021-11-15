@@ -30,7 +30,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { NavigationScreenProp } from 'react-navigation';
 import { __API_OK_PATH } from '../utils/constKVP';
 import { QMS_DefectCountDaily, QMS_ProductionCountHourly, QMS_RejectCountDaily, QMS_ReworkedCountDaily } from '../db/schemas/entities';
-
+var { width, height } = Dimensions.get('window');
 /**
  * /DataTracking/SyncBulkProductionData
  * /DataTracking/SyncBulkDefectData
@@ -80,7 +80,10 @@ type State = {
 
   unitName: string,
   lineName: string,
-  
+
+  countLocked: boolean,
+  timeLeft: number,
+
   currentHour: any,
   isConnected: boolean | null,
   isApiOK: boolean | null,
@@ -136,6 +139,9 @@ class MultipleSizeCount extends React.Component<Props, State> {
       unitName: '',
       lineName: "",
 
+      countLocked: false,
+      timeLeft:4,
+
       currentHour: null,
       isConnected: false,
       isApiOK: true,
@@ -145,10 +151,14 @@ class MultipleSizeCount extends React.Component<Props, State> {
     /**Roration sync animation value*/
     _rotateValue: Animated.Value;
 
+    interval: any;
+
+    //countLocked: boolean = false;
+
     //moment(new Date()).format("hh:00A");
     constructor(props: Props) {
       super(props);
-      this._rotateValue = new Animated.Value(0);
+      this._rotateValue = new Animated.Value(0);    
       this.props.navigation.addListener(
         'didFocus',
         payload => {
@@ -156,6 +166,45 @@ class MultipleSizeCount extends React.Component<Props, State> {
           handleAndroidBackButton(this.navigateBack);
         });
     }
+
+    startTimer() {
+      let self = this;
+      this.interval = setInterval(() => {
+        if(this.state.timeLeft > 0) {
+          self.setState({
+            timeLeft: this.state.timeLeft - 1
+          });
+        } else {
+          self.resetTimer();
+          self.setState({
+            countLocked: false
+          });
+        }
+      },1000)
+    }
+  
+    resetTimer() {
+      // this.timeLeft = 30
+      clearInterval(this.interval);
+    }
+
+  /**Set timeout for 5 second */
+  timeOutForFiveSeconds = () => {
+    var self = this;
+    this.startTimer();
+    // setTimeout(() => {
+    //       self.setState({
+    //         countLocked: false
+    //       })
+    //   },
+    //   5000
+    // );
+    // setTimeout(() => {
+      
+    //   this.countLocked = false;
+
+    // }, 5000);
+  }
 
     navigateBack = ()=>{
         this.props.navigation.goBack();
@@ -206,6 +255,15 @@ class MultipleSizeCount extends React.Component<Props, State> {
     /***This function counts Accepted Garments (FTT) */
     countFtt(){
     
+      if(this.state.countLocked){
+          return Toast.show({
+            type: "error",
+            position: 'top',
+            text1: "Alert!",
+            text2: "Try after 5 Sec",
+            visibilityTime: 5000,
+            });
+      }
       /****Get current hour ID */
       var thisHourID: any = getCurrentHourId();
 
@@ -248,13 +306,15 @@ class MultipleSizeCount extends React.Component<Props, State> {
                     dLastUpdated: new Date() 
                     },
               totalDayFttCount: this.state.totalDayFttCount + 1, //independent of hour but dependent on size
+              countLocked: true,
+              timeLeft:4,
             }),async ()=>{
               ////console.log('Production count write to db....', this.state.currentProdCountObj)
             var {currentProdCountObj} = this.state;
-            
+            //this.countLocked = true;
             /**Send Data to local persistance */
             var isOk = await writeProductionToLocalDB(currentProdCountObj);
-            this.setState({isApiOK: isOk, isSynced: isOk});
+            this.setState({isApiOK: isOk, isSynced: isOk}, ()=> this.timeOutForFiveSeconds());
               // isOk.then((val)=>{
               //       this.setState({isApiOK: val});
               // }).catch(errorMessage => {
@@ -279,7 +339,9 @@ class MultipleSizeCount extends React.Component<Props, State> {
               dLastUpdated: new Date() 
               },
             totalDayFttCount: this.state.totalDayFttCount + 1,
-            currentHour: thisHourID["vHourId"]
+            currentHour: thisHourID["vHourId"],
+            countLocked: true,
+            timeLeft:4,
           }),async ()=>{
             ////console.log('Production count write to db....', this.state.currentProdCountObj.iProductionQty)
             console.log('PQ NWHR', this.state.currentProdObj.iProductionQty);
@@ -292,9 +354,12 @@ class MultipleSizeCount extends React.Component<Props, State> {
               });
 
               var {currentProdCountObj} = this.state;
+              //this.countLocked = true;
               /**Send Data to local persistance */
               var isOk = await writeProductionToLocalDB(currentProdCountObj);
-              this.setState({isApiOK: isOk});
+              this.setState({isApiOK: isOk}
+                , ()=> this.timeOutForFiveSeconds()
+                );
               // isOk.then((val)=>{
               //       this.setState({isApiOK: val});
               // }).catch(errorMessage => {
@@ -373,8 +438,10 @@ class MultipleSizeCount extends React.Component<Props, State> {
                   isSynced: isOk,
                   modalVisible: !prev.modalVisible, 
                   modeCode: constKVP.__MODAL_FOR_DEFECT,
-                  modeColor: constKVP.__MODAL_DEFECT_BUTTON_COLOR
-                }));
+                  modeColor: constKVP.__MODAL_DEFECT_BUTTON_COLOR,
+                  countLocked: true,
+                  timeLeft:4
+                }), ()=> this.timeOutForFiveSeconds());
                 /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
                 /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
               });
@@ -447,8 +514,10 @@ class MultipleSizeCount extends React.Component<Props, State> {
           isSynced: isOk,
           modalVisible: !prev.modalVisible, 
           modeCode: constKVP.__MODAL_FOR_REJECT,
-          modeColor: constKVP.__MODAL_REJECT_BUTTON_COLOR
-        }));
+          modeColor: constKVP.__MODAL_REJECT_BUTTON_COLOR,
+          countLocked: true,
+          timeLeft:4,
+        }), ()=> this.timeOutForFiveSeconds());
         
         /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
         /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
@@ -482,7 +551,9 @@ class MultipleSizeCount extends React.Component<Props, State> {
       this.setState((prevState, props) => ({
         reworkedCount: prevState.reworkedCount + 1,
         totalDayReworkedCount: prevState.totalDayReworkedCount+1,
-        currentHour: thisHourID["vHourId"]
+        currentHour: thisHourID["vHourId"],
+        countLocked: true,
+        timeLeft:4
       }), async ()=>{
           ////console.log('count defect')
          var currentReworkedCountObj: QMS_ReworkedCountDaily =
@@ -514,7 +585,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
         
         ////console.log(currentReworkedCountObj);
         var isOk = await writeReworkedToLocalDB(currentReworkedCountObj);
-        this.setState({isApiOK: isOk, isSynced: isOk});
+        this.setState({isApiOK: isOk, isSynced: isOk}, ()=> this.timeOutForFiveSeconds());
         
       });
     }
@@ -1177,6 +1248,12 @@ class MultipleSizeCount extends React.Component<Props, State> {
                   </View>
                 </Modal>
               </View>
+              {
+                this.state.countLocked ?
+                (<View style={[styles.overlay, { height: height, alignItems: "center", justifyContent:'center' }]}>
+                <Text style={{fontSize: 150, color: "#fff"}}>{(this.state.timeLeft+1)}</Text>
+              </View>) : <View/>
+              }
   </View>
     )
   }
@@ -1187,6 +1264,15 @@ const styles = StyleSheet.create({
       //marginTop: 48,
       backgroundColor: "#151a30",
       flex: 1
+    },
+    overlay: {
+      flex: 1,
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      opacity: 0.5,
+      backgroundColor: 'black',
+      width: width
     },
     headerStyle: {
       fontSize: 36,

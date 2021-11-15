@@ -14,6 +14,7 @@ import {setupPickerData} from '../utils/utilityFunctions'
 import {handleAndroidBackButton, removeAndroidBackButtonHandler} from '../utils/backHandler.config';
 import Orientation from 'react-native-orientation';
 import {getQmsDeviceSecurityData, rehydrateExistingdata, writeToLocalDb} from '../db/dbServices/__Device_Login_DBF'
+import NetInfo, {NetInfoSubscription, NetInfoState, NetInfoWifiState} from '@react-native-community/netinfo'
 //import Realm from 'realm';
 import { NavigationScreenProp } from 'react-navigation';
 import { __REHYDRATING_DATA_PATH } from '../utils/constKVP';
@@ -109,7 +110,16 @@ export default class DeviceLogin extends React.Component<Props, State> {
       removeAndroidBackButtonHandler();
     }
 
-    componentDidMount(){
+    async componentDidMount(){
+
+      // var macAddress = DeviceInfo.getMacAddressSync();
+      // //54:21:9D:1E:0B:DC
+      // //var deviceId = DeviceInfo.getDeviceId();
+      // var uniqueId = DeviceInfo.getUniqueId();
+      // // 4572eace315ef2aa
+
+      // console.log('mac',macAddress,  uniqueId);
+
       Orientation.lockToLandscapeLeft();
       let comInfo:any = getQmsDeviceSecurityData();
 
@@ -176,6 +186,8 @@ export default class DeviceLogin extends React.Component<Props, State> {
     var {vCompanyId, vUnitId, vUnitLineId, Password, vShiftId, vDeviceId} = this.state;
 
     var macAddress = DeviceInfo.getMacAddressSync();
+
+    console.log(' dis mac',macAddress)
     
     var reqObj: any = {
       "vDeviceId": vDeviceId,
