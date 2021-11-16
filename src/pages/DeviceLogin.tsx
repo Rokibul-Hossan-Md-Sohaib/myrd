@@ -185,7 +185,10 @@ export default class DeviceLogin extends React.Component<Props, State> {
   userLoginAndGetData(){
     var {vCompanyId, vUnitId, vUnitLineId, Password, vShiftId, vDeviceId} = this.state;
 
-    var macAddress = DeviceInfo.getMacAddressSync();
+    var macAddress = DeviceInfo.getMacAddressSync().trim();
+    if(!macAddress){
+      macAddress = DeviceInfo.getUniqueId();
+    }
 
     console.log(' dis mac',macAddress)
     

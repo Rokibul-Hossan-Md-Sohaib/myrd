@@ -139,7 +139,9 @@ class MultipleSizeCount extends React.Component<Props, State> {
       unitName: '',
       lineName: "",
 
+      /**this flag updates when there is any recent production addition */
       countLocked: false,
+      /**This is the counter which resets eachtime */
       timeLeft:4,
 
       currentHour: null,
@@ -152,8 +154,6 @@ class MultipleSizeCount extends React.Component<Props, State> {
     _rotateValue: Animated.Value;
 
     interval: any;
-
-    //countLocked: boolean = false;
 
     //moment(new Date()).format("hh:00A");
     constructor(props: Props) {
@@ -171,10 +171,12 @@ class MultipleSizeCount extends React.Component<Props, State> {
       let self = this;
       this.interval = setInterval(() => {
         if(this.state.timeLeft > 0) {
+          /**As count down is running it will decrement after each second */
           self.setState({
             timeLeft: this.state.timeLeft - 1
           });
         } else {
+          /**When count down ends */
           self.resetTimer();
           self.setState({
             countLocked: false
@@ -184,7 +186,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
     }
   
     resetTimer() {
-      // this.timeLeft = 30
+      /**Clears the interval instance */
       clearInterval(this.interval);
     }
 
@@ -192,18 +194,6 @@ class MultipleSizeCount extends React.Component<Props, State> {
   timeOutForFiveSeconds = () => {
     var self = this;
     this.startTimer();
-    // setTimeout(() => {
-    //       self.setState({
-    //         countLocked: false
-    //       })
-    //   },
-    //   5000
-    // );
-    // setTimeout(() => {
-      
-    //   this.countLocked = false;
-
-    // }, 5000);
   }
 
     navigateBack = ()=>{
@@ -314,7 +304,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
             //this.countLocked = true;
             /**Send Data to local persistance */
             var isOk = await writeProductionToLocalDB(currentProdCountObj);
-            this.setState({isApiOK: isOk, isSynced: isOk}, ()=> this.timeOutForFiveSeconds());
+            this.setState({isApiOK: isOk, isSynced: isOk}, ()=> this.startTimer());
               // isOk.then((val)=>{
               //       this.setState({isApiOK: val});
               // }).catch(errorMessage => {
@@ -358,7 +348,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
               /**Send Data to local persistance */
               var isOk = await writeProductionToLocalDB(currentProdCountObj);
               this.setState({isApiOK: isOk}
-                , ()=> this.timeOutForFiveSeconds()
+                , ()=> this.startTimer()
                 );
               // isOk.then((val)=>{
               //       this.setState({isApiOK: val});
@@ -441,7 +431,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
                   modeColor: constKVP.__MODAL_DEFECT_BUTTON_COLOR,
                   countLocked: true,
                   timeLeft:4
-                }), ()=> this.timeOutForFiveSeconds());
+                }), ()=> this.startTimer());
                 /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
                 /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
               });
@@ -517,7 +507,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
           modeColor: constKVP.__MODAL_REJECT_BUTTON_COLOR,
           countLocked: true,
           timeLeft:4,
-        }), ()=> this.timeOutForFiveSeconds());
+        }), ()=> this.startTimer());
         
         /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
         /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
@@ -585,7 +575,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
         
         ////console.log(currentReworkedCountObj);
         var isOk = await writeReworkedToLocalDB(currentReworkedCountObj);
-        this.setState({isApiOK: isOk, isSynced: isOk}, ()=> this.timeOutForFiveSeconds());
+        this.setState({isApiOK: isOk, isSynced: isOk}, ()=> this.startTimer());
         
       });
     }
