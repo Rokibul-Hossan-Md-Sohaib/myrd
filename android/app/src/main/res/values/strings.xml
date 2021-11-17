@@ -2,5 +2,5 @@
     <string name="app_name">KDS QMS</string>
     <string name="appCenterCrashes_whenToSendCrashes" moduleConfig="true" translatable="false">DO_NOT_ASK_JAVASCRIPT</string>
     <string name="appCenterAnalytics_whenToEnableAnalytics" moduleConfig="true" translatable="false">ALWAYS_SEND</string>
-    <string moduleConfig="true" name="CodePushDeploymentKey">xg-l5rK-d4o0Y3A2JB2AO97cyndPz8ayerwN3</string>
+    <string moduleConfig="true" name="CodePushDeploymentKey">spORK0TNdkvirewApdZ-uSFh_lMU9Q86OsIJQ</string>
 </resources>
