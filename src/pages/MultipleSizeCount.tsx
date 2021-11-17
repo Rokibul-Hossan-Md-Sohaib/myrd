@@ -518,6 +518,16 @@ class MultipleSizeCount extends React.Component<Props, State> {
     /***This function counts Reworked Garments */
     countreworked(){
 
+      if(this.state.countLocked){
+        return Toast.show({
+          type: "error",
+          position: 'top',
+          text1: "Alert!",
+          text2: "Try after 5 Sec",
+          visibilityTime: 5000,
+          });
+    }
+
       /****Get current hour ID */
       var thisHourID: any = getCurrentHourId();
       ////console.log('Now',thisHourID)  currentHour: thisHourID["vHourId"]
