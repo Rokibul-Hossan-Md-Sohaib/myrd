@@ -169,6 +169,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
 
     startTimer() {
       let self = this;
+      self.setState({ countLocked: true, timeLeft:4});
       this.interval = setInterval(() => {
         if(this.state.timeLeft > 0) {
           /**As count down is running it will decrement after each second */
@@ -190,11 +191,6 @@ class MultipleSizeCount extends React.Component<Props, State> {
       clearInterval(this.interval);
     }
 
-  /**Set timeout for 5 second */
-  timeOutForFiveSeconds = () => {
-    var self = this;
-    this.startTimer();
-  }
 
     navigateBack = ()=>{
         this.props.navigation.goBack();
@@ -246,13 +242,14 @@ class MultipleSizeCount extends React.Component<Props, State> {
     countFtt(){
     
       if(this.state.countLocked){
-          return Toast.show({
-            type: "error",
-            position: 'top',
-            text1: "Alert!",
-            text2: "Try after 5 Sec",
-            visibilityTime: 5000,
-            });
+          return;
+          // Toast.show({
+          //   type: "error",
+          //   position: 'top',
+          //   text1: "Alert!",
+          //   text2: "Try after 5 Sec",
+          //   visibilityTime: 5000,
+          //   });
       }
       /****Get current hour ID */
       var thisHourID: any = getCurrentHourId();
@@ -287,6 +284,8 @@ class MultipleSizeCount extends React.Component<Props, State> {
 
             //console.log('PQ', this.state.currentProdObj.iProductionQty);
             
+            this.startTimer();
+
             //This is running hour...
             this.setState((prevState, props) => ({
               fttCount: this.state.fttCount + 1, //hour based counter
@@ -296,15 +295,13 @@ class MultipleSizeCount extends React.Component<Props, State> {
                     dLastUpdated: new Date() 
                     },
               totalDayFttCount: this.state.totalDayFttCount + 1, //independent of hour but dependent on size
-              countLocked: true,
-              timeLeft:4,
             }),async ()=>{
               ////console.log('Production count write to db....', this.state.currentProdCountObj)
             var {currentProdCountObj} = this.state;
             //this.countLocked = true;
             /**Send Data to local persistance */
             var isOk = await writeProductionToLocalDB(currentProdCountObj);
-            this.setState({isApiOK: isOk, isSynced: isOk}, ()=> this.startTimer());
+            this.setState({isApiOK: isOk, isSynced: isOk});
               // isOk.then((val)=>{
               //       this.setState({isApiOK: val});
               // }).catch(errorMessage => {
@@ -317,7 +314,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
         }else{
           //New Hour detected, So this will reset hourCounter but main counter will go on...
           // And will create a new db entry with NEW hour ID
-          
+          this.startTimer();
           //console.log('New hour totalDayFttCount',this.state.totalDayFttCount);
           this.setState((prevState, props) => ({
             fttCount: 1,
@@ -330,8 +327,8 @@ class MultipleSizeCount extends React.Component<Props, State> {
               },
             totalDayFttCount: this.state.totalDayFttCount + 1,
             currentHour: thisHourID["vHourId"],
-            countLocked: true,
-            timeLeft:4,
+            // countLocked: true,
+            // timeLeft:4,
           }),async ()=>{
             ////console.log('Production count write to db....', this.state.currentProdCountObj.iProductionQty)
             console.log('PQ NWHR', this.state.currentProdObj.iProductionQty);
@@ -347,9 +344,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
               //this.countLocked = true;
               /**Send Data to local persistance */
               var isOk = await writeProductionToLocalDB(currentProdCountObj);
-              this.setState({isApiOK: isOk}
-                , ()=> this.startTimer()
-                );
+              this.setState({isApiOK: isOk});
               // isOk.then((val)=>{
               //       this.setState({isApiOK: val});
               // }).catch(errorMessage => {
@@ -381,7 +376,8 @@ class MultipleSizeCount extends React.Component<Props, State> {
             this.props.navigation.goBack();
         }, 2000);
       }else{
-            
+            this.startTimer();
+
             this.setState((prevState, props) => ({
               defectCount: prevState.defectCount + 1,
               totalDayDefectCount: prevState.totalDayDefectCount+1,
@@ -429,9 +425,9 @@ class MultipleSizeCount extends React.Component<Props, State> {
                   modalVisible: !prev.modalVisible, 
                   modeCode: constKVP.__MODAL_FOR_DEFECT,
                   modeColor: constKVP.__MODAL_DEFECT_BUTTON_COLOR,
-                  countLocked: true,
-                  timeLeft:4
-                }), ()=> this.startTimer());
+                  // countLocked: true,
+                  // timeLeft:4
+                }));
                 /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
                 /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
               });
@@ -459,6 +455,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
         }, 2000);
       }else{
 
+      this.startTimer();
       this.setState((prevState, props) => ({
         rejectCount: prevState.rejectCount + 1,
         totalDayRejectCount: prevState.totalDayRejectCount+1,
@@ -505,9 +502,9 @@ class MultipleSizeCount extends React.Component<Props, State> {
           modalVisible: !prev.modalVisible, 
           modeCode: constKVP.__MODAL_FOR_REJECT,
           modeColor: constKVP.__MODAL_REJECT_BUTTON_COLOR,
-          countLocked: true,
-          timeLeft:4,
-        }), ()=> this.startTimer());
+          // countLocked: true,
+          // timeLeft:4,
+        }));
         
         /***TODO: Show Total Defects on Count, save on local db As individual Defect category */
         /***TODO: Save Defect Count Data to Local DB, And should be updated any existing defect data with production plan id, dDateOf Prod, vULID, Defect Code */
@@ -519,13 +516,7 @@ class MultipleSizeCount extends React.Component<Props, State> {
     countreworked(){
 
       if(this.state.countLocked){
-        return Toast.show({
-          type: "error",
-          position: 'top',
-          text1: "Alert!",
-          text2: "Try after 5 Sec",
-          visibilityTime: 5000,
-          });
+        return;
     }
 
       /****Get current hour ID */
@@ -545,15 +536,14 @@ class MultipleSizeCount extends React.Component<Props, State> {
         }, 2000);
       }else{
 
-
-      }
+      this.startTimer();
 
       this.setState((prevState, props) => ({
         reworkedCount: prevState.reworkedCount + 1,
         totalDayReworkedCount: prevState.totalDayReworkedCount+1,
         currentHour: thisHourID["vHourId"],
-        countLocked: true,
-        timeLeft:4
+        // countLocked: true,
+        // timeLeft:4
       }), async ()=>{
           ////console.log('count defect')
          var currentReworkedCountObj: QMS_ReworkedCountDaily =
@@ -585,10 +575,11 @@ class MultipleSizeCount extends React.Component<Props, State> {
         
         ////console.log(currentReworkedCountObj);
         var isOk = await writeReworkedToLocalDB(currentReworkedCountObj);
-        this.setState({isApiOK: isOk, isSynced: isOk}, ()=> this.startTimer());
+        this.setState({isApiOK: isOk, isSynced: isOk});
         
       });
     }
+}
 
     
     filterDefectesCategoryWise(categoryId: string, catShortName: string){
