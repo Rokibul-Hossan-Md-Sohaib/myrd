@@ -234,10 +234,62 @@ const syncBulkData = async (): Promise<boolean> =>{
     return Promise.resolve(isSuccessful);
 }
 
+
+
+
+//data read
+const ReadFromRealm =  (dataToWrite: any): Promise<boolean> =>{
+
+  console.log('production Obj',dataToWrite);
+    var isApiOK: boolean = false;
+    Realm.write(() => { //write single data
+      //Realm.create(ProductionCountSchema.name, updatedData);
+      let existingData: any = Realm.objects<QMS_ProductionCountHourly>(ProductionCountSchema.name)
+                          .filtered('dDateOfProduction = $0 && vProductionPlanId =$1 && vHourId = $2 && vUnitLineId = $3 && vDeviceId=$4 && vStyleId=$5 && vSizeId=$6 && vExpPoorderNo=$7 && vColorId=$8 && vBuyerId=$9', 
+                          dataToWrite.dDateOfProduction, 
+                          dataToWrite.vProductionPlanId, 
+                          dataToWrite.vHourId, 
+                          dataToWrite.vUnitLineId, 
+                          dataToWrite.vDeviceId,
+                          dataToWrite.vStyleId,
+                          dataToWrite.vSizeId,
+                          dataToWrite.vExpPoorderNo,
+                          dataToWrite.vColorId,
+                          dataToWrite.vBuyerId);
+
+
+        if(existingData === undefined){
+          //as no previous data exists, we will create new data row...
+          Realm.create(ProductionCountSchema.name, dataToWrite);
+        }else{
+          existingData.iProductionQty =  dataToWrite.iProductionQty;
+          existingData.dLastUpdated =  new Date();
+        }
+    });
+
+    /**Send Data to Server for persistance */
+    // await post(__TRACK_PROD_DATA, dataToWrite)
+    // .then((response: any) => {
+    //   console.log(response.data);
+    //   isApiOK = true;
+    // }).catch(errorMessage => {
+    //   console.log('err prod count :',errorMessage);
+    //   isApiOK = false;
+    // });
+    // Realm.close();
+    return Promise.resolve(isApiOK);
+}
+
+const queryRead = () => new Promise ((resolve, reject) =>{
+  let allRead = Realm.objects<QMS_ProductionCountHourly>(ProductionCountSchema.name)
+  resolve(allRead)
+})
   export {
       writeProductionToLocalDB, 
       writeReworkedToLocalDB,
       writeRejectToLocalDB,
       writeDefectToLocalDB,
-      syncBulkData
+      syncBulkData,
+      ReadFromRealm,
+      queryRead
     };

@@ -17,6 +17,7 @@ import moment from 'moment'
 import {convertToArray} from '../../utils/utilityFunctions'
 import { RealmQuery } from "../lib/realm-helper.types";
 
+
 export function getCurrentLoggedInUserForToday(dayString: string) {
     let currLoginData: RealmQuery = Realm.objects<LoggedIn_Session>(CurrentLoggedInUserSchema.name).filtered('dLoginDateTime = $0', dayString);
     currLoginData = convertToArray(currLoginData);
@@ -42,6 +43,7 @@ export function setDeviceAndDefectMasterDataLocalDB(deviceSecInfo: any[], defect
       });
 }
 
+// cleaning realm storage
 export function clearStaleLocalDb() {
     //todays date  2021-04-03T00:00:00.000Z
     //let dateObj = new Date();

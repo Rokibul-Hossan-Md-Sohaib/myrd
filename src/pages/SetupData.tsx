@@ -114,6 +114,7 @@ export default class SetupData extends React.Component<Props, State> {
     );
   }
 
+  //when click in logout button
   syncAndLogout(){
     Alert.alert(
       "Do you Want to Logout?",
@@ -210,6 +211,7 @@ export default class SetupData extends React.Component<Props, State> {
     }
   }
 
+  
   setupDataForProduction(){
     var {finalProductionObject} = this.state;
     console.log('setup prod data', finalProductionObject);
@@ -509,6 +511,7 @@ export default class SetupData extends React.Component<Props, State> {
                   //disabled={this.state.showLogoutButton}
                 customClick={()=>   this.syncAndLogout()}
                 />
+                
                 <Mybutton
                   style={{backgroundColor: "#3d9efd", width: 100}}
                   title="Sync Data"

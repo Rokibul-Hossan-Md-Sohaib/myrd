@@ -1,20 +1,24 @@
 import React from 'react';
 import codePush from 'react-native-code-push';
 import { createAppContainer } from 'react-navigation';
-import { createStackNavigator} from 'react-navigation-stack';
+import { createStackNavigator } from 'react-navigation-stack';
 import Toast from 'react-native-toast-message';
 import HomeScreen from './src/pages/HomeScreen';
 import DeviceLogin from './src/pages/DeviceLogin'
 import SetupData from './src/pages/SetupData'
 import ProductionCountSizeWise from './src/pages/ProductionCountSizeWise'
 import MultipleSizeCount from './src/pages/MultipleSizeCount'
+import ProductionShow from './src/pages/ProductionShow';
+import ShowData from './src/pages/components/ShowData';
+import MyComponent from './src/pages/MyComponent';
 
-let codePushOptions = { 
-  checkFrequency: codePush.CheckFrequency.ON_APP_RESUME, 
-  installMode: codePush.InstallMode.IMMEDIATE, 
+
+let codePushOptions = {
+  checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
+  installMode: codePush.InstallMode.IMMEDIATE,
   updateDialog: true,
-  allowRestart: true 
-}; 
+  allowRestart: true
+};
 
 const App = createStackNavigator({
   HomeScreen: {
@@ -23,7 +27,7 @@ const App = createStackNavigator({
       title: 'QMS Home',
       headerStyle: { backgroundColor: '#222b45' },
       headerTintColor: '#ffffff',
-      headerLeft: ()=> null
+      headerLeft: () => null
     },
   },
   DeviceLogin: {
@@ -32,7 +36,7 @@ const App = createStackNavigator({
       title: 'QMS Login',
       headerStyle: { backgroundColor: '#222b45' },
       headerTintColor: '#ffffff',
-      headerLeft: ()=> null
+      headerLeft: () => null
     },
   },
   SetupData: {
@@ -41,11 +45,32 @@ const App = createStackNavigator({
       title: 'QMS Data Setup',
       headerStyle: { backgroundColor: '#222b45' },
       headerTintColor: '#ffffff',
-      headerLeft: ()=> null
+      headerLeft: () => null
+    },
+  },
+  ProductionShow: {
+    screen: ProductionShow,
+    navigationOptions: {
+      headerShown: false,
+      title: 'Production Show',
+      headerStyle: { backgroundColor: '#222b45' },
+      headerTintColor: '#ffffff',
+      headerLeft: () => null
+    },
+  },
+  MyComponent: {
+    screen: MyComponent,
+    navigationOptions: {
+      headerShown: false,
+      title: 'Production Show',
+      headerStyle: { backgroundColor: '#222b45' },
+      headerTintColor: '#ffffff',
+      headerLeft: () => null
     },
   },
   ProductionCountSizeWise: {
     screen: ProductionCountSizeWise,
+
     navigationOptions: {
       headerShown: false,
       title: 'QMS Production Count',
@@ -61,14 +86,25 @@ const App = createStackNavigator({
       headerStyle: { backgroundColor: '#3a59b7' },
       headerTintColor: '#ffffff',
     }
-  }
+  },
+
+  // ShowDta: {
+  //   screen: MyComponent,
+  //   navigationOptions: {
+  //     headerShown: false,
+  //     title: 'QMS Show',
+  //     headerStyle: { backgroundColor: '#3a59b7' },
+  //     headerTintColor: '#ffffff',
+  //   }
+  // }
 });
 
-const AppContainer =  createAppContainer(App);
+
+const AppContainer = createAppContainer(App);
 
 const ToastContainer = () => <>
-                              <AppContainer/> 
-                              <Toast ref={(ref) => Toast.setRef(ref)} />
-                            </>
+  <AppContainer />
+  <Toast ref={(ref) => Toast.setRef(ref)} />
+</>
 
 export default codePush(codePushOptions)(ToastContainer);

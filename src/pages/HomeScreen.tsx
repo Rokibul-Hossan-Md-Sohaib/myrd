@@ -72,7 +72,7 @@ export default class HomeScreen extends React.Component<Props, State> {
   }
 //adb pull /data/data/com.rnrelmdbsync/files/QmsDb.realm QmsDb.realm
 
-
+//get all info from device & planning data 
   checkLoggedInAndRouteToSetupData(): void{
     let loginData = getCurrentLoggedInUserForToday(this.state.today);
     let planDataExists = planDataExistsForToday(this.state.today);
@@ -121,7 +121,8 @@ export default class HomeScreen extends React.Component<Props, State> {
           var deviceSecInfo = responseData.compUnitData;
           var defectRaw = responseData.defectRawData;
           var latestVersion = responseData.versionData ?? null;
-
+          
+// for the update portion
           if(latestVersion && this.state.currentVersion < latestVersion.currentVersion){
               Alert.alert(
                 "✨ New Update Available!",
